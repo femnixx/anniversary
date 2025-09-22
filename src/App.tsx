@@ -12,10 +12,15 @@ function App() {
         <p>Here's to the first year of our relationship</p>
         {/* decoration like clouds */}
         <div></div>
-        {/* pictures */}
+        {/* timeline of us */}
+        <div>
+
+        </div>
+        {/* favorite pictures */}
         <div></div>
         {/* cinnamoroll pop up */}
         <p>Thank you for being with me</p>
+        <p>Here's some cute things to do here!</p>
      </div>
     </>
   )
