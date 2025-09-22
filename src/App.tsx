@@ -11,8 +11,9 @@ function App() {
        {/* background opacity */}
        <div className='bg-black w-full h-full opacity-5 z-0 absolute'></div>
         {/* content */}
-        <div className='relative z-20'>
-          <p className='font-greatvibes text-7xl text-white'>Happy <br /> Anniversary</p>
+        <div className='relative z-20 text-center pt-5'>
+          <p className='font-greatvibes text-7xl text-white mr-20'>Happy</p>
+          <p className='font-greatvibes text-6xl text-white ml-20'>Anniversary</p>
           <p>Here's to the first year of our relationship</p>
           {/* decoration like clouds */}
           <div></div>
