@@ -7,9 +7,9 @@ import background from "./assets/background.jpg"
 function App() {
   return (
     <>
-     <div className='relative w-full h-screen background-cover background-center bg-[url(./assets/bluebackground.jpg)]'>
+     <div className='relative w-full h-screen background-cover background-center bg-blue-200'>
        {/* background opacity */}
-       <div className='bg-black w-full h-full opacity-10 z-0 absolute'></div>
+       <div className='bg-black w-full h-full opacity-5 z-0 absolute'></div>
         {/* content */}
         <div className='relative z-20'>
           <p className='font-greatvibes text-7xl text-white'>Happy <br /> Anniversary</p>
