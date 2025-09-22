@@ -1,8 +1,2 @@
 @import "tailwindcss";
 
-@font-face {
-    font-family: "GreatVibes-Regular";
-    src: url(./assets/fonts/GreatVibes-Regular.ttf);
-    font-weight: normal;
-    font-style: normal;
-}
