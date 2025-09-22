@@ -7,13 +7,11 @@ import background from "./assets/background.jpg"
 function App() {
   return (
     <>
-      <div className='w-full h-screen bg-cover bg-center' style={{backgroundImage: `url(${background})`}}>
-        <div className='flex items-center justify-center h-full'>
-          <div className='flex bg-red-600'>
-            <p>hi there</p>
-          </div>
-        </div>
-      </div> 
+     <div className='relative w-full h-screen bg-blue-300'>
+        <p className=''>Happy <br /> Anniversary</p>
+        <p>Here's to the first year of our relationship</p>
+        {/* pictures */}
+     </div>
     </>
   )
 }
