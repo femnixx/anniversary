@@ -9,7 +9,7 @@ function App() {
   return (
     <>
       {/* splashscreen */}
-      <div className="w-screen h-screen bg-[url('./assets/cinnamy.jpg')] bg-cover bg-center">
+      <div className="w-screen h-screen bg-[url('./assets/bluerealbackground.jpg')] bg-cover bg-center">
         <div className="w-full h-full flex justify-center items-center">
           <div className="bg-white rounded-lg shadow-lg">
             {/* container for video */}
