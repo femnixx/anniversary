@@ -5,10 +5,13 @@ function App() {
     <>
     {/* splashscreen */}
     <div className="w-screen h-screen bg-[url('./assets/cinnamy.jpg')] bg-cover bg-center">
-
     </div>
     {/* content */}
-    {/* <div className="w-screen h-screen bg-[url('./assets/bluebackground.jpg')] bg-cover bg-center"></div> */}
+    <div className="w-screen h-screen bg-[url('./assets/bluebackground.jpg')] bg-cover bg-center">
+      <div className='w-full h-full flex flex-col justify-center items-center'>
+          <p>hi there</p>
+      </div>
+    </div>
 
     </>
   )
