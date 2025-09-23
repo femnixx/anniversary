@@ -1,9 +1,14 @@
-import './App.css'
+import './App.css';
 
 function App() {
   return (
     <>
-    <div className="w-screen h-screen bg-[url('/couple.svg')] bg-cover bg-center"></div>
+    {/* splashscreen */}
+    <div>
+
+    </div>
+    {/* content */}
+    <div className="w-screen h-screen bg-[url('./assets/bluebackground.jpg')] bg-cover bg-center"></div>
 
     </>
   )
