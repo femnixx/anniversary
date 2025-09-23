@@ -4,11 +4,11 @@ function App() {
   return (
     <>
     {/* splashscreen */}
-    <div>
+    <div className="w-screen h-screen bg-[url('./assets/cinnamy.jpg')] bg-cover bg-center">
 
     </div>
     {/* content */}
-    <div className="w-screen h-screen bg-[url('./assets/bluebackground.jpg')] bg-cover bg-center"></div>
+    {/* <div className="w-screen h-screen bg-[url('./assets/bluebackground.jpg')] bg-cover bg-center"></div> */}
 
     </>
   )
