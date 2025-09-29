@@ -2,8 +2,7 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import './App.css';
 import envelope from "./assets/trans-evelope.png"
-gsap.registerPlugin(useGSAP);
-
+import text from "./assets/text.png"
 function App() {
   
   return (
@@ -22,7 +21,9 @@ function App() {
               </div>
           </div>
           <div>
-            
+            <div>
+              <img src={text} alt="" />
+            </div>
           </div>
         </div>
       </div>
