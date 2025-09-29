@@ -17,9 +17,12 @@ function App() {
                 <p className="text-center text-blue-400 font-bold">you've got mail ! </p>
                 <div className="flex gap-x-5 w-full justify-center mt-3">
                     <button className="bg-green-300 px-2 py-0.5 rounded-full">open</button>
-                    <button bg->leave</button>
+                    <button className="bg-red-300 px-2 py-0 rounded-full text-black">leave</button>
                 </div>
               </div>
+          </div>
+          <div>
+            
           </div>
         </div>
       </div>
