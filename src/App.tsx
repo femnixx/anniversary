@@ -24,8 +24,8 @@ function App() {
           </div>
             <div className="w-full h-full flex flex-col items-center justify-center">
               <img src={text} alt="" className="max-w-full max-h-full object-contain"/>
-              <img src={cinnamorollpeeking} alt="" className="flex flex-1"/>
             </div>
+              <div className="flex flex-1 items-center justify-center"><img src={cinnamorollpeeking} alt="" className=""/></div>
       </div>
     </>
   );
