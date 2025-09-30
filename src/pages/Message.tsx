@@ -1,5 +1,5 @@
 import bluerealbackground from "../assets/bluerealbackground.jpg"
-
+import pomaroll from "../assets/pomarollcropped.png"
 const Message = () => {
   return (
     <div className="w-screen h-screen bg-[url('../assets/bluebackground2.jpg')]" style={{ backgroundImage: `url(${bluerealbackground})`, backgroundPosition:"center", backgroundRepeat:"no-repeat",backgroundSize:"cover"}}>
@@ -7,9 +7,10 @@ const Message = () => {
         <div className="w-full h-full flex items-center justify-center p-3">
           <div className="bg-white flex justify-center items-center flex-col p-3 gap-y-5">
             <div>
-              <p>To My Amore~</p>
+            <img src={pomaroll} alt=""  className="border-1"/>
             </div>
             <div>
+              <p>To My Amore~</p>
               <p>Hapy Anniversary!!</p>
             </div>
             {/* main content */}
