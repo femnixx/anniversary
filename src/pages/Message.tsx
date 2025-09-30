@@ -16,6 +16,7 @@ const Message = () => {
             <div>
 
             </div>
+            <button>Continue</button>
           </div>
         </div>
     </div>
