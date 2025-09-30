@@ -13,7 +13,7 @@ const navigate = useNavigate();
       {/* splashscreen */}
       <div className="w-screen h-screen bg-[url('./assets/bluerealbackground.jpg')] bg-cover bg-center flex flex-col overflow-y-hidden">
             <div className='p-3'>
-              <div className="bg-white/95 rounded-2xl shadow-2xl p-3">
+              <div className="bg-white/95 rounded-2xl p-3 ring-3 ring-blue-300 shadow-lg shadow-blue-300">
                   <div className="flex justify-center">
                     <img src={envelope} alt="baby blue envelope"/>
                     </div>
