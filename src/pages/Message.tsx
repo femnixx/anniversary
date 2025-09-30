@@ -1,7 +1,9 @@
 
 const Message = () => {
   return (
-    <div>Message</div>
+    <div className="bg-[url('../assets/bluebackground.jpg')]">
+
+    </div>
   )
 }
 
