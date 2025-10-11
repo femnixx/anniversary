@@ -1,6 +1,9 @@
 import React from 'react'
 import bluerealbackground from '../assets/bluerealbackground.jpg'
-
+import date from "../assets/date.jpg"
+import moments from "../assets/moments.jpg"
+import compliments from "../assets/compliments.jpg"
+import together from "../assets/togethertime.jpg"
 const Options = () => {
   return (
     <div className='w-screen h-screen' style={{backgroundImage: `url(${bluerealbackground})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
