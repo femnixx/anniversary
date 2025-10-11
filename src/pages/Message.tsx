@@ -1,7 +1,10 @@
 import bluerealbackground from "../assets/bluerealbackground.jpg"
 import pomaroll from "../assets/pomarollcropped.png"
+import { useNavigate } from "react-router-dom"
 const Message = () => {
+  const navigate = useNavigate();
   return (
+    
     <div className="w-screen h-screen bg-[url('../assets/bluebackground2.jpg')]" style={{ backgroundImage: `url(${bluerealbackground})`, backgroundPosition:"center", backgroundRepeat:"no-repeat",backgroundSize:"cover"}}>
         {/* main screen */}
         <div className="w-full h-full flex items-center justify-center p-3">
@@ -19,7 +22,7 @@ const Message = () => {
                 <p className="text-sm">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Qui ipsam doloribus voluptate unde quaerat aperiam, reprehenderit impedit obcaecati incidunt culpa possimus sapiente quo fugit alias suscipit quisquam quos libero deleniti.</p>
               </div>
             </div>
-            <button className="bg-blue-400 text-white p-2 rounded-full font-bold text-sm px-3">Continue {'<'}3</button>
+            <button className="bg-blue-400 text-white p-2 rounded-full font-bold text-sm px-3" onClick={() => {navigate('/options')}}>Continue {'<'}3</button>
           </div>
         </div>
     </div>

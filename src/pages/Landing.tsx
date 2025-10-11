@@ -3,7 +3,6 @@ import '../App.css';
 import cinnamorollpeeking from "../assets/cinnamorollpeeking.png";
 import text from "../assets/text.png";
 import envelope from "../assets/trans-evelope.png";
-
 function Landing() {
   
 const navigate = useNavigate();
