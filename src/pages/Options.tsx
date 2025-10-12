@@ -7,14 +7,16 @@ import compliments from "../assets/compliments.png"
 import title from "../assets/optionstitle.png"
 import { Navigate, useNavigate } from 'react-router-dom'
 
-const Card = ({ imgSrc, label, alt }) => (
+const navigate = useNavigate();
+const Card = ({ imgSrc, label, alt, Link }) => 
+(
   <div
     role="button"
     tabIndex={0}
     className="group rounded-2xl bg-white/20 backdrop-blur-md ring-5 ring-white/100
                hover:ring-white/60 transition-all duration-300 hover:-translate-y-1
                hover:shadow-xl focus-visible:outline-none
-               focus-visible:ring-2 focus-visible:ring-white/70"
+               focus-visible:ring-2 focus-visible:ring-white/70" onClick={() => {navigate(`${Link}`)}}
   >
     <div className="flex flex-col items-center justify-center p-6 sm:p-8">
       <img
@@ -31,7 +33,6 @@ const Card = ({ imgSrc, label, alt }) => (
 )
 
 const Options = () => {
-    const navigate = useNavigate();
   return (
     <div
       className="relative min-h-screen w-full bg-cover bg-center"
@@ -49,7 +50,7 @@ const Options = () => {
         </header>
 
         <section className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 auto-rows-fr">
-          <Card imgSrc={date} alt="Calendar and heart" label="plan our next date" />
+          <Card imgSrc={date} alt="Calendar and heart" label="plan our next date"/>
           <Card imgSrc={moments} alt="Camera and memories" label="our favorite moments" />
           <Card imgSrc={together} alt="Timeline together" label="journey of togetherness" />
           <Card imgSrc={compliments} alt="Stars and compliments" label="compliments generator" />
