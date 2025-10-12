@@ -19,10 +19,10 @@ function App() {
         <Route path='/' element={<Landing />}></Route>
         <Route path='/message' element={<Message />}></Route>
         <Route path='/options' element={<Options />}></Route>
-        <Route />
-        <Route />
-        <Route />
-        <Route />
+        <Route path='/compliments' element={<Compliments />}/>
+        <Route path='/journey' element={<Journey />}/>
+        <Route path='moments' element={<Moments />}/>
+        <Route path='/Plan' element={<Plan />}/>
       </Routes>
       </BrowserRouter>
     </>
