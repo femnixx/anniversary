@@ -50,10 +50,10 @@ const Options = () => {
         </header>
 
         <section className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 auto-rows-fr">
-          <Card imgSrc={date} alt="Calendar and heart" label="plan our next date"/>
-          <Card imgSrc={moments} alt="Camera and memories" label="our favorite moments" />
-          <Card imgSrc={together} alt="Timeline together" label="journey of togetherness" />
-          <Card imgSrc={compliments} alt="Stars and compliments" label="compliments generator" />
+          <Card imgSrc={date} alt="Calendar and heart" label="plan our next date" Link={'/date'}/>
+          <Card imgSrc={moments} alt="Camera and memories" label="our favorite moments" Link={'/moments'}/>
+          <Card imgSrc={together} alt="Timeline together" label="journey of togetherness" Link={'/together'}/>
+          <Card imgSrc={compliments} alt="Stars and compliments" label="compliments generator" Link={'/compliments'}/>
         </section>
       </main>
     </div>
