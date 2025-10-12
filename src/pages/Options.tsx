@@ -5,12 +5,13 @@ import moments from "../assets/moments.png"
 import together from "../assets/together.png"
 import compliments from "../assets/compliments.png"
 import title from "../assets/optionstitle.png"
+import { Navigate, useNavigate } from 'react-router-dom'
 
 const Card = ({ imgSrc, label, alt }) => (
   <div
     role="button"
     tabIndex={0}
-    className="group rounded-2xl bg-white/10 backdrop-blur-md ring-5 ring-white/100
+    className="group rounded-2xl bg-white/20 backdrop-blur-md ring-5 ring-white/100
                hover:ring-white/60 transition-all duration-300 hover:-translate-y-1
                hover:shadow-xl focus-visible:outline-none
                focus-visible:ring-2 focus-visible:ring-white/70"
@@ -30,6 +31,7 @@ const Card = ({ imgSrc, label, alt }) => (
 )
 
 const Options = () => {
+    const navigate = useNavigate();
   return (
     <div
       className="relative min-h-screen w-full bg-cover bg-center"
