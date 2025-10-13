@@ -47,7 +47,6 @@ const Options = () => {
       className="relative min-h-screen w-full bg-cover bg-center"
       style={{ backgroundImage: `url(${bluerealbackground})` }}
     >
-      <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
 
       <main className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <header className="flex justify-center">
