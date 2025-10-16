@@ -4,7 +4,9 @@ const complimentGenerator = () => {
     "hi",
     "you",
     "you're pretty",
-    "You're so lovely"
+    "You're so lovely",
+    "i love you",
+    "memememe"
   ];
   const random = Math.floor(Math.random() * complimentsList.length);
   const randomCompliment = complimentsList[random];
