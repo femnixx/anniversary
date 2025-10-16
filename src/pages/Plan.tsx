@@ -1,7 +1,7 @@
 import bluerealbackground from "../assets/bluerealbackground.jpg";
 
 const Plan = () => {
-  const []
+ 
   
   return (
     <div className="w-screen h-screen">
