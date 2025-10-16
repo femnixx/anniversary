@@ -1,11 +1,10 @@
-import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import bluerealbackground from "../assets/bluerealbackground.jpg"
+import compliments from "../assets/compliments.png"
 import date from "../assets/date.png"
 import moments from "../assets/moments.png"
-import together from "../assets/together.png"
-import compliments from "../assets/compliments.png"
 import title from "../assets/optionstitle.png"
-import { useNavigate } from 'react-router-dom'
+import together from "../assets/together.png"
 
 const Card = ({ imgSrc, label, alt, to }) => {
   const navigate = useNavigate();
@@ -58,7 +57,7 @@ const Options = () => {
         </header>
 
         <section className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 auto-rows-fr">
-          <Card imgSrc={date} alt="Calendar and heart" label="plan our next date" to="/date" />
+          <Card imgSrc={date} alt="Calendar and heart" label="plan our next date" to="/plan" />
           <Card imgSrc={moments} alt="Camera and memories" label="our favorite moments" to="/moments" />
           <Card imgSrc={together} alt="Timeline together" label="journey of togetherness" to="/together" />
           <Card imgSrc={compliments} alt="Stars and compliments" label="compliments generator" to="/compliments" />
