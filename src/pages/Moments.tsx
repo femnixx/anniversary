@@ -1,4 +1,3 @@
-import React from 'react'
 import bluerealbackground from "../assets/bluerealbackground.jpg"
 
 const Moments = () => {
