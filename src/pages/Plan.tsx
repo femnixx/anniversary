@@ -1,7 +1,7 @@
 import bluerealbackground from "../assets/bluerealbackground.jpg";
 
 const Plan = () => {
-  
+
   return (
     <div className="w-screen h-screen">
       <div className="w-full h-full" style={{backgroundImage: `url(${bluerealbackground})`}}>
