@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import bluerealbackground from "../assets/bluerealbackground.jpg"
 
-
 gsap.registerPlugin(ScrollTrigger);
 
 const Journey = () => {
