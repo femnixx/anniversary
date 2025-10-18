@@ -59,7 +59,7 @@ const Options = () => {
         <section className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 auto-rows-fr">
           <Card imgSrc={date} alt="Calendar and heart" label="plan our next date" to="/plan" />
           <Card imgSrc={moments} alt="Camera and memories" label="our favorite moments" to="/moments" />
-          <Card imgSrc={together} alt="Timeline together" label="journey of togetherness" to="/together" />
+          <Card imgSrc={together} alt="Timeline together" label="journey of togetherness" to="/journey" />
           <Card imgSrc={compliments} alt="Stars and compliments" label="compliments generator" to="/compliments" />
         </section>
       </main>
