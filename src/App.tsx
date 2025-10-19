@@ -10,6 +10,8 @@ import Moments from './pages/Moments';
 import Message from './pages/Message';
 import Journey from './pages/Journey';
 import Compliments from './pages/Compliments';
+import { PrimeReactProvider } from "@primereact/core";
+
 
 function App() {
 
