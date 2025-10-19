@@ -1,4 +1,4 @@
-import {Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Typography} from "@mui/material"
+import {Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Typography, Button} from "@mui/material"
 import { random } from "gsap";
 import React, { useState } from 'react'
 import { motion } from "framer-motion";
@@ -16,25 +16,15 @@ const begTitle = [
     "pleaseee"
 ]
 
-const LeaveDialog = () => {
-    const [open, setOpen] = useState(false);
-    const [message, setMessage] = useState("");
-    const [title, setTitle] = useState("");
-    
-    const handleClickOpen = () => {
-        const randomMessageIndex = Math.floor(Math.random() * begMessage.length);
-        const randomTitleIndex = Math.floor(Math.random() * begTitle.length);
-        setMessage(begMessage[randomMessageIndex]);
-        setTitle(begTitle[randomTitleIndex]);
-        setOpen(true);
-    }
-    const handleClose = () => {
-        setOpen(false);
-    }
+const LeaveDialog = ({ open, onClose }) => {
+    const begMessageIndex = Math.floor(Math.random() * begMessage.length);
+    const begTitleIndex = Math.floor(Math.random() * begTitle.length);
+    const message = begMessage[begMessageIndex];
+    const title = begTitle[begTitleIndex];
 
   return ( 
     <div>
-        <Dialog onClose={handleClose} open={open}>
+        <Dialog onClose={onClose} open={open}>
             <DialogTitle>
                 <motion.div
                 initial={{opacity: 0, scale: 0.8}}
@@ -52,8 +42,12 @@ const LeaveDialog = () => {
                 transition={{duration: 0.4}}
                 className="flex flex-col justify-center items-center text-base font-semibold text-blue-600/40 italic"
                 >
+                    {message}
                 </motion.div>
             </DialogContent>
+            <DialogActions>
+                <Button onClick={onclose} color="primary">Let's try again please!</Button>
+            </DialogActions>
         </Dialog>
     </div>
   )

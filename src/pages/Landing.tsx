@@ -3,9 +3,12 @@ import '../App.css';
 import cinnamorollpeeking from "../assets/cinnamorollpeeking.png";
 import text from "../assets/text.png";
 import envelope from "../assets/trans-evelope.png";
+import LeaveDialog from '@/components/LeaveDialog';
+import { useState } from 'react';
 
 function Landing() {
   const navigate = useNavigate();
+  const [openDialog, setOpenDialog] = useState(false);
 
   return (
     <div className="w-screen h-screen bg-[url('./assets/bluerealbackground.jpg')] bg-cover bg-center flex flex-col justify-between overflow-y-hidden">
@@ -31,7 +34,7 @@ function Landing() {
               >
                 open
               </button>
-              <button className="bg-red-300 px-3 py-1 rounded-full text-black hover:bg-red-400 transition">
+              <button className="bg-red-300 px-3 py-1 rounded-full text-black hover:bg-red-400 transition" onClick={() => {setOpenDialog(true)}}>
                 leave
               </button>
             </div>
@@ -48,6 +51,9 @@ function Landing() {
       <div className="flex justify-center mb-2">
         <img src={cinnamorollpeeking} alt="cinnamoroll peeking" className="w-40 md:w-56 -mt-6" />
       </div>
+
+      {/* Leave Dialog */}
+      <LeaveDialog open={openDialog} onClose={() => setOpenDialog(false)}></LeaveDialog>
     </div>
   );
 }
