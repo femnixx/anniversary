@@ -1,11 +1,11 @@
 import React from 'react'
-import bluerealbackground from "../assets/bluerealbackground.jpg"
+import bluerealbackground3 from "../assets/bluerealbackground3.jpg"
 import complimentGenerator from '../components/Functions'
 import { useState } from 'react'
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import { random } from 'gsap';
+import { motion } from "framer-motion";
 
 export interface SimpleDialogProps {
     open: boolean;
@@ -39,7 +39,7 @@ export interface SimpleDialogProps {
   }
   return (
     <div className='w-screen h-screen overflow-hidden'>
-      <div className='w-full h-full' style={{backgroundImage: `url(${bluerealbackground})`}}>
+      <div className='w-full h-full bg-no-repeat bg-cover bg-center' style={{backgroundImage: `url(${bluerealbackground3})`}}>
             
           
           <div className='pt-10 flex flex-col justify-center items-center w-full h-auto'>
@@ -57,14 +57,19 @@ export interface SimpleDialogProps {
                   {/* generate compliments */}
                   <button onClick={generateCompliment} className='bg-gradient-to-r from-blue-300 to-blue-400 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform duration-300 hover:shadow-blue-400/50'>generate 🤍</button>
                   {/* show compliments */}
-                  <Dialog className='' onClose={handleClose} open={open}>
-                    <DialogTitle>
-                      Your Compliment
-                    </DialogTitle>
-                    <DialogContent>
-                        <div className='flex flex-col justify-center items-center'>{randomCompliment}</div>
-                    </DialogContent>
-                  </Dialog>
+                  <Dialog onClose={handleClose} open={open}>
+  <DialogTitle>Your Compliment</DialogTitle>
+  <DialogContent>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col justify-center items-center text-lg font-semibold text-blue-500/60 italic"
+    >
+      {randomCompliment}
+    </motion.div>
+  </DialogContent>
+</Dialog>
                 </div>
             </div>
           </div>
