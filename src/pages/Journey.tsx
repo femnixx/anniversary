@@ -9,6 +9,7 @@ import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
+import date from "../assets/date.png"
 
 const Journey = () => {
   return (
@@ -21,7 +22,7 @@ const Journey = () => {
           <TimelineDot />
           <TimelineConnector />
         </TimelineSeparator>
-        <TimelineContent>Eat</TimelineContent>
+        <TimelineContent><img src={date} alt="" /></TimelineContent>
       </TimelineItem>
       <TimelineItem>
         <TimelineSeparator>
