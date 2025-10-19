@@ -7,8 +7,8 @@ import {
   TimelineContent,
   TimelineDot,
 } from "@mui/lab";
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
 
 const timelineEvents = [
   {
@@ -49,7 +49,6 @@ const timelineEvents = [
 const Journey = () => {
   const [isMobile, setIsMobile] = useState(false);
 
-  // ✅ Detect screen size dynamically
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -65,36 +64,46 @@ const Journey = () => {
       <p className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg mb-10 text-center">
         Our Journey Together 💞
       </p>
-
       {/* Timeline container */}
       <div className="flex justify-center w-full max-w-3xl md:max-w-4xl">
         <Timeline position={isMobile ? "right" : "alternate"}>
-          {timelineEvents.map((event, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 60 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: index * 0.15 }}
-              viewport={{ once: true, amount: 0.3 }}
-            >
-              <TimelineItem>
-                <TimelineSeparator>
-                  <TimelineDot color="primary" />
-                  {index !== timelineEvents.length - 1 && <TimelineConnector />}
-                </TimelineSeparator>
-                <TimelineContent className="md:px-4">
-                  <div className="bg-white/90 backdrop-blur-md p-3 md:p-4 rounded-xl shadow-lg border border-white/40">
-                    <h3 className="font-semibold text-base md:text-lg text-blue-600 mb-1">
-                      {event.title}
-                    </h3>
-                    <p className="text-xs md:text-sm text-gray-800 italic leading-snug md:leading-relaxed">
-                      {event.desc}
-                    </p>
-                  </div>
-                </TimelineContent>
-              </TimelineItem>
-            </motion.div>
-          ))}
+         {timelineEvents.map((event, index) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { amount: 0.3 }); // only active when 30% in view
+
+  return (
+    <div ref={ref} key={index}>
+      <AnimatePresence mode="wait">
+        {isInView && (
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 60 }}
+            transition={{ duration: 0.6 }}
+          >
+            <TimelineItem>
+              <TimelineSeparator>
+                <TimelineDot color="primary" />
+                {index !== timelineEvents.length - 1 && <TimelineConnector />}
+              </TimelineSeparator>
+              <TimelineContent className="md:px-4">
+                <div className="bg-white/90 backdrop-blur-md p-3 md:p-4 rounded-xl shadow-lg border border-white/40">
+                  <h3 className="font-semibold text-base md:text-lg text-blue-600 mb-1">
+                    {event.title}
+                  </h3>
+                  <p className="text-xs md:text-sm text-gray-800 italic leading-snug md:leading-relaxed">
+                    {event.desc}
+                  </p>
+                </div>
+              </TimelineContent>
+            </TimelineItem>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+})}
+
         </Timeline>
       </div>
     </div>
