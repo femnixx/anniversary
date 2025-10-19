@@ -6,6 +6,8 @@ import DialogContent from '@mui/material/DialogContent';
 import { motion } from "framer-motion";
 import InfiniteScroll from '../components/InfiniteScroll';
 import '../components/InfiniteScroll.css';
+import CircularGallery from "../components/CircularGallery"
+import "../components/CircularGallery.css"
 
 const Compliments = () => {
   const [randomCompliment, setRandomCompliment] = useState("");
