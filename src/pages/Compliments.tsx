@@ -46,7 +46,7 @@ export interface SimpleDialogProps {
             <p className='text-center text-2xl text-white text-shadow-lg text-shadow-blue-300/60 italic font-semibold'>compliments</p>
           </div>
           
-        <div className='flex flex-col pt-20 items-center w-full h-full p-3 text-center'>
+        <div className='flex flex-col pt-20 items-center w-full h-full p-3 text-center flex-grow flex-1'>
           <div className='bg-white/100 p-3 shadow-xl rounded-xl gap-y-3 flex flex-col outline-2 outline-blue-500 shadow-blue-200'>
             <p className='text-lg font-semibold drop-shadow-lg italic'>to my favorite person 💌</p>
             <p className='text-md font-light p-2'>handmade compliments for your eyes only</p>
