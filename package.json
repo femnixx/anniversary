@@ -22,8 +22,6 @@
     "clsx": "^2.1.1",
     "gsap": "^3.13.0",
     "lucide-react": "^0.546.0",
-    "primeicons": "^7.0.0",
-    "primereact": "^11.0.0-alpha.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.4",
