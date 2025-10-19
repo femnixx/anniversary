@@ -2,6 +2,7 @@ import bluerealbackground from "../assets/bluerealbackground.jpg";
 import pomaroll from "../assets/pomarollcropped.png";
 import { useNavigate } from "react-router-dom";
 
+
 const Message = () => {
   const navigate = useNavigate();
   return (

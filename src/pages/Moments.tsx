@@ -1,6 +1,6 @@
 import bluerealbackground from "../assets/bluerealbackground.jpg"
 import pomsit from "../assets/pomsit.png"
-
+import { usetState } from "react";
 
 function onUpload() {
 
