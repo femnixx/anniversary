@@ -16,7 +16,7 @@ gsap.registerPlugin(ScrollTrigger);
 const timelineEvents = [
   { title: "How We Met 💫", desc: "A simple hello that changed everything." },
   { title: "Our First Time Going Out 🍰", desc: "Almost got poisoned, but here we are!" },
-  { title: "Our Adventures ✈️", desc: "Our time together, adventures, and laughter." },
+  { title: "Pir Adventures ✈️", desc: "Our time together, adventures, and laughter." },
   { title: "Today 💙", desc: "Still us, still together, still growing." },
   { title: "Our Future ✨", desc: "Our story continues..." },
    { title: "Our Future ✨", desc: "Our story continues..." },

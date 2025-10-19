@@ -60,7 +60,7 @@ const Compliments = () => {
                 </button>
 
                 <Dialog onClose={handleClose} open={open}>
-                  <DialogTitle>Your Compliment</DialogTitle>
+                  <DialogTitle>your compliment:</DialogTitle>
                   <DialogContent>
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
