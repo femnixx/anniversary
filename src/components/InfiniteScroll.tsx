@@ -1,11 +1,28 @@
-import { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Observer } from 'gsap/Observer';
-import './InfiniteScroll.css';
 
 gsap.registerPlugin(Observer);
 
-export default function InfiniteScroll({
+interface InfiniteScrollItem {
+  content: React.ReactNode;
+}
+
+interface InfiniteScrollProps {
+  width?: string;
+  maxHeight?: string;
+  negativeMargin?: string;
+  items?: InfiniteScrollItem[];
+  itemMinHeight?: number;
+  isTilted?: boolean;
+  tiltDirection?: 'left' | 'right';
+  autoplay?: boolean;
+  autoplaySpeed?: number;
+  autoplayDirection?: 'down' | 'up';
+  pauseOnHover?: boolean;
+}
+
+const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
   width = '30rem',
   maxHeight = '100%',
   negativeMargin = '-0.5em',
@@ -17,11 +34,11 @@ export default function InfiniteScroll({
   autoplaySpeed = 0.5,
   autoplayDirection = 'down',
   pauseOnHover = false
-}) {
-  const wrapperRef = useRef(null);
-  const containerRef = useRef(null);
+}) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const getTiltTransform = () => {
+  const getTiltTransform = (): string => {
     if (!isTilted) return 'none';
     return tiltDirection === 'left'
       ? 'rotateX(20deg) rotateZ(-20deg) skewX(20deg)'
@@ -33,7 +50,7 @@ export default function InfiniteScroll({
     if (!container) return;
     if (items.length === 0) return;
 
-    const divItems = gsap.utils.toArray(container.children);
+    const divItems = gsap.utils.toArray<HTMLDivElement>(container.children);
     if (!divItems.length) return;
 
     const firstItem = divItems[0];
@@ -55,10 +72,10 @@ export default function InfiniteScroll({
       type: 'wheel,touch,pointer',
       preventDefault: true,
       onPress: ({ target }) => {
-        target.style.cursor = 'grabbing';
+        (target as HTMLElement).style.cursor = 'grabbing';
       },
       onRelease: ({ target }) => {
-        target.style.cursor = 'grab';
+        (target as HTMLElement).style.cursor = 'grab';
       },
       onChange: ({ deltaY, isDragging, event }) => {
         const d = event.type === 'wheel' ? -deltaY : deltaY;
@@ -76,7 +93,7 @@ export default function InfiniteScroll({
       }
     });
 
-    let rafId;
+    let rafId: number;
     if (autoplay) {
       const directionFactor = autoplayDirection === 'down' ? 1 : -1;
       const speedPerFrame = autoplaySpeed * directionFactor;
@@ -97,7 +114,9 @@ export default function InfiniteScroll({
 
       if (pauseOnHover) {
         const stopTicker = () => rafId && cancelAnimationFrame(rafId);
-        const startTicker = () => (rafId = requestAnimationFrame(tick));
+        const startTicker = () => {
+          rafId = requestAnimationFrame(tick);
+        };
 
         container.addEventListener('mouseenter', stopTicker);
         container.addEventListener('mouseleave', startTicker);
@@ -126,18 +145,18 @@ export default function InfiniteScroll({
     <>
       <style>
         {`
-        .infinite-scroll-wrapper {
-          max-height: ${maxHeight};
-        }
+          .infinite-scroll-wrapper {
+            max-height: ${maxHeight};
+          }
 
-        .infinite-scroll-container {
-          width: ${width};
-        }
+          .infinite-scroll-container {
+            width: ${width};
+          }
 
-        .infinite-scroll-item {
-          height: ${itemMinHeight}px;
-          margin-top: ${negativeMargin};
-        }
+          .infinite-scroll-item {
+            height: ${itemMinHeight}px;
+            margin-top: ${negativeMargin};
+          }
         `}
       </style>
 
@@ -158,5 +177,6 @@ export default function InfiniteScroll({
       </div>
     </>
   );
-}
+};
 
+export default InfiniteScroll;
