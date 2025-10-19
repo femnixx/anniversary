@@ -62,7 +62,7 @@ export interface SimpleDialogProps {
                       Your Compliment
                     </DialogTitle>
                     <DialogContent>
-                        {randomCompliment}
+                        <div className='flex flex-col justify-center items-center'>{randomCompliment}</div>
                     </DialogContent>
                   </Dialog>
                 </div>
