@@ -44,7 +44,7 @@ const Compliments = () => {
         </div>
 
         {/* Compliment Generator */}
-        <div className='flex flex-col pt-20 items-center w-full h-full p-3 text-center flex-grow flex-1'>
+        <div className='relative z-20 flex flex-col pt-20 items-center w-full h-full p-3 text-center flex-grow flex-1'>
           <div className='bg-white/100 p-3 shadow-xl rounded-xl gap-y-3 flex flex-col outline-2 outline-blue-500 shadow-blue-200'>
             <p className='text-lg font-semibold drop-shadow-lg italic'>to my favorite person 💌</p>
             <p className='text-md font-light p-2'>handmade compliments for your eyes only</p>
@@ -78,7 +78,8 @@ const Compliments = () => {
         </div>
 
         {/* Infinite Scroll */}
-        <div className='absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-2xl' style={{ height: '500px' }}>
+        <div className='absolute z-10 bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-2xl' style={{ height: '500px' }}>
+          {/* make a new list for this and fill it with something else */}
           <InfiniteScroll
             items={complimentsList.map(text => ({ content: <p className="text-white">{text}</p> }))}
             maxHeight="500px"
