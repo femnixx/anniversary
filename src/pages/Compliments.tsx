@@ -4,7 +4,8 @@ import complimentGenerator from '../components/Functions'
 import { useState } from 'react'
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-
+import DialogContent from '@mui/material/DialogContent';
+import { random } from 'gsap';
 
 export interface SimpleDialogProps {
     open: boolean;
@@ -56,7 +57,14 @@ export interface SimpleDialogProps {
                   {/* generate compliments */}
                   <button onClick={generateCompliment} className='bg-gradient-to-r from-blue-300 to-blue-400 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:scale-105 transition-transform duration-300 hover:shadow-blue-400/50'>generate 🤍</button>
                   {/* show compliments */}
-                  <Dialog className='' onClose={handleClose} open={open}>{randomCompliment}</Dialog>
+                  <Dialog className='' onClose={handleClose} open={open}>
+                    <DialogTitle>
+                      Your Compliment
+                    </DialogTitle>
+                    <DialogContent>
+                        {randomCompliment}
+                    </DialogContent>
+                  </Dialog>
                 </div>
             </div>
           </div>
