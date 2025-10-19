@@ -1,4 +1,6 @@
 import bluerealbackground3 from "../assets/bluerealbackground3.jpg"
+import { motion } from "motion/react";
+import type { Variants } from "motion/react"
 
 const Journey = () => {
   return (
@@ -7,11 +9,14 @@ const Journey = () => {
   className="w-full h-full bg-cover bg-center bg-no-repeat"
   style={{ backgroundImage: `url(${bluerealbackground3})` }}
 >
-  <div className="w-full h-full flex flex-col justify-center items-center bg-black/30 text-white">
-    <p className="text-xl font-semibold">Scroll down or something</p>
+  <div className=" absolute w-full h-full flex flex-col justify-center items-center bg-black/30 text-white">
   </div>
-</div>
+    <div className="w-full h-full items-center justify-center flex flex-col">
+      <p className="text-xl font-semibold">Scroll down or something</p>
+    </div>
+      <p>hi</p>
 
+</div>
     </div>
   )
 }
