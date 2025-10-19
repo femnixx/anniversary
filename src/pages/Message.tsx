@@ -1,7 +1,8 @@
 import bluerealbackground from "../assets/bluerealbackground.jpg";
 import pomaroll from "../assets/pomarollcropped.png";
 import { useNavigate } from "react-router-dom";
-
+import InfiniteScroll from '../components/InfiniteScroll.css'
+import complimentGenerator from "@/components/Functions";
 
 const Message = () => {
   const navigate = useNavigate();

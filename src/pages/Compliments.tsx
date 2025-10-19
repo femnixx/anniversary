@@ -6,6 +6,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import { motion } from "framer-motion";
+import InfiniteScroll from '../components/InfiniteScroll'
+import  '../components/InfiniteScroll.css' 
 
 export interface SimpleDialogProps {
     open: boolean;
@@ -73,6 +75,17 @@ export interface SimpleDialogProps {
                 </div>
             </div>
           </div>
+        </div>
+      <div style={{height: '500px', position: 'relative', zIndex:-20}}>
+            <InfiniteScroll
+  items={complimentsList as never[]} // no casting
+  isTilted={true}
+  tiltDirection="left"
+  autoplay={true}
+  autoplaySpeed={0.1}
+  autoplayDirection="down"
+  pauseOnHover={true} // correct prop name
+/>
         </div>
       </div>
     </div>

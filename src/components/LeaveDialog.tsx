@@ -30,7 +30,7 @@ const LeaveDialog = ({ open, onClose }) => {
                 initial={{opacity: 0, scale: 0.8}}
                 animate={{opacity:1, scale:1}}
                 transition={{duration: 0.4}}
-                className="flex flex-col justify-center items-center text-lg font-semibold text-blue-400/60"
+                className="flex flex-col justify-center items-center text-lg font-semibold text-blue-400/60 text-center"
                 >
                     {title}
                 </motion.div>
@@ -40,14 +40,11 @@ const LeaveDialog = ({ open, onClose }) => {
                 initial={{opacity:0, scale: 0.8}}
                 animate={{opacity: 1, scale: 1}}
                 transition={{duration: 0.4}}
-                className="flex flex-col justify-center items-center text-base font-semibold text-blue-600/40 italic"
+                className="flex flex-col justify-center items-center text-base font-semibold text-blue-600/40 italic text-center"
                 >
                     {message}
                 </motion.div>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onclose} color="primary">Let's try again please!</Button>
-            </DialogActions>
         </Dialog>
     </div>
   )
