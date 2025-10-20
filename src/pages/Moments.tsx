@@ -2,11 +2,12 @@ import bluerealbackground from "../assets/bluerealbackground.jpg";
 import pomsit from "../assets/pomsit.png";
 import { FileUpload, type FileUploadSelectEvent } from "primereact/fileupload";
 import { useState } from "react";
-
+import { supabase } from "../SupabaseClient";
 
 
 const Moments = () => {
   const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const onSelect = (e: FileUploadSelectEvent) => {
     const selectedFiles = Array.from(e.files as File[]);
@@ -14,9 +15,27 @@ const Moments = () => {
     console.log("Selected files:", selectedFiles);
   };
 
-  const onUpload = () => {
+  const onUpload = async () => {
+    if (files.length === 0) return alert("No files selected!");
     console.log("Uploading files:", files);
     alert(`Uploaded ${files.length} file(s)!`);
+    setUploading(true);
+
+    for (const file of files) {
+      const filePath = `moments/${Date.now()}_${file.name}`;
+      const { error } = await supabase.storage.from("images").upload(filePath, file);
+      
+      if (error) {
+        console.error("Upload failed:", error.message);
+        alert(`Failed to upload ${file.name}`);
+      } else {
+        console.log("Uploaded:", filePath);
+      }
+    }
+
+    alert(`Sucessfully uploaded ${files.length} file(s)!`);
+    setUploading(false);
+    setFiles([]);
   };
 
   return (
@@ -36,8 +55,11 @@ const Moments = () => {
   name="files"
   accept="image/*"
   multiple
+  customUpload
+  uploadHandler={onUpload}
+  onSelect={onSelect}
   chooseLabel="Choose Files"
-  uploadLabel="Upload"
+  uploadLabel={uploading ? "Uploading..." : "Upload"}
   cancelLabel="Clear"
   className="flex flex-col gap-2  w-full  gap-x-3 gap-y-4 justify-center items-center"
   chooseOptions={{
