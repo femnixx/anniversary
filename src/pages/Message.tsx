@@ -1,3 +1,4 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
 import bluerealbackground from "../assets/bluerealbackground.jpg";
 import pomaroll from "../assets/pomarollcropped.png";
@@ -42,9 +43,11 @@ const Message = () => {
 
               {/* Main content */}
               <div className="text-center border-2 border-blue-400 border-dotted py-3 px-2 rounded-md">
-                <p className="text-sm md:text-base text-gray-700 leading-relaxed">
-                  Happy 1 year anniversary for the both of us together, we've been through so much. We've been through happiness, sadness, and times where we don't even know where we are in life and in our relationship. Though, we've pushed through all of that and we've proven time and time again that with grit, determination, and love for each other, we can push through. And I intend to love you as much as I do now, and even more. Thank you, my lovely ciby, my princess. My bright, shining star.
-                  </p>
+                <ScrollArea className="h-40 md:h-60 w-auto">
+                  <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Happy 1 year anniversary for the both of us together, we've been through so much. We've been through happiness, sadness, and times where we don't even know where we are in life and in our relationship. Though, we've pushed through all of that and we've proven time and time again that with grit, determination, and love for each other, we can push through. And I intend to love you as much as I do now, and even more. Thank you, my lovely ciby, my princess. My bright, shining star.
+                    </p>
+                </ScrollArea>
               </div>
             </div>
           </div>
