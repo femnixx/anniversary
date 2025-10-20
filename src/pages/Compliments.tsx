@@ -1,27 +1,33 @@
-import React, { useState } from 'react';
-import bluerealbackground3 from "../assets/bluerealbackground3.jpg";
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import { motion } from "framer-motion";
+import { useState } from 'react';
+import bluerealbackground3 from "../assets/bluerealbackground3.jpg";
+import "../components/CircularGallery.css";
 import InfiniteScroll from '../components/InfiniteScroll';
 import '../components/InfiniteScroll.css';
-import CircularGallery from "../components/CircularGallery"
-import "../components/CircularGallery.css"
 
 const Compliments = () => {
   const [randomCompliment, setRandomCompliment] = useState("");
   const [open, setOpen] = useState(false);
 
   const complimentsList = [
-    "hi there",
-    "hi",
-    "you",
-    "you're pretty",
-    "You're so lovely",
-    "i love you",
-    "memememe"
+    "a kind and patient soul like you doesn't deserve to be broken^^",
+    "never have i sought upon someone's heart but yours",
+    "for always being kind, for always being genuine, thank you for everything.",
+    "thinking about you everyday makes my heart ache from not being able to always see you.",
+    "having you made me realize that someone can love as much as you.",
+    "your smile and giggle are one of the wonders of my world",
+    "the dandelions sings when your presence is seen"
   ];
+
+  const questionsList = [
+    "i hope you love me",
+    "hiiii i hope you're enjoying this even though it's not perfect",
+    "no AI!! all made by me :3",
+    "you deserve every single part of my praise for everything you've done"
+  ]
 
   const generateCompliment = () => {
     const randomIndex = Math.floor(Math.random() * complimentsList.length);
@@ -83,7 +89,7 @@ const Compliments = () => {
         <div className='absolute z-10 bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-2xl' style={{ height: '500px' }}>
           {/* make a new list for this and fill it with something else */}
           <InfiniteScroll
-            items={complimentsList.map(text => ({ content: <p className="text-white">{text}</p> }))}
+            items={questionsList.map(text => ({ content: <p className="text-white">{text}</p> }))}
             maxHeight="500px"
             isTilted={true}
             tiltDirection="left"
