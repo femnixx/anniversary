@@ -32,14 +32,21 @@ const Plan = () => {
         }
 
         // generate public URLs
-        const imtes = files.map((file) => {
+        const items = files.map((file) => {
           const { data } = supabase
           .storage
           .from("images")
           .getPublicUrl(`moments/${file.name}`);
-        })
-    }
-  })
+
+          return {
+            image: data.publicUrl,
+            text: file.name.replace(/\.[^/.]+$/, ""),
+          };
+        });
+        setMyGalleryItems(items);
+    };
+    fetchImages();
+  }, []);
 
   
   const myGalleryItems2 = [
