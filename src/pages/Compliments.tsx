@@ -46,7 +46,7 @@ const Compliments = () => {
       >
         {/* Header */}
         <div className='pt-10 flex flex-col justify-center items-center w-full h-auto'>
-          <p className='text-center text-2xl text-white text-shadow-lg text-shadow-blue-300/60 italic font-semibold'>
+          <p className='text-center text-2xl md:text-4xl lg:text-6xl text-white text-shadow-lg text-shadow-blue-300/60 italic font-semibold'>
             compliments
           </p>
         </div>
