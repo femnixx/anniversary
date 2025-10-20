@@ -9,7 +9,7 @@ import { supabase } from "@/SupabaseClient";
 const Plan = () => {
   const [time, setTime] = useState("");
   const [place, setPlace] = useState("");
-  const [myGalleryItems, setMyGalleryItems] = useState< {image: String, text: string}[]>([]);
+  const [myGalleryItems, setMyGalleryItems] = useState< {image: string, text: string}[]>([]);
   
   const handleTime = (event: SelectChangeEvent) => {
     setTime(event.target.value as string);
