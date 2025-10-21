@@ -1,5 +1,5 @@
 import './App.css'  
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Plan from './pages/Plan';
 import Options from './pages/Options';
@@ -16,7 +16,7 @@ function App() {
     <>
       <PrimeReactProvider>
         <div>
-          <BrowserRouter>
+          <HashRouter>
             <Routes>
               <Route path='/anniversary' element={<Landing />}></Route>
               <Route path='/message' element={<Message />}></Route>
@@ -26,7 +26,7 @@ function App() {
               <Route path='/journey' element={<Journey />}></Route>
               <Route path='/compliments' element={<Compliments />}></Route>
             </Routes>
-          </BrowserRouter>
+          </HashRouter>
         </div>
       </PrimeReactProvider>
     </>
