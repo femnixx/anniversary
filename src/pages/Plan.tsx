@@ -76,6 +76,7 @@ const Plan = () => {
           }}
         >
           <CircularGallery
+          key={myGalleryItems.length}
             items={myGalleryItems}
             bend={2.5}
             textColor="#ffffff"
