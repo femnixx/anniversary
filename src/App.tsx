@@ -18,7 +18,7 @@ function App() {
         <div>
           <HashRouter>
             <Routes>
-              <Route path='/anniversary' element={<Landing />}></Route>
+              <Route path='/' element={<Landing />}></Route>
               <Route path='/message' element={<Message />}></Route>
               <Route path='/plan' element={<Plan />}></Route>
               <Route path='/options' element={<Options />}></Route>
