@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Environment files — contain Neon DB password + AWS secret.
+# NEVER commit. Use .env.example as the tracked template.
+.env
+.env.*
+!.env.example
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

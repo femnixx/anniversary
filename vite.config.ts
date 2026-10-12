@@ -11,5 +11,18 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src")
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          motion: ['framer-motion', 'gsap'],
+          mui: ['@mui/material', '@mui/lab', '@emotion/react', '@emotion/styled'],
+          aws: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner'],
+        }
+      }
+    },
+    chunkSizeWarningLimit: 700
   }
 })
