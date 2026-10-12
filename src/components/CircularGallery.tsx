@@ -80,7 +80,7 @@ class Title {
   font: string;
   mesh!: Mesh;
 
-  constructor({ gl, plane, renderer, text, textColor = '#545050', font = '30px sans-serif' }: TitleProps) {
+  constructor({ gl, plane, renderer, text, textColor = '#1e3a5c', font = '30px sans-serif' }: TitleProps) {
     autoBind(this);
     this.gl = gl;
     this.plane = plane;
@@ -154,6 +154,7 @@ interface MediaProps {
   textColor: string;
   borderRadius?: number;
   font?: string;
+  app: App;
 }
 
 class Media {
@@ -172,6 +173,7 @@ class Media {
   textColor: string;
   borderRadius: number;
   font?: string;
+  app: App;
   program!: Program;
   plane!: Mesh;
   title!: Title;
@@ -198,7 +200,8 @@ class Media {
     bend,
     textColor,
     borderRadius = 0,
-    font
+    font,
+    app
   }: MediaProps) {
     this.geometry = geometry;
     this.gl = gl;
@@ -214,6 +217,7 @@ class Media {
     this.textColor = textColor;
     this.borderRadius = borderRadius;
     this.font = font;
+    this.app = app;
     this.createShader();
     this.createMesh();
     this.createTitle();
@@ -235,11 +239,25 @@ class Media {
         uniform mat4 projectionMatrix;
         uniform float uTime;
         uniform float uSpeed;
+        uniform float uFocus;
+        uniform float uDim;
         varying vec2 vUv;
+        varying float vDim;
         void main() {
           vUv = uv;
+          vDim = uDim;
           vec3 p = position;
-          p.z = (sin(p.x * 4.0 + uTime) * 1.5 + cos(p.y * 2.0 + uTime) * 1.5) * (0.1 + uSpeed * 0.5);
+
+          /* Inertia ripple — a flag caught in the scroll. uSpeed is the
+             frame delta, so it decays to exactly 0 as the carousel eases
+             to a stop and the sheet lies flat again. */
+          float ripple = sin(p.x * 5.0 + uTime * 1.4) * cos(p.y * 3.0 - uTime * 1.1);
+          p.z += ripple * (0.30 + uSpeed * 0.95);
+
+          /* Focal plane: pulled out of the cylinder and bowed toward camera */
+          p.z += uFocus * 3.2;
+          p.xy *= (1.0 + uFocus * 0.07);
+
           gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
         }
       `,
@@ -249,13 +267,15 @@ class Media {
         uniform vec2 uPlaneSizes;
         uniform sampler2D tMap;
         uniform float uBorderRadius;
+        uniform float uDim;
         varying vec2 vUv;
-        
+        varying float vDim;
+
         float roundedBoxSDF(vec2 p, vec2 b, float r) {
           vec2 d = abs(p) - b;
           return length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0) - r;
         }
-        
+
         void main() {
           vec2 ratio = vec2(
             min((uPlaneSizes.x / uPlaneSizes.y) / (uImageSizes.x / uImageSizes.y), 1.0),
@@ -266,13 +286,16 @@ class Media {
             vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
           );
           vec4 color = texture2D(tMap, uv);
-          
+
           float d = roundedBoxSDF(vUv - 0.5, vec2(0.5 - uBorderRadius), uBorderRadius);
-          
+
           float edgeSmooth = 0.002;
           float alpha = 1.0 - smoothstep(-edgeSmooth, edgeSmooth, d);
-          
-          gl_FragColor = vec4(color.rgb, alpha);
+
+          /* non-focal sheets sink back so the focused one reads as forward */
+          vec3 shaded = color.rgb * (1.0 - vDim * 0.55);
+
+          gl_FragColor = vec4(shaded, alpha);
         }
       `,
       uniforms: {
@@ -281,6 +304,8 @@ class Media {
         uImageSizes: { value: [0, 0] },
         uSpeed: { value: 0 },
         uTime: { value: 100 * Math.random() },
+        uFocus: { value: 0 },
+        uDim: { value: 0 },
         uBorderRadius: { value: this.borderRadius }
       },
       transparent: true
@@ -314,7 +339,16 @@ class Media {
   }
 
   update(scroll: { current: number; last: number }, direction: 'right' | 'left') {
+    const app = this.app;
+    const focused = app?.focusIndex === this.index;
+
     this.plane.position.x = this.x - scroll.current - this.extra;
+
+    /* Focal plane eases to the centre of the viewport instead of
+       tracking the carousel, so it reads as pulled out of the ring. */
+    if (focused) {
+      this.plane.position.x = lerp(this.plane.position.x, 0, 0.09);
+    }
 
     const x = this.plane.position.x;
     const H = this.viewport.width / 2;
@@ -340,6 +374,18 @@ class Media {
     this.speed = scroll.current - scroll.last;
     this.program.uniforms.uTime.value += 0.04;
     this.program.uniforms.uSpeed.value = this.speed;
+
+    /* focus / dim envelopes, eased so nothing pops */
+    const targetFocus = focused ? 1 : 0;
+    const targetDim = app?.focusIndex != null && !focused ? 1 : 0;
+    this.program.uniforms.uFocus.value = lerp(this.program.uniforms.uFocus.value, targetFocus, 0.12);
+    this.program.uniforms.uDim.value = lerp(this.program.uniforms.uDim.value, targetDim, 0.12);
+
+    /* the focal plane lifts out of the ring and grows */
+    const baseY = this.plane.scale.y;
+    const targetY = focused ? baseY * 1.28 : baseY;
+    this.plane.scale.y = lerp(this.plane.scale.y, targetY, 0.12);
+    this.plane.position.z = lerp(this.plane.position.z, focused ? 3.2 : 0, 0.12);
 
     const planeOffset = this.plane.scale.x / 2;
     const viewportOffset = this.viewport.width / 2;
@@ -382,6 +428,7 @@ interface AppConfig {
   font?: string;
   scrollSpeed?: number;
   scrollEase?: number;
+  onSelect?: (index: number | null) => void;
 }
 
 class App {
@@ -411,9 +458,17 @@ class App {
   boundOnTouchDown!: (e: MouseEvent | TouchEvent) => void;
   boundOnTouchMove!: (e: MouseEvent | TouchEvent) => void;
   boundOnTouchUp!: () => void;
+  boundOnClick!: (e: MouseEvent) => void;
 
   isDown: boolean = false;
   start: number = 0;
+  startX?: number;
+
+  /* click-to-focus state */
+  focusIndex: number | null = null;
+  onSelect?: (index: number | null) => void;
+  /** set while a press is a drag, so we don't focus on a fling */
+  dragged: boolean = false;
 
   constructor(
     container: HTMLElement,
@@ -424,14 +479,16 @@ class App {
       borderRadius = 0,
       font = 'bold 30px Figtree',
       scrollSpeed = 2,
-      scrollEase = 0.05
+      scrollEase = 0.05,
+      onSelect
     }: AppConfig
   ) {
     document.documentElement.classList.remove('no-js');
     this.container = container;
     this.scrollSpeed = scrollSpeed;
-    this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0 };
+    this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0, position: 0 };
     this.onCheckDebounce = debounce(this.onCheck.bind(this), 200);
+    this.onSelect = onSelect;
     this.createRenderer();
     this.createCamera();
     this.createScene();
@@ -544,20 +601,25 @@ class App {
         bend,
         textColor,
         borderRadius,
-        font
+        font,
+        app: this
       });
     });
   }
 
   onTouchDown(e: MouseEvent | TouchEvent) {
     this.isDown = true;
+    this.dragged = false;
     this.scroll.position = this.scroll.current;
     this.start = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    this.startX = this.start;
   }
 
   onTouchMove(e: MouseEvent | TouchEvent) {
     if (!this.isDown) return;
     const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    /* anything past a few px is a fling, not a tap-to-focus */
+    if (Math.abs(x - (this.startX ?? x)) > 6) this.dragged = true;
     const distance = (this.start - x) * (this.scrollSpeed * 0.025);
     this.scroll.target = (this.scroll.position ?? 0) + distance;
   }
@@ -602,7 +664,15 @@ class App {
   }
 
   update() {
-    this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
+    /* While a plate is focused the ring holds still, so the focal
+       sheet can settle to the centre without the carousel dragging
+       it away underneath. */
+    if (this.focusIndex != null) {
+      this.scroll.current = this.scroll.target = this.scroll.last;
+    } else {
+      this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
+    }
+
     const direction = this.scroll.current > this.scroll.last ? 'right' : 'left';
     if (this.medias) {
       this.medias.forEach(media => media.update(this.scroll, direction));
@@ -612,12 +682,41 @@ class App {
     this.raf = window.requestAnimationFrame(this.update.bind(this));
   }
 
+  /* ── click-to-focus ──────────────────────────────────────────
+     Converts a click's x into world space, then picks the plate
+     whose current position is closest, so what you click is what
+     you get even mid-drift.                                       */
+  setFocus(index: number | null) {
+    this.focusIndex = index;
+    this.onSelect?.(index);
+  }
+
+  onCanvasClick(e: MouseEvent) {
+    if (this.dragged) { this.dragged = false; return; }
+
+    const rect = this.renderer.gl.canvas.getBoundingClientRect();
+    const worldX = ((e.clientX - rect.left - rect.width / 2) / rect.width) * this.viewport.width;
+
+    let best: number | null = null;
+    let bestDist = Infinity;
+    this.medias.forEach((m, i) => {
+      const d = Math.abs(m.plane.position.x - worldX);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+
+    if (best == null) return;
+    /* clicking the focused plate again dismisses it */
+    if (this.focusIndex === best) this.setFocus(null);
+    else this.setFocus(best);
+  }
+
   addEventListeners() {
     this.boundOnResize = this.onResize.bind(this);
     this.boundOnWheel = this.onWheel.bind(this);
     this.boundOnTouchDown = this.onTouchDown.bind(this);
     this.boundOnTouchMove = this.onTouchMove.bind(this);
     this.boundOnTouchUp = this.onTouchUp.bind(this);
+    this.boundOnClick = this.onCanvasClick.bind(this);
     window.addEventListener('resize', this.boundOnResize);
     window.addEventListener('mousewheel', this.boundOnWheel);
     window.addEventListener('wheel', this.boundOnWheel);
@@ -627,6 +726,7 @@ class App {
     window.addEventListener('touchstart', this.boundOnTouchDown);
     window.addEventListener('touchmove', this.boundOnTouchMove);
     window.addEventListener('touchend', this.boundOnTouchUp);
+    this.renderer.gl.canvas.addEventListener('click', this.boundOnClick);
   }
 
   destroy() {
@@ -640,6 +740,7 @@ class App {
     window.removeEventListener('touchstart', this.boundOnTouchDown);
     window.removeEventListener('touchmove', this.boundOnTouchMove);
     window.removeEventListener('touchend', this.boundOnTouchUp);
+    this.renderer.gl.canvas.removeEventListener('click', this.boundOnClick);
     if (this.renderer && this.renderer.gl && this.renderer.gl.canvas.parentNode) {
       this.renderer.gl.canvas.parentNode.removeChild(this.renderer.gl.canvas as HTMLCanvasElement);
     }
@@ -654,6 +755,7 @@ interface CircularGalleryProps {
   font?: string;
   scrollSpeed?: number;
   scrollEase?: number;
+  onSelect?: (index: number | null) => void;
 }
 
 export default function CircularGallery({
@@ -663,7 +765,8 @@ export default function CircularGallery({
   borderRadius = 0.05,
   font = 'bold 30px Figtree',
   scrollSpeed = 2,
-  scrollEase = 0.05
+  scrollEase = 0.05,
+  onSelect
 }: CircularGalleryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -675,11 +778,12 @@ export default function CircularGallery({
       borderRadius,
       font,
       scrollSpeed,
-      scrollEase
+      scrollEase,
+      onSelect
     });
     return () => {
       app.destroy();
     };
-  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
+  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, onSelect]);
   return <div className="circular-gallery" ref={containerRef} />;
 }

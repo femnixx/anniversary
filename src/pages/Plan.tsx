@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import bluerealbackground3 from "../assets/bluerealbackground3.jpg";
 import CircularGallery from "../components/CircularGallery";
 import "../components/CircularGallery.css";
 import { neonStorage } from "@/NeonClient";
-import { ScrollReveal, FloatingElement, RevealText } from '@/components/ScrollReveal';
+import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
 
 interface GalleryItem {
   image: string;
@@ -23,6 +23,52 @@ const fallbackGallery: GalleryItem[] = [
 function Plan() {
   const [myGalleryItems, setMyGalleryItems] = useState<GalleryItem[]>([]);
   const [galleryFontSize, setGalleryFontSize] = useState(28);
+  const [focused, setFocused] = useState<number | null>(null);
+
+  const onSelect = useCallback((index: number | null) => {
+    setFocused(index);
+    if (index == null) return;
+
+    /* Sample the focused photo's dominant colour so /options can echo
+       it back as a halo. Drawn offscreen so it costs nothing visible. */
+    const item = myGalleryItems[index];
+    if (!item?.image) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const size = 24;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, size, size);
+        const { data } = ctx.getImageData(0, 0, size, size);
+
+        /* bucket into 4x4x4 coarse bins, pick the most populated,
+           skipping near-black/near-white so the halo stays visible */
+        const bins = new Map<string, { n: number; r: number; g: number; b: number }>();
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          const lum = (r * 299 + g * 587 + b * 114) / 1000;
+          if (lum < 26 || lum > 232) continue;
+          const key = `${r >> 6}-${g >> 6}-${b >> 6}`;
+          const hit = bins.get(key) ?? { n: 0, r: 0, g: 0, b: 0 };
+          hit.n++; hit.r += r; hit.g += g; hit.b += b;
+          bins.set(key, hit);
+        }
+        let best: { n: number; r: number; g: number; b: number } | null = null;
+        bins.forEach(v => { if (!best || v.n > best.n) best = v; });
+        if (!best) return;
+        const rgb = `rgb(${Math.round(best.r / best.n)}, ${Math.round(best.g / best.n)}, ${Math.round(best.b / best.n)})`;
+        sessionStorage.setItem("last-photo-color", rgb);
+      } catch {
+        /* cross-origin canvas taint — halo simply stays off */
+      }
+    };
+    img.src = item.image;
+  }, [myGalleryItems]);
 
   useEffect(() => {
     const updateFontSize = () => {
@@ -85,10 +131,9 @@ function Plan() {
           alt=""
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-rose-900/20 via-transparent to-lavender-900/20" />
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(ellipse at 30% 20%, rgba(146, 198, 249, 0.24) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(199, 210, 254, 0.24) 0%, transparent 50%)'
-        }} />
+        {/* one flat tint, so the photo reads as the same paper everywhere */}
+        <div className="absolute inset-0 bg-cream-50/75" />
+        <div className="absolute inset-0 halftone-fade" />
       </div>
 
       <main className="relative z-10 flex flex-col min-h-screen">
@@ -120,27 +165,70 @@ function Plan() {
             <div className="relative w-full max-w-6xl mx-auto" style={{ height: "clamp(18rem, 62vh, 46rem)" }}>
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <motion.div
-                  className="w-full h-full bg-gradient-to-r from-rose-200/10 via-transparent to-lavender-200/10 rounded-3xl"
-                  animate={{ scale: [1, 1.02, 1], opacity: [0.5, 0.8, 0.5] }}
+                  className="w-full h-full bg-cream-200 rounded-3xl"
+                  animate={{ scale: [1, 1.02, 1], opacity: [0.4, 0.7, 0.4] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
 
-              <ScrollReveal direction="up" delay={0.3} className="relative z-10 w-full h-full">
-                <CircularGallery
-                  key={myGalleryItems.length}
-                  items={myGalleryItems}
-                  bend={2.5}
-                  textColor="#1d5aa0"
-                  borderRadius={0.08}
-                  scrollEase={0.04}
-                  scrollSpeed={1.5}
-                  font={`bold ${galleryFontSize}px 'Great Vibes', 'Dancing Script', cursive`}
-                />
-              </ScrollReveal>
+              {/* Focus mode: the ring recedes, the chosen sheet comes forward */}
+              <motion.div
+                className="absolute inset-0"
+                animate={{
+                  filter: focused != null ? "blur(7px) saturate(0.7)" : "blur(0px) saturate(1)",
+                }}
+                transition={{ duration: 0.45 }}
+              >
+                <ScrollReveal direction="up" delay={0.3} className="relative z-10 w-full h-full">
+                  <CircularGallery
+                    key={myGalleryItems.length}
+                    items={myGalleryItems}
+                    bend={2.5}
+                    textColor="#1d5aa0"
+                    borderRadius={0.08}
+                    scrollEase={0.04}
+                    scrollSpeed={1.5}
+                    font={`bold ${galleryFontSize}px 'Great Vibes', 'Dancing Script', cursive`}
+                    onSelect={onSelect}
+                  />
+                </ScrollReveal>
+              </motion.div>
 
-              <FloatingElement amplitude={8} period={4} className="absolute -top-8 left-1/2 -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-rose-300/30 to-lavender-300/30 rounded-full blur-2xl" />
-              <FloatingElement amplitude={6} period={5} className="absolute -bottom-8 right-1/4 w-12 h-12 bg-gradient-to-br from-cream-300/40 to-rose-300/40 rounded-full blur-xl" />
+              {/* scrim so the focused sheet reads as above the ring */}
+              <motion.div
+                className="absolute inset-0 bg-cream-50 pointer-events-none"
+                animate={{ opacity: focused != null ? 0.45 : 0 }}
+                transition={{ duration: 0.4 }}
+              />
+
+              {/* focused caption */}
+              {focused != null && myGalleryItems[focused] && (
+                <motion.div
+                  className="absolute inset-x-0 bottom-2 flex justify-center px-4 z-20"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                >
+                  <div className="bg-cream-50 border-2 border-rose-700 plate rounded-xl px-6 py-4 text-center max-w-md">
+                    <p className="press-label mb-1">now showing</p>
+                    <p className="font-romantic type-subtitle text-rose-700 leading-none">
+                      {myGalleryItems[focused].text}
+                    </p>
+                    <p className="font-romantic-alt text-sage-600 text-sm italic mt-2">
+                      click the photo again to close
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {focused != null && (
+                <button
+                  className="absolute top-2 right-2 z-20 romantic-button romantic-button-ghost text-sm"
+                  onClick={() => setFocused(null)}
+                >
+                  close
+                </button>
+              )}
             </div>
           </div>
         </ScrollReveal>

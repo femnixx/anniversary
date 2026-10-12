@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface NavItem {
@@ -41,6 +41,7 @@ function ComplimentsIcon() {
 
 export function DynamicIsland() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeIndex, setActiveIndex] = useState(
     navItems.findIndex(item => location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path)))
@@ -53,10 +54,14 @@ export function DynamicIsland() {
     setActiveIndex(newIndex >= 0 ? newIndex : 0);
   }, [location.pathname]);
 
+  /**
+   * Must use the router, not window.location: this app runs on
+   * HashRouter, so a plain href of "/message" resolves to
+   * /anniversary/message, which GitHub Pages 404s. navigate()
+   * writes the hash route instead.
+   */
   const handleNavClick = (path: string) => {
-    if (path !== location.pathname) {
-      window.location.href = path;
-    }
+    if (path !== location.pathname) navigate(path);
     setIsExpanded(false);
   };
 
@@ -84,7 +89,7 @@ export function DynamicIsland() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: -20 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="glass-rose rounded-full px-6 py-3 shadow-2xl shadow-rose-200/50 border border-rose-200/50 cursor-pointer transition-all duration-300 hover:shadow-rose-300/50"
+              className="bg-cream-50 rounded-full px-6 py-3 plate border-2 border-rose-700 cursor-pointer transition-all duration-200"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsExpanded(true); } }}
@@ -93,7 +98,7 @@ export function DynamicIsland() {
             >
               <div className="flex items-center gap-2">
                 <span className="text-2xl animate-heartbeat">{activeItem.shortLabel}</span>
-                <span className="font-romantic-alt text-rose-700 text-lg hidden sm:inline">{activeItem.label}</span>
+                <span className="font-romantic-alt text-rose-700 type-lead hidden sm:inline">{activeItem.label}</span>
                 <svg className="w-4 h-4 text-rose-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7"/></svg>
               </div>
             </motion.div>
@@ -104,7 +109,7 @@ export function DynamicIsland() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: -20 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="glass-rose rounded-3xl shadow-2xl shadow-rose-200/50 border border-rose-200/50 overflow-hidden"
+              className="bg-cream-50 rounded-3xl plate-lg border-2 border-rose-700 overflow-hidden"
               role="navigation"
               aria-label="Main navigation"
               aria-expanded="true"
@@ -120,8 +125,8 @@ export function DynamicIsland() {
                       transition={{ delay: index * 0.03, type: "spring", stiffness: 400, damping: 30 }}
                       className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl transition-all duration-300 ${
                         index === activeIndex
-                          ? "bg-gradient-to-br from-rose-400/20 to-rose-500/20 text-rose-700 shadow-lg shadow-rose-300/30"
-                          : "text-sage-600 hover:text-rose-600 hover:bg-rose-50/50"
+                          ? "bg-rose-400 text-cream-50 border-2 border-rose-700"
+                          : "bg-cream-50 text-rose-700 border-2 border-transparent hover:border-rose-700"
                       }`}
                       onClick={() => handleNavClick(item.path)}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNavClick(item.path); } }}
@@ -129,7 +134,7 @@ export function DynamicIsland() {
                       aria-label={item.label}
                     >
                       <span className="text-xl animate-heartbeat">{item.shortLabel}</span>
-                      <span className="font-romantic-alt text-sm font-medium hidden lg:inline whitespace-nowrap">{item.label}</span>
+                      <span className="font-romantic-alt text-sm font-bold hidden lg:inline whitespace-nowrap">{item.label}</span>
                     </motion.button>
                   ))}
                 </AnimatePresence>
@@ -143,7 +148,7 @@ export function DynamicIsland() {
           animate={{ opacity: isExpanded ? 1 : 0, y: isExpanded ? -8 : 0 }}
           transition={{ duration: 200 }}
         >
-          <div className="glass-rose rounded-full px-4 py-1.5 shadow-lg shadow-rose-200/50 border border-rose-200/50 text-xs font-romantic-alt text-rose-700 whitespace-nowrap">
+          <div className="bg-cream-50 rounded-full px-4 py-1.5 plate border-2 border-rose-700 text-xs font-romantic-alt text-rose-700 whitespace-nowrap">
             Hover to explore 💕
           </div>
         </motion.div>
@@ -171,7 +176,7 @@ export function ScrollProgress() {
       animate={{ scaleX: progress }}
       style={{ transformOrigin: 'left center' }}
     >
-      <div className="h-full bg-gradient-to-r from-rose-400 via-rose-500 to-lavender-500 rounded-full shadow-lg shadow-rose-400/50" />
+      <div className="h-full bg-rose-400" />
     </motion.div>
   );
 }

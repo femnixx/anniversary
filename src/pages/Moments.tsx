@@ -1,210 +1,156 @@
 "use client";
 
-import { FileUpload, type FileUploadSelectEvent } from "primereact/fileupload";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import bluerealbackground from "../assets/bluerealbackground.jpg";
 import pomsit from "../assets/pomsit.png";
-import { neonStorage } from "@/NeonClient";
-import { ScrollReveal, StaggerContainer, StaggerItem, FloatingElement, RevealText } from '@/components/ScrollReveal';
+import { ScrollReveal, RevealText, FloatingElement } from '@/components/ScrollReveal';
+
+/* ═══════════════════════════════════════════════════════════════
+   TIME CAPSULE
+   ─────────────────────────────────────────────────────────────
+   The vault is sealed until the milestone below. Change this one
+   line to move the date; everything else follows automatically.
+   ═══════════════════════════════════════════════════════════════ */
+const VAULT_OPENS_AT = "2027-06-08T00:00:00+08:00"; // next 8 June — our recurring milestone
+
+interface Left { days: number; hours: number; minutes: number; seconds: number; done: boolean; }
+
+function timeLeft(target: string): Left {
+  const diff = new Date(target).getTime() - Date.now();
+  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, done: true };
+  const s = Math.floor(diff / 1000);
+  return {
+    days: Math.floor(s / 86400),
+    hours: Math.floor((s % 86400) / 3600),
+    minutes: Math.floor((s % 3600) / 60),
+    seconds: s % 60,
+    done: false,
+  };
+}
+
+function CountCell({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="w-16 sm:w-20 py-3 bg-cream-50 border-2 border-rose-700 rounded-lg plate flex items-center justify-center">
+        <span className="font-romantic text-4xl sm:text-5xl text-rose-700 tabular-nums leading-none">
+          {String(value).padStart(2, "0")}
+        </span>
+      </div>
+      <span className="press-label mt-2">{label}</span>
+    </div>
+  );
+}
 
 function Moments() {
-  const [files, setFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadComplete, setUploadComplete] = useState(false);
+  const [left, setLeft] = useState<Left>(() => timeLeft(VAULT_OPENS_AT));
 
-  const onSelect = (e: FileUploadSelectEvent) => {
-    const selectedFiles = Array.from(e.files as File[]);
-    setFiles(selectedFiles);
-    setUploadComplete(false);
-    console.log("Selected files:", selectedFiles);
-  };
+  useEffect(() => {
+    const id = window.setInterval(() => setLeft(timeLeft(VAULT_OPENS_AT)), 1000);
+    return () => window.clearInterval(id);
+  }, []);
 
-  const onUpload = async () => {
-    if (!neonStorage.isConfigured) {
-      alert("📸 Photo storage isn't set up yet — add the VITE_NEON_S3_* credentials to .env and restart the app.");
-      return;
-    }
-    if (files.length === 0) return alert("No files selected!");
-    setUploading(true);
-
-    let anyFailed = false;
-    for (const file of files) {
-      try {
-        await neonStorage.upload(file, file.name);
-        console.log("Uploaded:", file.name);
-      } catch (error) {
-        console.error("Upload failed:", error);
-        anyFailed = true;
-      }
-    }
-
-    setUploadComplete(!anyFailed);
-    setUploading(false);
-    setFiles([]);
-    
-    setTimeout(() => setUploadComplete(false), 3000);
-  };
+  const target = useMemo(() => new Date(VAULT_OPENS_AT), []);
 
   return (
     <div className="page-container min-h-screen relative">
       <div className="absolute inset-0 z-0">
-        <img
-          src={bluerealbackground}
-          alt=""
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-50/30 via-cream-50/20 to-lavender-50/30" />
+        <img src={bluerealbackground} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-cream-50/85" />
+        <div className="absolute inset-0 halftone-fade" />
       </div>
 
       <main className="relative z-10 flex flex-col min-h-screen">
         <div className="flex-1 flex items-center justify-center px-4 py-16">
-          <ScrollReveal direction="up" delay={0.1} className="w-full max-w-[clamp(24rem,92vw,40rem)]">
-            <StaggerContainer>
-              <StaggerItem direction="down" delay={0.1} className="w-full">
-                <motion.div
-                  className="romantic-card relative overflow-hidden"
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 22 }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-rose-50/50 via-cream-50/50 to-lavender-50/50" />
-                  
-                  <div className="relative z-10 text-center">
-                    <RevealText 
-                      text="capture our moments" 
-                      className="font-romantic type-title text-gradient-romantic mb-2" 
-                      delay={0.2}
+          <ScrollReveal direction="up" delay={0.1} className="w-full max-w-[clamp(24rem,92vw,44rem)]">
+            <motion.div
+              className="romantic-card reg-tick"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 22 }}
+            >
+              <p className="press-label mb-2">sealed · vault 001</p>
+
+              <div className="text-center">
+                <RevealText
+                  text="time capsule"
+                  className="font-romantic type-title text-rose-700 mb-1"
+                  delay={0.2}
+                />
+                <RevealText
+                  text="the photos are still sealed"
+                  className="font-romantic-alt text-rose-600 type-subtitle italic mb-6"
+                  delay={0.3}
+                />
+
+                <FloatingElement amplitude={10} period={4} className="my-4 inline-block">
+                  <div className="relative">
+                    <div
+                      className="absolute inset-0 bg-lavender-200 rounded-xl"
+                      style={{ transform: "translate(8px, 8px)" }}
+                      aria-hidden="true"
                     />
-                    <RevealText 
-                      text="pick your favorite memory of us together" 
-                      className="font-romantic-alt text-rose-600 type-subtitle" 
-                      delay={0.3}
+                    <img
+                      src={pomsit}
+                      alt="us"
+                      className="relative w-[clamp(11rem,24vw,17rem)] rounded-xl border-2 border-rose-700"
                     />
+                  </div>
+                </FloatingElement>
 
-                    <FloatingElement amplitude={12} period={4} className="my-6 inline-block">
-                      <img 
-                        src={pomsit} 
-                        alt="cute moment together" 
-                        className="w-[clamp(13rem,28vw,30rem)] drop-shadow-xl transition-transform duration-500 hover:scale-105"
-                      />
-                    </FloatingElement>
-
-                    <div className="relative">
-                      <div className={`w-full border-2 border-dashed rounded-2xl p-6 bg-white/60 backdrop-blur-sm transition-all duration-300 ${
-                        neonStorage.isConfigured
-                          ? "border-rose-300 group-hover:border-rose-400 group-hover:bg-white/80"
-                          : "border-sage-200 bg-sage-50/40"
-                      }`}>
-                        {!neonStorage.isConfigured && (
-                          <motion.div
-                            className="w-full bg-sage-50/60 border border-sage-200 rounded-xl p-4 mb-5 text-left"
-                            initial={{ opacity: 0, y: -8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4 }}
-                          >
-                            <div className="flex items-start gap-3">
-                              <span className="text-2xl flex-shrink-0">🔒</span>
-                              <div>
-                                <p className="font-romantic-alt text-sage-700 font-medium">
-                                  Photo storage isn't connected yet
-                                </p>
-                                <p className="text-sm text-sage-600 mt-1 leading-relaxed">
-                                  The old credentials pointed at a different project and were removed, so this page is paused for now.
-                                  Add the <code className="px-1 py-0.5 rounded bg-white/70 border border-sage-200 text-xs">VITE_NEON_S3_*</code> credentials
-                                  to <code className="px-1 py-0.5 rounded bg-white/70 border border-sage-200 text-xs">.env</code> and restart to turn it back on.
-                                  Your uploaded photos will show up on the memories page automatically.
-                                </p>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                        <FileUpload
-                          name="files"
-                          accept="image/*"
-                          multiple
-                          customUpload
-                          disabled={!neonStorage.isConfigured}
-                          uploadHandler={onUpload}
-                          onSelect={onSelect}
-                          chooseLabel={neonStorage.isConfigured ? "Choose Photos" : "Unavailable"}
-                          uploadLabel={uploading ? "Uploading..." : "Add to Memories"}
-                          cancelLabel="Clear"
-                          className="flex flex-col gap-3 w-full justify-center items-center"
-                          chooseOptions={{
-                            className: neonStorage.isConfigured ? "romantic-button-primary" : "romantic-button-ghost opacity-50 cursor-not-allowed",
-                          }}
-                          uploadOptions={{
-                            className: "romantic-button-secondary",
-                          }}
-                          cancelOptions={{
-                            className: "romantic-button-ghost border-rose-300 text-rose-600 hover:bg-rose-50",
-                          }}
-                          pt={{
-                            buttonbar: { className: "flex gap-4 justify-center mt-4" },
-                          }}
-                        />
-
-                        {files.length > 0 && (
-                          <motion.div
-                            className="w-full bg-rose-50/50 rounded-xl p-4 mt-6"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4 }}
-                          >
-                            <RevealText 
-                              text="Selected Photos" 
-                              className="font-romantic-alt text-rose-700 text-base font-medium mb-3" 
-                              delay={0.1}
-                            />
-                            <ul className="text-sage-700 text-sm space-y-2 text-left">
-                              {files.map((file, i) => (
-                                <motion.li
-                                  key={i}
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: i * 0.1 }}
-                                  className="flex items-center gap-2"
-                                >
-                                  <span className="text-2xl">📸</span>
-                                  <span>{file.name}</span>
-                                </motion.li>
-                              ))}
-                            </ul>
-                          </motion.div>
-                        )}
-
-                        {uploadComplete && (
-                          <motion.div
-                            className="w-full bg-green-50/50 border border-green-200 rounded-xl p-4 mt-6"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          >
-                            <div className="flex items-center justify-center gap-2 text-green-700">
-                              <motion.span className="text-4xl animate-heartbeat">✨</motion.span>
-                              <RevealText 
-                                text="Successfully uploaded to our memories!" 
-                                className="font-romantic-alt font-medium" 
-                                delay={0.1}
-                              />
-                            </div>
-                          </motion.div>
-                        )}
-                      </div>
+                {/* Locked state */}
+                <div className="mt-6 romantic-card-deep rounded-xl px-5 py-6 text-left">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-11 h-11 rounded-lg bg-rose-400 border-2 border-rose-700 flex items-center justify-center text-xl text-cream-50">
+                      🔒
+                    </div>
+                    <div>
+                      <p className="font-romantic text-2xl text-rose-700 leading-tight">Vault locked</p>
+                      <p className="type-body text-sage-700 mt-1 leading-relaxed">
+                        The old photo storage pointed at a project that wasn't ours, so it's been unplugged.
+                        The uploads are paused rather than lost — they open up on the date below, once the
+                        new shelf is ready and this becomes the gallery we fill together.
+                      </p>
                     </div>
                   </div>
-                </motion.div>
-              </StaggerItem>
-            </StaggerContainer>
+                </div>
+
+                {/* Countdown */}
+                <div className="mt-7">
+                  <p className="press-label mb-4">
+                    opens {target.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+
+                  {left.done ? (
+                    <p className="font-romantic type-subtitle text-rose-700">it's open — let's fill it</p>
+                  ) : (
+                    <div className="flex justify-center gap-2 sm:gap-4">
+                      <CountCell value={left.days} label="days" />
+                      <CountCell value={left.hours} label="hrs" />
+                      <CountCell value={left.minutes} label="min" />
+                      <CountCell value={left.seconds} label="sec" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Disabled controls */}
+                <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center opacity-70">
+                  <button className="romantic-button romantic-button-secondary" disabled>
+                    Choose Photos
+                  </button>
+                  <button className="romantic-button romantic-button-ghost" disabled>
+                    Add to Vault
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </ScrollReveal>
         </div>
 
-        <footer className="relative z-10 py-8 px-4">
+        <footer className="relative z-10 py-8 px-4 flex justify-center">
           <ScrollReveal direction="up" delay={1}>
-            <p className="font-romantic-alt text-rose-500/80 text-center type-lead">
-              every photo tells our story 💕
+            <p className="font-romantic-alt text-rose-600 type-lead bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2 max-w-[calc(100%-2rem)]">
+              patience is a love language too
             </p>
           </ScrollReveal>
         </footer>

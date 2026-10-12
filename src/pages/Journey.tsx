@@ -8,164 +8,322 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@mui/lab";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import bluerealbackground3 from "../assets/bluerealbackground3.jpg";
-import { ScrollReveal, StaggerContainer, StaggerItem, FloatingElement, RevealText } from '@/components/ScrollReveal';
+import PassportStamp from "@/components/PassportStamp";
+import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
 
-const timelineEvents = [
-  { title: "How We Met 💫", desc: "A simple hello that changed everything.", icon: "✨" },
-  { title: "Our First Date 🍰", desc: "Almost got poisoned, but here we are!", icon: "🍰" },
-  { title: "Our Adventures ✈️", desc: "Our time well spent together!", icon: "✈️" },
-  { title: "Today 💙", desc: "Still us, still together, still growing.", icon: "💙" },
-  { title: "Malaysia 🇲🇾", desc: "Still will be there with you, as well as call and play with you anytime I can:3", icon: "🇲🇾" },
-  { title: "Swiss Adventure? 🌏", desc: "Can't wait to hear everything!", icon: "🌏" },
-  { title: "Our Future ✨", desc: "Our story continues...", icon: "✨" },
+/* ═══════════════════════════════════════════════════════════════
+   MILESTONES
+   ─────────────────────────────────────────────────────────────
+   Nested: each trip is a parent milestone, its sub-journeys are
+   children. `slug` is matched against filenames in
+   src/assets/moments/ (see that folder's README).
+
+   Dates and labels are placeholders until the real list is dropped in.
+   ═══════════════════════════════════════════════════════════════ */
+
+interface SubJourney {
+  slug: string;
+  title: string;
+  date: string;
+  desc: string;
+}
+
+interface Milestone {
+  slug: string;
+  title: string;
+  date: string;
+  desc: string;
+  icon: string;
+  stamp?: boolean;
+  children?: SubJourney[];
+}
+
+const MILESTONES: Milestone[] = [
+  {
+    slug: "surabaya-birthday",
+    title: "Surabaya, on your birthday",
+    date: "7–8 June",
+    desc: "We left in the dark, through the toll road, and drove into Surabaya under the night lights. At midnight we were still there — cake, chaos, and you.",
+    icon: "🌃",
+    children: [
+      {
+        slug: "pakuwon-mall",
+        title: "Pakuwon City Mall",
+        date: "7 Jun",
+        desc: "First stop. Wandering the mall with nowhere to be.",
+      },
+      {
+        slug: "her-friend-ikea",
+        title: "Her friend & IKEA",
+        date: "8 Jun",
+        desc: "Met up with her friend, drifted around IKEA, had far too much fun pretending to furnish a life together.",
+      },
+      {
+        slug: "birthday-midnight",
+        title: "Still awake at 12 AM",
+        date: "8 Jun",
+        desc: "Past midnight, still in Surabaya, still not ready to leave.",
+      },
+      {
+        slug: "drive-home",
+        title: "Home in the early morning",
+        date: "8 Jun",
+        desc: "The drive back while the sky turned, both of us half asleep and completely happy.",
+      },
+    ],
+  },
+  {
+    slug: "surabaya-again",
+    title: "And then we went back",
+    date: "July – August",
+    desc: "A few more runs to Surabaya. Dates that ran until morning, sleeping in the car, then doing it all again the next week.",
+    icon: "🚗",
+    children: [
+      {
+        slug: "car-sunrise",
+        title: "Sleeping in the car",
+        date: "Jul – Aug",
+        desc: "Dates stretched until dawn, then a nap in the parked car before the drive back.",
+      },
+      {
+        slug: "variety-dates",
+        title: "Every kind of date",
+        date: "Jul – Aug",
+        desc: "Small ones, long ones, ones that only made sense to us.",
+      },
+    ],
+  },
+  {
+    slug: "malaysia",
+    title: "Malaysia",
+    date: "2 September → now",
+    desc: "You went off to Malaysia and you've been having the time of your life. Different country, same us — spending it all online and still counting.",
+    icon: "🇲🇾",
+    stamp: true,
+  },
+  {
+    slug: "future",
+    title: "Swiss Adventure?",
+    date: "sometime soon",
+    desc: "Can't wait to hear every bit of it.",
+    icon: "🌏",
+  },
 ];
+
+/* Discover date-prefixed photos. Empty until the directory is filled. */
+const photoModules = import.meta.glob<{ default: string }>(
+  "../assets/moments/*.{jpg,jpeg,png,webp,avif}",
+  { eager: true, query: "?url", import: "default" }
+);
+
+interface Photo { slug: string; date: string; url: string; file: string; }
+
+const PHOTOS: Photo[] = Object.entries(photoModules).map(([path, url]) => {
+  const file = path.split("/").pop() ?? "";
+  const base = file.replace(/\.[^.]+$/, "");
+  const [date = "", ...rest] = base.split("_");
+  return { slug: rest.join("_"), date, url, file };
+});
+
+function photoFor(slug: string) {
+  return PHOTOS.find(p => p.slug && slug.includes(p.slug)) ?? null;
+}
+
+/* ── Printed placeholder plate ─────────────────────────────── */
+function PhotoPlate({ label }: { label: string }) {
+  return (
+    <div className="relative aspect-[4/3] bg-cream-100 border-2 border-dashed border-sage-300 rounded-lg overflow-hidden halftone">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-3 text-center">
+        <span className="text-2xl opacity-60">🖼️</span>
+        <p className="press-label opacity-60">photo pending</p>
+        <p className="font-romantic-alt text-sm text-sage-500 leading-tight">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function JourneyMilestone({ item, isLast }: { item: Milestone; isLast: boolean }) {
+  const [open, setOpen] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  /* Keep children collapsed until the card scrolls into view */
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el || !item.children?.length) return;
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setOpen(true); io.disconnect(); } },
+      { threshold: 0.35 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [item.children?.length]);
+
+  const hasKids = Boolean(item.children?.length);
+
+  return (
+    <TimelineItem>
+      <TimelineSeparator>
+        <TimelineDot
+          sx={{
+            width: 26, height: 26, backgroundColor: "#2f80d8",
+            border: "2.5px solid #123a6b", zIndex: 2,
+          }}
+        />
+        {!isLast && (
+          <TimelineConnector
+            sx={{
+              height: { xs: 48, sm: 64, md: 80 }, backgroundColor: "transparent",
+              "&::before": {
+                content: '""', position: "absolute", top: 0, left: "50%",
+                transform: "translateX(-50%)", width: 4, height: "100%",
+                background: "#123a6b", borderRadius: 2,
+              },
+            }}
+          />
+        )}
+      </TimelineSeparator>
+
+      <TimelineContent className="md:px-6 lg:px-10 py-4">
+        <ScrollReveal direction="up" delay={0.1}>
+          <motion.div
+            ref={cardRef}
+            className="romantic-card reg-tick"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 22 }}
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-cream-100 border-2 border-rose-700 flex items-center justify-center text-2xl">
+                {item.icon}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="press-label mb-1">{item.date}</p>
+                <RevealText
+                  text={item.title}
+                  className="font-romantic type-subtitle text-rose-700 mb-2"
+                  delay={0.1}
+                />
+                <p className="font-romantic-alt text-sage-700 type-body italic leading-relaxed">
+                  {item.desc}
+                </p>
+
+                {/* Passport stamp for the Malaysia milestone */}
+                {item.stamp && (
+                  <div className="mt-4 flex justify-end">
+                    <PassportStamp place="MALAYSIA" date="02 SEP" />
+                  </div>
+                )}
+
+                {hasKids && (
+                  <button
+                    className="romantic-button romantic-button-ghost mt-4 text-sm"
+                    onClick={() => setOpen(o => !o)}
+                    aria-expanded={open}
+                  >
+                    {open ? "hide sub-journeys" : `show ${item.children!.length} sub-journeys`}
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </ScrollReveal>
+
+        {/* Nested sub-journeys */}
+        {hasKids && open && (
+          <motion.div
+            className="mt-4 ml-6 space-y-3"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.4 }}
+          >
+            {item.children!.map((kid, i) => {
+              const shot = photoFor(kid.slug);
+              return (
+                <motion.div
+                  key={kid.slug}
+                  className="romantic-card-flat bg-cream-50 !p-4"
+                  initial={{ opacity: 0, x: -18 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.07, type: "spring", stiffness: 300, damping: 24 }}
+                >
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="w-full sm:w-40 flex-shrink-0">
+                      {shot
+                        ? <img src={shot.url} alt={kid.title} className="w-full aspect-[4/3] object-cover rounded-md border-2 border-rose-700" />
+                        : <PhotoPlate label={kid.title} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="press-label mb-1">{kid.date}</p>
+                      <p className="font-romantic text-2xl text-rose-700 leading-tight">{kid.title}</p>
+                      <p className="font-romantic-alt text-sage-600 text-base italic mt-1 leading-snug">{kid.desc}</p>
+                      {shot && <p className="press-label mt-2 opacity-60">{shot.file}</p>}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+      </TimelineContent>
+    </TimelineItem>
+  );
+}
 
 function Journey() {
   const [isMobile, setIsMobile] = useState(false);
-  const itemRefs = useRef<HTMLDivElement[]>([]);
+  const matched = useMemo(() => PHOTOS.filter(p => p.slug).length, []);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   return (
     <div className="page-container min-h-screen relative">
       <div className="absolute inset-0 z-0">
-        <img
-          src={bluerealbackground3}
-          alt=""
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-rose-900/20 via-transparent to-lavender-900/20" />
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(ellipse at 20% 20%, rgba(146, 198, 249, 0.28) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(199, 210, 254, 0.28) 0%, transparent 50%)'
-        }} />
+        <img src={bluerealbackground3} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-cream-50/85" />
+        <div className="absolute inset-0 halftone-fade" />
       </div>
 
       <main className="relative z-10 flex flex-col min-h-screen">
         <ScrollReveal direction="down" delay={0.1} className="pt-8 px-4 flex-1">
-          <div className="text-center mb-12 relative">
-            <motion.div
-              className="inline-flex items-center gap-3 px-6 py-3 rounded-full glass-rose border border-rose-200/50 shadow-lg shadow-rose-200/30 mb-6"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="text-4xl animate-heartbeat">🗺️</span>
-              <RevealText 
-                text="our journey together" 
-                className="font-romantic type-title text-gradient-romantic" 
+          <div className="text-center mb-10">
+            <div className="inline-flex flex-col items-center">
+              <p className="press-label mb-2">our route so far</p>
+              <RevealText
+                text="every road we took"
+                className="font-romantic type-title ink-mark inline-block"
                 delay={0.2}
               />
-              <span className="text-4xl animate-heartbeat" style={{ animationDelay: '0.3s' }}>🗺️</span>
-            </motion.div>
-
-            <RevealText 
-              text="every step brought us closer" 
-              className="font-romantic-alt text-rose-300/90 type-subtitle" 
-              delay={0.4}
-            />
+              <p className="font-romantic-alt text-rose-600 type-lead mt-3 italic">
+                {PHOTOS.length === 0
+                  ? "sub-journeys marked — photos land soon"
+                  : `${matched} photo${matched === 1 ? "" : "s"} wired into the timeline`}
+              </p>
+            </div>
           </div>
 
-          <StaggerContainer className="w-full max-w-4xl mx-auto">
+          <div className="w-full max-w-4xl mx-auto">
             <Timeline position={isMobile ? "right" : "alternate"}>
-              {timelineEvents.map((event, index) => (
-                <StaggerItem key={index} direction={index % 2 === 0 ? "left" : "right"} delay={index * 0.08} className="w-full">
-                  <TimelineItem>
-                    <TimelineSeparator>
-                      <TimelineDot 
-                        color="primary" 
-                        sx={{ 
-                          width: 24, 
-                          height: 24,
-                          backgroundColor: '#3b8ee0',
-                          boxShadow: '0 0 0 4px rgba(226,239,255,0.9), 0 4px 12px rgba(59,142,224,0.35)',
-                          zIndex: 2,
-                        }} 
-                      />
-                      {index !== timelineEvents.length - 1 && (
-                        <TimelineConnector 
-                          sx={{ 
-                            height: { xs: 50, sm: 70, md: 90 },
-                            backgroundColor: 'transparent',
-                            '&::before': {
-                              content: '""',
-                              position: 'absolute',
-                              top: 0,
-                              left: '50%',
-                              transform: 'translateX(-50%)',
-                              width: 3,
-                              height: '100%',
-                              background: 'linear-gradient(to bottom, #92c6f9, #c7d2fe, #dbe9f7)',
-                              borderRadius: 2,
-                            }
-                          }} 
-                        />
-                      )}
-                    </TimelineSeparator>
-
-                    <TimelineContent className="md:px-6 lg:px-10 py-4">
-                      <ScrollReveal direction={index % 2 === 0 ? "left" : "right"} delay={0.1}>
-                        <motion.div
-                          ref={(el) => (itemRefs.current[index] = el!)}
-                          className="romantic-card relative overflow-hidden group"
-                          initial={{ opacity: 0, y: 40 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ type: "spring", stiffness: 200, damping: 22 }}
-                          whileHover={{ y: -8, scale: 1.01, boxShadow: "0 32px 64px -12px rgba(59, 142, 224, 0.26)" }}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-rose-50/30 via-cream-50/30 to-lavender-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          
-                          <div className="relative z-10 p-6 md:p-8">
-                            <div className="flex items-start gap-4">
-                              <motion.div
-                                className="flex-shrink-0 w-[clamp(3rem,7vw,4.5rem)] h-[clamp(3rem,7vw,4.5rem)] rounded-2xl glass-rose border border-rose-200/50 flex items-center justify-center text-5xl animate-heartbeat"
-                                animate={{ rotate: [0, 5, -5, 0] }}
-                                transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
-                              >
-                                {event.icon}
-                              </motion.div>
-                              <div className="flex-1 min-w-0">
-                                <RevealText 
-                                  text={event.title} 
-                                  className="font-romantic type-title text-gradient-romantic mb-2" 
-                                  delay={0.1}
-                                />
-                                <RevealText 
-                                  text={event.desc} 
-                                  className="font-romantic-alt text-sage-700 type-lead leading-relaxed italic" 
-                                  delay={0.2}
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <motion.div
-                            className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-rose-400 to-transparent scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500"
-                          />
-                        </motion.div>
-                      </ScrollReveal>
-                    </TimelineContent>
-                  </TimelineItem>
-                </StaggerItem>
+              {MILESTONES.map((m, i) => (
+                <JourneyMilestone key={m.slug} item={m} isLast={i === MILESTONES.length - 1} />
               ))}
             </Timeline>
-          </StaggerContainer>
+          </div>
         </ScrollReveal>
 
-        <footer className="relative z-10 py-8 px-4">
+        <footer className="relative z-10 py-8 px-4 flex justify-center">
           <ScrollReveal direction="up" delay={1}>
-            <FloatingElement amplitude={8} period={3} className="inline-block">
-              <p className="font-romantic text-rose-500/90 text-center type-lead">
-                our story continues forever 💕
-              </p>
-            </FloatingElement>
+            <p className="font-romantic text-rose-600 type-lead bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2">
+              the map isn't finished
+            </p>
           </ScrollReveal>
         </footer>
       </main>
