@@ -38,6 +38,11 @@ function Plan() {
   }, []);
 
   useEffect(() => {
+    if (!neonStorage.isConfigured) {
+      setMyGalleryItems(fallbackGallery);
+      return;
+    }
+
     const fetchImages = async () => {
       try {
         const files = await neonStorage.list();

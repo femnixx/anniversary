@@ -21,20 +21,25 @@ function Moments() {
   };
 
   const onUpload = async () => {
+    if (!neonStorage.isConfigured) {
+      alert("📸 Photo storage isn't set up yet — add the VITE_NEON_S3_* credentials to .env and restart the app.");
+      return;
+    }
     if (files.length === 0) return alert("No files selected!");
     setUploading(true);
 
+    let anyFailed = false;
     for (const file of files) {
       try {
         await neonStorage.upload(file, file.name);
         console.log("Uploaded:", file.name);
       } catch (error) {
         console.error("Upload failed:", error);
-        alert(`❌ Failed to upload ${file.name}`);
+        anyFailed = true;
       }
     }
 
-    setUploadComplete(true);
+    setUploadComplete(!anyFailed);
     setUploading(false);
     setFiles([]);
     
@@ -86,20 +91,48 @@ function Moments() {
                     </FloatingElement>
 
                     <div className="relative">
-                      <div className="w-full border-2 border-dashed border-rose-300 rounded-2xl p-6 bg-white/60 backdrop-blur-sm transition-all duration-300 group-hover:border-rose-400 group-hover:bg-white/80">
+                      <div className={`w-full border-2 border-dashed rounded-2xl p-6 bg-white/60 backdrop-blur-sm transition-all duration-300 ${
+                        neonStorage.isConfigured
+                          ? "border-rose-300 group-hover:border-rose-400 group-hover:bg-white/80"
+                          : "border-sage-200 bg-sage-50/40"
+                      }`}>
+                        {!neonStorage.isConfigured && (
+                          <motion.div
+                            className="w-full bg-sage-50/60 border border-sage-200 rounded-xl p-4 mb-5 text-left"
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4 }}
+                          >
+                            <div className="flex items-start gap-3">
+                              <span className="text-2xl flex-shrink-0">🔒</span>
+                              <div>
+                                <p className="font-romantic-alt text-sage-700 font-medium">
+                                  Photo storage isn't connected yet
+                                </p>
+                                <p className="text-sm text-sage-600 mt-1 leading-relaxed">
+                                  The old credentials pointed at a different project and were removed, so this page is paused for now.
+                                  Add the <code className="px-1 py-0.5 rounded bg-white/70 border border-sage-200 text-xs">VITE_NEON_S3_*</code> credentials
+                                  to <code className="px-1 py-0.5 rounded bg-white/70 border border-sage-200 text-xs">.env</code> and restart to turn it back on.
+                                  Your uploaded photos will show up on the memories page automatically.
+                                </p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
                         <FileUpload
                           name="files"
                           accept="image/*"
                           multiple
                           customUpload
+                          disabled={!neonStorage.isConfigured}
                           uploadHandler={onUpload}
                           onSelect={onSelect}
-                          chooseLabel="Choose Photos"
+                          chooseLabel={neonStorage.isConfigured ? "Choose Photos" : "Unavailable"}
                           uploadLabel={uploading ? "Uploading..." : "Add to Memories"}
                           cancelLabel="Clear"
                           className="flex flex-col gap-3 w-full justify-center items-center"
                           chooseOptions={{
-                            className: "romantic-button-primary",
+                            className: neonStorage.isConfigured ? "romantic-button-primary" : "romantic-button-ghost opacity-50 cursor-not-allowed",
                           }}
                           uploadOptions={{
                             className: "romantic-button-secondary",
