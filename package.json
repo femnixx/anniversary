@@ -9,8 +9,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "check:hooks": "node scripts/check-hook-imports.mjs",
     "preview": "vite preview",
-    "predeploy": "npm run build",
+    "predeploy": "npm run build && npm run check:hooks && npm run typecheck",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {

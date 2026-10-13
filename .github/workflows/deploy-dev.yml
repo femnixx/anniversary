@@ -30,6 +30,12 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Check
+        run: |
+          npm run check:hooks
+          npm run typecheck
+          npm run lint
+
       - name: Build
         env:
           VITE_BASE: /anniversary-dev/
