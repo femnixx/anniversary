@@ -165,7 +165,7 @@ function Journey() {
 
         <footer className="relative z-10 py-8 px-4 flex justify-center">
           <ScrollReveal direction="up" delay={1}>
-            <p className="font-romantic-alt text-rose-600 type-lead bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2">
+            <p className="font-romantic-alt text-rose-600 type-lead text-center bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2">
               the map isn't finished
             </p>
           </ScrollReveal>
