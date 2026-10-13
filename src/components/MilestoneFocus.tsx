@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PassportStamp from "@/components/PassportStamp";
-import { photoFor, focusMotion, type Milestone } from "@/journeyData";
+import { photoForAny, focusMotion, type Milestone } from "@/journeyData";
 import PhotoPlate from "@/components/PhotoPlate";
 
 const SWIPE_THRESHOLD = 60; // px before a drag counts as a page change
@@ -93,7 +93,9 @@ export default function MilestoneFocus({ item, onClose }: Props) {
   };
 
   const active = hasSubs ? subs[subIndex] : null;
-  const shot = photoFor(active ? active.slug : item.slug);
+  /* the milestone's own photo when it has one, otherwise any photo
+     from the pool — so a card never sits empty once photos exist */
+  const shot = photoForAny(active ? active.slug : item.slug);
 
   return (
     <motion.div

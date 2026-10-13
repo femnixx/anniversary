@@ -1,38 +1,37 @@
-# Photo directory — Journey timeline
+# Photo directory — drop anything in here
 
-Drop dated photos here and the `/journey` timeline wires them into the
-matching milestone automatically. Nothing needs to be imported by hand.
+**No renaming required.** Every image you drop into this folder is picked
+up automatically and shown on the site. Nothing needs to be imported by
+hand, and the filenames don't need to mean anything.
 
-## Naming
+## What happens to each photo
+
+- It joins the **memories gallery** on the `/memories` page.
+- It can also fill the **focused card view** on `/journey`, for any
+  milestone that doesn't have a photo of its own.
+
+## Optional: pin a photo to a milestone
+
+If you want a specific photo to stick to a specific moment, name it with
+a date first and a short description after:
 
 ```
-YYYY-MM-DD_short-slug.jpg
+2025-06-07_pakuwon-mall.jpg     → pins to the Pakuwon City Mall milestone
+2025-08-14_car-sunrise.png      → pins to the "sleeping in the car" one
 ```
 
-The date **must** come first, then an underscore, then a slug made of
-lowercase letters, digits and hyphens. The slug is what matches a
-milestone, so keep it short and descriptive.
+The date part is what makes it a match — keep it as `YYYY-MM-DD` at the
+start, then an underscore, then a slug of lowercase letters and hyphens.
 
-```
-2025-06-07_pakuwon-mall.jpg      -> matches the "pakuwon-mall" child
-2025-06-08_birthday-cake.jpg     -> matches "birthday-cake"
-2025-08-14_car-sunrise.jpg       -> matches "car-sunrise"
-2025-09-02_airport.jpg           -> matches "airport"
-```
-
-## Matching rules
-
-- A milestone matches a photo when its `slug` appears in the filename.
-- Milestones with no matching photo fall back to a printed
-  placeholder sheet, so the timeline never breaks while this is empty.
-- Photos whose slug matches nothing are listed under their date, so
-  nothing you add gets silently dropped.
+Photos named this way get the date shown as their caption instead of the
+filename. Everything else just uses its filename.
 
 ## Supported formats
 
 `.jpg .jpeg .png .webp .avif`
 
-## Until this is filled
+## Until this has photos
 
-Every milestone renders a placeholder plate. That is expected — the
-feature is data-driven and activates the moment files land here.
+The gallery falls back to a small set of sample images, and the focused
+cards show a printed "photo pending" plate. That is expected — the
+moment real files land here, they take over on their own.

@@ -21,8 +21,12 @@ export interface Milestone {
 }
 
 export interface Photo {
+  /** descriptive part of the filename ("" when the file is just a name) */
   slug: string;
+  /** "YYYY-MM-DD" when the file is date-prefixed, otherwise "" */
   date: string;
+  /** true when the filename carried a real date prefix */
+  hasDate: boolean;
   url: string;
   file: string;
 }
@@ -176,23 +180,56 @@ export const MILESTONES: Milestone[] = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   Photo discovery — date-prefixed files in src/assets/moments/.
-   Empty until the directory is filled; see that folder's README.
+   Photo discovery — anything dropped into src/assets/moments/ is
+   picked up automatically. No renaming required.
+
+   A date-prefixed name like 2025-06-07_pakuwon.jpg is a bonus: it
+   lets that photo pin itself to the matching milestone. Every other
+   file still counts — it simply joins the shared pool that fills in
+   any milestone without its own photo.
    ═══════════════════════════════════════════════════════════════ */
 const photoModules = import.meta.glob<{ default: string }>(
-  "../assets/moments/*.{jpg,jpeg,png,webp,avif}",
+  "./assets/moments/*.{jpg,jpeg,png,webp,avif}",
   { eager: true, query: "?url", import: "default" }
 );
+
+const DATE_PREFIX = /^(\d{4}-\d{2}-\d{2})(?:_(.+) )?$/;
 
 export const PHOTOS: Photo[] = Object.entries(photoModules).map(([path, url]) => {
   const file = path.split("/").pop() ?? "";
   const base = file.replace(/\.[^.]+$/, "");
-  const [date = "", ...rest] = base.split("_");
-  return { slug: rest.join("_"), date, url, file };
+
+  const dated = base.match(DATE_PREFIX);
+  if (dated) {
+    return { slug: dated[2] ?? "", date: dated[1], hasDate: true, url, file };
+  }
+  /* no date prefix: the whole name becomes the slug, no date */
+  return { slug: base.replace(/[_-]+/g, "-"), date: "", hasDate: false, url, file };
 });
 
+/* stable small hash, so a pool pick never shuffles between renders */
+function hash(str: string): number {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+/** the milestone's own photo, if one matched by slug */
 export function photoFor(slug: string): Photo | null {
   return PHOTOS.find(p => p.slug && slug.includes(p.slug)) ?? null;
+}
+
+/**
+ * A photo for a milestone: its own match if one exists, otherwise a
+ * deterministic pick from everything available. Keeps every card
+ * showing a real photo once any exist, without needing filenames to
+ * mean anything.
+ */
+export function photoForAny(slug: string): Photo | null {
+  const own = photoFor(slug);
+  if (own) return own;
+  if (PHOTOS.length === 0) return null;
+  return PHOTOS[hash(slug) % PHOTOS.length];
 }
 
 /* ── Motion presets, shared by the open/close transition ──────── */

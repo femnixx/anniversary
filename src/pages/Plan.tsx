@@ -6,6 +6,7 @@ import bluerealbackground3 from "../assets/bluerealbackground3.jpg";
 import CircularGallery from "../components/CircularGallery";
 import "../components/CircularGallery.css";
 import { neonStorage } from "@/NeonClient";
+import { PHOTOS } from "@/journeyData";
 import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
 
 interface GalleryItem {
@@ -84,6 +85,18 @@ function Plan() {
   }, []);
 
   useEffect(() => {
+    /* Local photos in src/assets/moments/ come first — they are real,
+       and they need no renaming to show up. */
+    if (PHOTOS.length > 0) {
+      setMyGalleryItems(
+        PHOTOS.map(p => ({
+          image: p.url,
+          text: p.hasDate ? `${p.date}` : p.file.replace(/\.[^.]+$/, ""),
+        }))
+      );
+      return;
+    }
+
     if (!neonStorage.isConfigured) {
       setMyGalleryItems(fallbackGallery);
       return;
