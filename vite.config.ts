@@ -6,7 +6,9 @@ import tailwindcss from "@tailwindcss/vite"
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/anniversary/',
+  // Production stays on /anniversary/. The dev-preview workflow overrides
+  // this so the dev build serves from its own project path.
+  base: process.env.VITE_BASE || '/anniversary/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src")
