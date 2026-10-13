@@ -39,20 +39,43 @@ function ComplimentsIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
 }
 
+/* Shared sizing tokens, consistent across collapsed and expanded states */
+const EMOJI = "text-3xl sm:text-4xl leading-none";
+const ICON = "w-6 h-6 sm:w-7 sm:h-7";
+
 export function DynamicIsland() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(
     navItems.findIndex(item => location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path)))
   );
-  const islandRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const newIndex = navItems.findIndex(item => location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path)));
     setActiveIndex(newIndex >= 0 ? newIndex : 0);
   }, [location.pathname]);
+
+  /* Close on outside click and on Escape, so the panel is never a trap */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onDocClick = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setIsOpen(false); triggerRef.current?.focus(); }
+    };
+
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isOpen]);
 
   /**
    * Must use the router, not window.location: this app runs on
@@ -62,98 +85,99 @@ export function DynamicIsland() {
    */
   const handleNavClick = (path: string) => {
     if (path !== location.pathname) navigate(path);
-    setIsExpanded(false);
+    setIsOpen(false);
   };
 
   const activeItem = navItems[activeIndex >= 0 ? activeIndex : 0];
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+    <>
+      {/* Touch scrim — makes the open panel unmistakably modal on phones,
+          and tapping anywhere outside dismisses it. Desktop has no scrim. */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="fixed inset-0 z-40 bg-rose-900/50 sm:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Floating launcher, bottom-right: kept out of the top-centre band
+          that every page title occupies, so it can never sit over one. */}
       <div
-        ref={islandRef}
-        className="pointer-events-auto"
-        onMouseEnter={() => setIsExpanded(true)}
-        onMouseLeave={() => setIsExpanded(false)}
-        onFocus={() => setIsExpanded(true)}
-        onBlur={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-            setIsExpanded(false);
-          }
-        }}
+        ref={rootRef}
+        className="fixed z-50 bottom-4 right-3 sm:bottom-6 sm:right-6 flex flex-col items-end gap-3"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <AnimatePresence mode="wait">
-          {!isExpanded ? (
+        <AnimatePresence>
+          {isOpen && (
             <motion.div
-              key="collapsed"
-              initial={{ scale: 0.8, opacity: 0, y: -20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: -20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="bg-cream-50 rounded-full px-6 py-3 plate border-2 border-rose-700 cursor-pointer transition-all duration-200"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsExpanded(true); } }}
-              aria-label="Open navigation"
-              aria-expanded="false"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-2xl animate-heartbeat">{activeItem.shortLabel}</span>
-                <span className="font-romantic-alt text-rose-700 type-lead hidden sm:inline">{activeItem.label}</span>
-                <svg className="w-4 h-4 text-rose-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7"/></svg>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="expanded"
-              initial={{ scale: 0.9, opacity: 0, y: -20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: -20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="bg-cream-50 rounded-3xl plate-lg border-2 border-rose-700 overflow-hidden"
+              key="panel"
+              initial={{ opacity: 0, y: 14, scale: 0.94 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 14, scale: 0.94 }}
+              transition={{ type: "spring", stiffness: 320, damping: 26 }}
+              className="bg-cream-50 rounded-3xl plate-lg border-2 border-rose-700 overflow-hidden origin-bottom-right max-w-[calc(100vw-1.5rem)]"
               role="navigation"
               aria-label="Main navigation"
-              aria-expanded="true"
             >
-              <div ref={contentRef} className="flex items-center gap-1 p-2">
-                <AnimatePresence mode="popLayout">
-                  {navItems.map((item, index) => (
-                    <motion.button
-                      key={item.path}
-                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.8, y: -10 }}
-                      transition={{ delay: index * 0.03, type: "spring", stiffness: 400, damping: 30 }}
-                      className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl transition-all duration-300 ${
-                        index === activeIndex
-                          ? "bg-rose-400 text-cream-50 border-2 border-rose-700"
-                          : "bg-cream-50 text-rose-700 border-2 border-transparent hover:border-rose-700"
-                      }`}
-                      onClick={() => handleNavClick(item.path)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNavClick(item.path); } }}
-                      aria-current={index === activeIndex ? "page" : undefined}
-                      aria-label={item.label}
-                    >
-                      <span className="text-xl animate-heartbeat">{item.shortLabel}</span>
-                      <span className="font-romantic-alt text-sm font-bold hidden lg:inline whitespace-nowrap">{item.label}</span>
-                    </motion.button>
-                  ))}
-                </AnimatePresence>
+              <div className="px-4 pt-3.5 pb-2 border-b-2 border-rose-200 flex items-center justify-between gap-3">
+                <span className="press-label">jump to</span>
+                <span className="text-2xl leading-none animate-heartbeat" aria-hidden="true">💫</span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3">
+                {navItems.map((item, index) => (
+                  <motion.button
+                    key={item.path}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.035, type: "spring", stiffness: 400, damping: 28 }}
+                    className={`flex flex-col items-center gap-1.5 px-4 py-4 rounded-2xl transition-all duration-200 min-h-20 ${
+                      index === activeIndex
+                        ? "bg-rose-400 text-cream-50 border-2 border-rose-700"
+                        : "bg-cream-50 text-rose-700 border-2 border-transparent hover:border-rose-700"
+                    }`}
+                    onClick={() => handleNavClick(item.path)}
+                    aria-current={index === activeIndex ? "page" : undefined}
+                  >
+                    <span className={EMOJI} aria-hidden="true">{item.shortLabel}</span>
+                    <span className="nav-label">{item.label}</span>
+                  </motion.button>
+                ))}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <motion.div
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 pointer-events-none"
-          animate={{ opacity: isExpanded ? 1 : 0, y: isExpanded ? -8 : 0 }}
-          transition={{ duration: 200 }}
+        <motion.button
+          ref={triggerRef}
+          type="button"
+          className="bg-cream-50 rounded-full px-5 sm:px-6 py-3.5 sm:py-4 plate-lg border-2 border-rose-700 cursor-pointer transition-all duration-200 flex items-center gap-3 min-h-14"
+          onClick={() => setIsOpen(o => !o)}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Close navigation" : "Open navigation"}
         >
-          <div className="bg-cream-50 rounded-full px-4 py-1.5 plate border-2 border-rose-700 text-xs font-romantic-alt text-rose-700 whitespace-nowrap">
-            Hover to explore 💕
-          </div>
-        </motion.div>
+          <span className={EMOJI} aria-hidden="true">{activeItem.shortLabel}</span>
+          <span className="nav-label text-rose-700">{activeItem.label}</span>
+          <motion.svg
+            className={ICON + " text-rose-500 flex-shrink-0"}
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.25 }}
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </motion.svg>
+        </motion.button>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -164,7 +188,7 @@ export function ScrollProgress() {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(scrollTop / docHeight);
+      setProgress(docHeight > 0 ? scrollTop / docHeight : 0);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);

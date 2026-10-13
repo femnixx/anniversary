@@ -12,7 +12,7 @@ import { ScrollReveal, RevealText, FloatingElement } from '@/components/ScrollRe
    The vault is sealed until the milestone below. Change this one
    line to move the date; everything else follows automatically.
    ═══════════════════════════════════════════════════════════════ */
-const VAULT_OPENS_AT = "2027-06-08T00:00:00+08:00"; // next 8 June — our recurring milestone
+const VAULT_OPENS_AT = "2026-10-21T00:00:00+07:00"; // our anniversary — the vault opens here
 
 interface Left { days: number; hours: number; minutes: number; seconds: number; done: boolean; }
 
@@ -79,7 +79,7 @@ function Moments() {
                 />
                 <RevealText
                   text="the photos are still sealed"
-                  className="font-romantic-alt text-rose-600 type-subtitle italic mb-6"
+                  className="text-rose-600 type-subtitle mb-6"
                   delay={0.3}
                 />
 
@@ -118,7 +118,7 @@ function Moments() {
                 {/* Countdown */}
                 <div className="mt-7">
                   <p className="press-label mb-4">
-                    opens {target.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                    opens {target.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · our anniversary
                   </p>
 
                   {left.done ? (

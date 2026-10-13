@@ -103,7 +103,7 @@ function Compliments() {
                 className="font-romantic type-title ink-mark inline-block"
                 delay={0.2}
               />
-              <p className="font-romantic-alt text-rose-600 type-lead italic mt-3">
+              <p className="text-rose-600 type-lead mt-3">
                 one at a time, no repeats until they're used up
               </p>
             </div>
@@ -127,7 +127,7 @@ function Compliments() {
                   />
                   <RevealText
                     text="handmade love notes, your eyes only"
-                    className="font-romantic-alt text-rose-600 type-body italic mb-8"
+                    className="text-rose-600 type-body mb-8"
                     delay={0.5}
                   />
 
@@ -148,7 +148,7 @@ function Compliments() {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -20 }}
                           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                          className="absolute font-romantic-alt text-rose-700 type-subtitle italic px-4"
+                          className="absolute text-rose-700 type-subtitle px-4"
                         >
                           "{randomCompliment}"
                         </motion.p>
@@ -204,7 +204,7 @@ function Compliments() {
                         <p className="font-romantic type-subtitle text-rose-700">
                           ten in a row, and you're still here
                         </p>
-                        <p className="font-romantic-alt text-sage-600 type-body italic">
+                        <p className="text-sage-600 type-body">
                           thank you for reading every single one
                         </p>
                       </div>
@@ -249,7 +249,7 @@ function Compliments() {
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xl">💭</span>
-                      <p className="font-romantic-alt text-sage-700 type-body italic">{note}</p>
+                      <p className="text-sage-700 type-body">{note}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -297,14 +297,14 @@ function Compliments() {
                   note {history.length}
                 </p>
 
-                <p className="font-romantic-alt text-rose-700 type-lead italic leading-relaxed mb-6 px-2">
+                <p className="text-rose-700 type-lead mb-6 px-2">
                   "{randomCompliment}"
                 </p>
 
                 {/* streak inside the modal */}
                 <div className="inline-flex items-center gap-2 bg-cream-100 border-2 border-rose-700 rounded-full px-4 py-1.5 mb-6">
                   <span className="animate-heartbeat">💗</span>
-                  <span className="font-romantic-alt text-rose-700 font-bold">
+                  <span className="text-rose-700 font-bold">
                     streak {streak}
                   </span>
                 </div>

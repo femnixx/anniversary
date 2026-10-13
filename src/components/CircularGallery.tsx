@@ -178,6 +178,8 @@ class Media {
   plane!: Mesh;
   title!: Title;
   scale!: number;
+  baseScaleX!: number;
+  baseScaleY!: number;
   padding!: number;
   width!: number;
   widthTotal!: number;
@@ -381,11 +383,14 @@ class Media {
     this.program.uniforms.uFocus.value = lerp(this.program.uniforms.uFocus.value, targetFocus, 0.12);
     this.program.uniforms.uDim.value = lerp(this.program.uniforms.uDim.value, targetDim, 0.12);
 
-    /* the focal plane lifts out of the ring and grows */
-    const baseY = this.plane.scale.y;
-    const targetY = focused ? baseY * 1.28 : baseY;
-    this.plane.scale.y = lerp(this.plane.scale.y, targetY, 0.12);
+    /* the focal plate lifts out of the ring and grows, measured against
+       the resize-time base scale so it can never run away */
+    const zoom = 1 + (focused ? 0.26 : 0);
+    this.plane.scale.x = lerp(this.plane.scale.x, this.baseScaleX * zoom, 0.12);
+    this.plane.scale.y = lerp(this.plane.scale.y, this.baseScaleY * zoom, 0.12);
     this.plane.position.z = lerp(this.plane.position.z, focused ? 3.2 : 0, 0.12);
+    /* keep the shader's cover-fit in step with the live size */
+    this.plane.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y];
 
     const planeOffset = this.plane.scale.x / 2;
     const viewportOffset = this.viewport.width / 2;
@@ -410,8 +415,15 @@ class Media {
       }
     }
     this.scale = this.screen.height / 1500;
-    this.plane.scale.y = (this.viewport.height * (900 * this.scale)) / this.screen.height;
-    this.plane.scale.x = (this.viewport.width * (700 * this.scale)) / this.screen.width;
+
+    /* Landscape card stock. The old 700x900 factors produced a 0.78
+       portrait slab that left the carousel looking narrow and stranded;
+       1000x700 gives a 1.43 landscape sheet that fills the stage. */
+    this.baseScaleY = (this.viewport.height * (700 * this.scale)) / this.screen.height;
+    this.baseScaleX = (this.viewport.width * (1000 * this.scale)) / this.screen.width;
+    this.plane.scale.y = this.baseScaleY;
+    this.plane.scale.x = this.baseScaleX;
+
     this.plane.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y];
     this.padding = 2;
     this.width = this.plane.scale.x + this.padding;

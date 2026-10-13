@@ -138,35 +138,40 @@ function Plan() {
 
       <main className="relative z-10 flex flex-col min-h-screen">
         <ScrollReveal direction="down" delay={0.1} className="pt-8 px-4 flex-1 flex flex-col">
-          <div className="text-center mb-8 relative">
+          <div className="text-center mb-6 sm:mb-8 relative">
             <motion.div
-              className="inline-flex items-center gap-3 px-6 py-3 rounded-full glass-rose border border-rose-200/50 shadow-lg shadow-rose-200/30 mb-6"
+              className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-5 sm:px-7 py-3 sm:py-4 rounded-full bg-cream-50 plate border-2 border-rose-700 max-w-full"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <span className="text-4xl animate-heartbeat">🌸</span>
-              <RevealText 
-                text="our favorite memories" 
-                className="font-romantic type-title text-gradient-romantic" 
+              <span className="text-2xl sm:text-3xl animate-heartbeat flex-shrink-0">🌸</span>
+              {/* sized for a pill, not a page hero — type-title runs to 5rem
+                  and was blowing straight out of the container */}
+              <RevealText
+                text="our favorite memories"
+                className="pill-title text-rose-700"
                 delay={0.2}
               />
-              <span className="text-4xl animate-heartbeat" style={{ animationDelay: '0.3s' }}>🌸</span>
+              <span className="text-2xl sm:text-3xl animate-heartbeat flex-shrink-0">🌸</span>
             </motion.div>
-
-            <RevealText 
-              text="swipe through our journey together" 
-              className="font-romantic-alt text-rose-300/90 type-subtitle" 
-              delay={0.4}
-            />
           </div>
 
           <div className="flex-1 flex items-center justify-center w-full relative">
-            <div className="relative w-full max-w-6xl mx-auto" style={{ height: "clamp(18rem, 62vh, 46rem)" }}>
+            <div className="relative w-full max-w-[clamp(48rem,94vw,96rem)] mx-auto" style={{ height: "clamp(20rem, 68vh, 52rem)" }}>
+              {/* framed stage — the plate the sheets are mounted on */}
+              <div className="absolute -inset-3 sm:-inset-5 rounded-[26px] border-2 border-rose-700 bg-cream-100/70 pointer-events-none" aria-hidden="true" />
+              <div className="absolute -inset-3 sm:-inset-5 rounded-[26px] halftone-fade opacity-60 pointer-events-none" aria-hidden="true" />
+              {/* corner registration ticks */}
+              <span className="absolute -top-3 -left-3 w-5 h-5 border-t-[3px] border-l-[3px] border-rose-700 rounded-tl-lg pointer-events-none" aria-hidden="true" />
+              <span className="absolute -top-3 -right-3 w-5 h-5 border-t-[3px] border-r-[3px] border-rose-700 rounded-tr-lg pointer-events-none" aria-hidden="true" />
+              <span className="absolute -bottom-3 -left-3 w-5 h-5 border-b-[3px] border-l-[3px] border-rose-700 rounded-bl-lg pointer-events-none" aria-hidden="true" />
+              <span className="absolute -bottom-3 -right-3 w-5 h-5 border-b-[3px] border-r-[3px] border-rose-700 rounded-br-lg pointer-events-none" aria-hidden="true" />
+
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <motion.div
                   className="w-full h-full bg-cream-200 rounded-3xl"
-                  animate={{ scale: [1, 1.02, 1], opacity: [0.4, 0.7, 0.4] }}
+                  animate={{ scale: [1, 1.02, 1], opacity: [0.35, 0.6, 0.35] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
@@ -214,7 +219,7 @@ function Plan() {
                     <p className="font-romantic type-subtitle text-rose-700 leading-none">
                       {myGalleryItems[focused].text}
                     </p>
-                    <p className="font-romantic-alt text-sage-600 text-sm italic mt-2">
+                    <p className="text-sage-600 type-sm mt-2">
                       click the photo again to close
                     </p>
                   </div>
@@ -233,9 +238,17 @@ function Plan() {
           </div>
         </ScrollReveal>
 
-        <footer className="relative z-10 py-8 px-4">
+        <div className="relative z-10 px-4 pb-2 flex flex-col items-center gap-3">
+          <ScrollReveal direction="up" delay={0.8}>
+            <p className="text-rose-600 type-body text-center max-w-md">
+              swipe through our journey together — tap a photo to open it
+            </p>
+          </ScrollReveal>
+        </div>
+
+        <footer className="relative z-10 py-6 px-4">
           <ScrollReveal direction="up" delay={1}>
-            <p className="font-romantic-alt text-rose-300/90 text-center text-lg">
+            <p className="font-romantic-alt text-rose-600 type-lead text-center">
               every moment a treasure 💕
             </p>
           </ScrollReveal>

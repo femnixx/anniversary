@@ -1,0 +1,1340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#2f80d8" />
+<title>Every Road We Took — Interactive Timeline</title>
+<meta name="description" content="An interactive anniversary timeline with a lightbox focus state, live elapsed-time counter and a self-drawing spine." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   1. TOKENS
+   One blue family throughout. Every colour and space comes from here.
+   ═══════════════════════════════════════════════════════════════════ */
+:root{
+  /* palette */
+  --paper:#f4f8fd;
+  --paper-2:#eaf3fc;
+  --paper-3:#dce9f7;
+  --ink:#123a6b;
+  --ink-2:#0e2c58;
+  --ink-soft:#2c4560;
+  --ink-mute:#5f7690;
+  --accent:#2f80d8;
+  --accent-2:#3b6fc4;
+  --accent-3:#7ba3dc;
+  --card:#ffffff;
+  --card-2:#f7fbff;
+  --line:#123a6b;
+
+  /* per-milestone accent (overridden inline per card) */
+  --tl-accent: var(--accent);
+  --tl-accent-soft: color-mix(in srgb, var(--tl-accent) 12%, var(--card));
+
+  /* spacing scale */
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.5rem;
+  --s-6:2rem; --s-7:3rem; --s-8:4rem; --s-9:6rem;
+
+  /* geometry */
+  --rail: clamp(2.75rem, 7vw, 5rem);      /* desktop gap between spine & card */
+  --rail-mob: 1.5rem;                     /* mobile spine inset */
+  --radius: 18px;
+  --radius-sm: 12px;
+
+  /* motion — only transform & opacity are ever animated */
+  --ease: cubic-bezier(.22,1,.36,1);
+  --dur-fast: .22s;
+  --dur: .38s;
+  --dur-slow: .6s;
+
+  /* soft organic shadows */
+  --sh-rest: 0 1px 2px rgba(18,58,107,.05), 0 10px 26px -14px rgba(18,58,107,.20);
+  --sh-lift: 0 2px 6px rgba(18,58,107,.08), 0 28px 52px -18px rgba(18,58,107,.34);
+
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Great Vibes", "Nunito", cursive;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+
+html{ -webkit-text-size-adjust:100%; }
+
+body{
+  margin:0;
+  font-family: var(--font-body);
+  font-size: clamp(.95rem,.9rem + .2vw,1.05rem);
+  line-height:1.6;
+  color: var(--ink-soft);
+  background: var(--paper);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+h1,h2,h3{ margin:0; line-height:1.15; color: var(--ink); }
+p{ margin:0; }
+ol{ margin:0; padding:0; list-style:none; }
+button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   2. AMBIENT GRADIENT MESH
+   Soft radial glows that drift. Only transform is animated, so this
+   costs no layout. Reduced-motion users get a static version.
+   ═══════════════════════════════════════════════════════════════════ */
+.mesh{
+  position:fixed; inset:0; z-index:-1; overflow:hidden;
+  background:
+    radial-gradient(120% 80% at 12% 8%,  var(--paper-3) 0%, transparent 58%),
+    radial-gradient(100% 90% at 88% 14%, var(--paper-2) 0%, transparent 55%),
+    radial-gradient(130% 100% at 50% 104%, #eaf2fc 0%, transparent 62%),
+    var(--paper);
+}
+.mesh__blob{
+  position:absolute; width:48vmax; height:48vmax; border-radius:50%;
+  will-change:transform;
+}
+.mesh__blob--a{
+  top:-14vmax; left:-10vmax;
+  background:radial-gradient(circle at 50% 50%, rgba(59,111,196,.20), rgba(59,111,196,0) 68%);
+  animation: drift-a 26s var(--ease) infinite;
+}
+.mesh__blob--b{
+  top:22vmax; right:-16vmax;
+  background:radial-gradient(circle at 50% 50%, rgba(47,128,216,.16), rgba(47,128,216,0) 68%);
+  animation: drift-b 32s var(--ease) infinite;
+}
+.mesh__blob--c{
+  bottom:-18vmax; left:24vw;
+  background:radial-gradient(circle at 50% 50%, rgba(123,163,220,.16), rgba(123,163,220,0) 68%);
+  animation: drift-c 38s var(--ease) infinite;
+}
+@keyframes drift-a{
+  0%,100%{ transform:translate3d(0,0,0) scale(1); }
+  50%    { transform:translate3d(7vmax,4vmax,0) scale(1.09); }
+}
+@keyframes drift-b{
+  0%,100%{ transform:translate3d(0,0,0) scale(1.04); }
+  50%    { transform:translate3d(-8vmax,6vmax,0) scale(1); }
+}
+@keyframes drift-c{
+  0%,100%{ transform:translate3d(0,0,0) scale(1); }
+  50%    { transform:translate3d(5vmax,-6vmax,0) scale(1.07); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   3. HEADER + LIVE COUNTER
+   ═══════════════════════════════════════════════════════════════════ */
+.masthead{
+  position:relative;
+  padding: var(--s-9) var(--s-4) var(--s-7);
+  text-align:center;
+}
+.masthead__eyebrow{
+  font-size:.72rem; font-weight:800; letter-spacing:.22em;
+  text-transform:uppercase; color: var(--accent);
+  margin-bottom: var(--s-3);
+}
+.masthead__title{
+  font-family: var(--font-display);
+  font-weight:400;
+  font-size: clamp(2.75rem, 1.2rem + 7vw, 6rem);
+  color: var(--ink);
+}
+.masthead__sub{
+  margin-top: var(--s-3);
+  color: var(--ink-mute);
+  font-style:italic;
+  font-size: clamp(1rem,.95rem + .4vw,1.3rem);
+}
+
+.counter{
+  margin: var(--s-6) auto 0;
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0,1fr));
+  gap: var(--s-2) var(--s-3);
+  max-width: 42rem;
+}
+.counter__cell{
+  position:relative;
+  padding: var(--s-4) var(--s-2);
+  background: linear-gradient(160deg, var(--card) 0%, var(--card-2) 100%);
+  border:1px solid var(--paper-3);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--sh-rest);
+  overflow:hidden;
+}
+/* micro-gradient sheen, animated with transform only */
+.counter__cell::after{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(105deg, transparent 38%, rgba(47,128,216,.10) 50%, transparent 62%);
+  transform:translate3d(-120%,0,0);
+  animation: sweep 6.5s var(--ease) infinite;
+}
+@keyframes sweep{
+  0%,62%{ transform:translate3d(-120%,0,0); }
+  100%  { transform:translate3d(120%,0,0); }
+}
+.counter__num{
+  display:block;
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 2.6rem);
+  font-weight:800; line-height:1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.counter__label{
+  display:block; margin-top: var(--s-2);
+  font-size:.62rem; font-weight:800; letter-spacing:.16em;
+  text-transform:uppercase; color: var(--ink-mute);
+}
+.counter__since{
+  margin-top: var(--s-5);
+  font-size:.8rem; letter-spacing:.1em; text-transform:uppercase;
+  font-weight:700; color: var(--ink-mute);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   4. TIMELINE
+   ═══════════════════════════════════════════════════════════════════ */
+.timeline{
+  position:relative;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--s-7) var(--s-4) var(--s-9);
+}
+
+/* the spine — an SVG path so it can draw, morph and recolour */
+.timeline__spine{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  overflow:visible;
+}
+.timeline__spine-path{
+  fill:none;
+  stroke:url(#spineGradient);
+  stroke-width:4;
+  stroke-linecap:round;
+  transition: stroke-dashoffset .5s var(--ease);
+}
+.timeline__spine-glow{
+  fill:none;
+  stroke:url(#spineGradient);
+  stroke-width:14;
+  stroke-linecap:round;
+  opacity:.16;
+  transition: stroke-dashoffset .5s var(--ease);
+}
+#spineStart{ transition: stop-color var(--dur-slow) var(--ease); }
+#spineEnd  { transition: stop-color var(--dur-slow) var(--ease); }
+
+.timeline__list{ position:relative; }
+
+.tl-item{
+  position:relative;
+  padding-bottom: var(--s-7);
+}
+.tl-item:last-child{ padding-bottom:0; }
+
+/* ── node ── */
+.tl-node{
+  position:absolute;
+  left:50%; top: var(--s-6);
+  width:18px; height:18px;
+  margin:-9px 0 0 -9px;
+  border-radius:50%;
+  background: var(--card);
+  border:4px solid var(--tl-accent);
+  z-index:2;
+  transition: transform var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease);
+}
+/* pulse ring, animated with transform + opacity only */
+.tl-node::after{
+  content:"";
+  position:absolute; inset:-7px;
+  border-radius:50%;
+  border:2px solid var(--tl-accent);
+  opacity:0;
+  transform:scale(.6);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.tl-item.is-active .tl-node{
+  transform:scale(1.3);
+  border-color: var(--tl-accent);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--tl-accent) 16%, transparent);
+}
+.tl-item.is-active .tl-node::after{
+  opacity:.55;
+  transform:scale(1.35);
+}
+
+/* ── card ── */
+.tl-card{
+  position:relative;
+  width:100%;
+  padding: var(--s-5) var(--s-5) var(--s-5);
+  text-align:left;
+  border-radius: var(--radius);
+  border:1px solid var(--paper-3);
+  /* micro-gradient keyed to the milestone colour */
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 9%, var(--card)) 0%, var(--card) 46%, var(--card-2) 100%);
+  box-shadow: var(--sh-rest);
+  overflow:hidden;
+  display:block;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+/* crisp accent hairline along the card edge */
+.tl-card::before{
+  content:"";
+  position:absolute; top:0; bottom:0; left:0;
+  width:3px;
+  background: linear-gradient(180deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 35%, transparent));
+  opacity:.85;
+}
+.tl-card__eyebrow{
+  display:block;
+  font-size:.66rem; font-weight:800; letter-spacing:.2em;
+  text-transform:uppercase; color: var(--tl-accent);
+  margin-bottom: var(--s-2);
+}
+.tl-card__title{
+  display:block;
+  font-family: var(--font-display);
+  font-weight:400;
+  font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.4rem);
+  color: var(--ink);
+  line-height:1.1;
+}
+.tl-card__desc{
+  display:block;
+  margin-top: var(--s-3);
+  color: var(--ink-soft);
+  font-size: clamp(.92rem,.9rem + .15vw,1.02rem);
+}
+
+/* the '+' affordance, top right */
+.tl-card__plus{
+  position:absolute; top: var(--s-4); right: var(--s-4);
+  width:34px; height:34px;
+  display:grid; place-items:center;
+  border-radius:50%;
+  border:1.5px solid color-mix(in srgb, var(--tl-accent) 45%, var(--paper-3));
+  color: var(--tl-accent);
+  background: color-mix(in srgb, var(--tl-accent) 8%, var(--card));
+  transition: transform var(--dur) var(--ease),
+              background-color var(--dur) var(--ease),
+              color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+.tl-card__plus svg{ width:16px; height:16px; }
+.tl-card__hint{
+  position:absolute; right: var(--s-4); bottom: var(--s-3);
+  font-size:.62rem; font-weight:800; letter-spacing:.16em;
+  text-transform:uppercase; color: var(--ink-mute);
+  opacity:0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+/* entry animation — transform + opacity only */
+.tl-card{
+  opacity:0;
+  transform: translate3d(0, 34px, 0);
+}
+.tl-item.is-in .tl-card{
+  opacity:1;
+  transform: translate3d(0,0,0);
+  transition: transform var(--dur-slow) var(--ease), opacity var(--dur-slow) var(--ease),
+              box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+/* desktop alternation */
+@media (min-width: 900px){
+  .tl-item{ padding-left:0; padding-right:0; }
+  .tl-item:nth-child(odd)  .tl-card{ width: calc(50% - var(--rail)); margin-right:auto; }
+  .tl-item:nth-child(even) .tl-card{ width: calc(50% - var(--rail)); margin-left:auto; }
+}
+
+/* mobile: spine to the left, cards fill the rest */
+@media (max-width: 899px){
+  .tl-node{ left: var(--rail-mob); top: var(--s-5); }
+  .tl-card{ margin-left: calc(var(--rail-mob) + var(--s-4)); width:auto; }
+}
+
+/* ── desktop hover only, so touch never gets stuck states ── */
+@media (hover:hover) and (pointer:fine){
+  .tl-card:hover{
+    transform: translate3d(0,-6px,0);
+    box-shadow: var(--sh-lift);
+    border-color: color-mix(in srgb, var(--tl-accent) 40%, var(--paper-3));
+  }
+  .tl-card:hover .tl-card__plus{
+    transform: rotate(90deg);
+    background: var(--tl-accent);
+    border-color: var(--tl-accent);
+    color:#fff;
+  }
+  .tl-card:hover .tl-card__hint{ opacity:.7; }
+}
+.tl-card:focus-visible{
+  outline:3px solid color-mix(in srgb, var(--tl-accent) 60%, transparent);
+  outline-offset:4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   5. LIGHTBOX — native <dialog>
+   ═══════════════════════════════════════════════════════════════════ */
+.focus{
+  padding:0; margin:auto;
+  border:0; background:transparent;
+  max-width:min(1080px, 100vw);
+  width:min(1080px, 100vw);
+  max-height:100dvh;
+  overflow:hidden;
+  /* closed state */
+  opacity:0;
+  transform:scale(.95);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.focus::backdrop{
+  background: rgba(10,31,66,.62);
+  backdrop-filter: blur(3px);
+  opacity:0;
+  transition: opacity var(--dur) var(--ease);
+}
+.focus.is-open{ opacity:1; transform:scale(1); }
+.focus.is-open::backdrop{ opacity:1; }
+
+.focus__panel{
+  position:relative;
+  background: var(--card);
+  border:1px solid var(--paper-3);
+  border-radius: var(--radius);
+  box-shadow: 0 40px 90px -30px rgba(10,31,66,.5);
+  max-height:100dvh;
+  overflow:auto;
+  overscroll-behavior:contain;
+}
+.focus__bar{
+  position:sticky; top:0; z-index:3;
+  display:flex; align-items:center; gap:var(--s-3);
+  padding: var(--s-4) var(--s-5);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom:1px solid var(--paper-3);
+}
+.focus__bar-eyebrow{
+  flex:1; min-width:0;
+  font-size:.66rem; font-weight:800; letter-spacing:.2em;
+  text-transform:uppercase; color: var(--tl-accent, var(--accent));
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.focus__close{
+  flex-shrink:0;
+  width:38px; height:38px; border-radius:50%;
+  display:grid; place-items:center;
+  border:1.5px solid var(--paper-3);
+  color: var(--ink);
+  background: var(--card);
+  transition: transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.focus__close svg{ width:16px; height:16px; }
+.focus__close:hover{ background: var(--accent); color:#fff; transform:rotate(90deg); }
+
+/* two-column on desktop, stacked on mobile */
+.focus__grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap: var(--s-6);
+  padding: var(--s-5);
+}
+/* the date + title span both columns, then media | body split */
+.focus__head{ grid-column: 1 / -1; }
+@media (min-width: 900px){
+  .focus__grid{ grid-template-columns: 1.02fr .98fr; gap: var(--s-7); padding: var(--s-6); }
+}
+@media (min-width: 900px){
+  .focus__grid{ grid-template-columns: 1.02fr .98fr; gap: var(--s-7); padding: var(--s-6); }
+}
+
+/* ── media column ── */
+.focus__media{ display:flex; flex-direction:column; gap: var(--s-5); }
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap: var(--s-3);
+}
+.gallery__tile{
+  position:relative;
+  aspect-ratio: 4/3;
+  border-radius: var(--radius-sm);
+  border:1.5px dashed var(--paper-3);
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 10%, var(--card)), var(--card-2));
+  overflow:hidden;
+  display:grid; place-items:center;
+  text-align:center;
+  padding: var(--s-3);
+}
+.gallery__tile--wide{ grid-column: span 2; aspect-ratio: 16/9; }
+/* shimmer sweep — transform only */
+.gallery__tile::after{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(105deg, transparent 40%, rgba(47,128,216,.13) 50%, transparent 60%);
+  transform:translate3d(-130%,0,0);
+  animation: sweep 5s var(--ease) infinite;
+}
+.gallery__tile:nth-child(2)::after{ animation-delay:.7s; }
+.gallery__tile:nth-child(3)::after{ animation-delay:1.4s; }
+.gallery__tile:nth-child(4)::after{ animation-delay:2.1s; }
+.gallery__label{
+  position:relative; z-index:1;
+  font-size:.68rem; font-weight:800; letter-spacing:.14em;
+  text-transform:uppercase; color: var(--ink-mute);
+}
+
+/* ── text column ── */
+.focus__body{ display:flex; flex-direction:column; gap: var(--s-5); }
+.focus__title{
+  font-family: var(--font-display);
+  font-weight:400;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.1rem);
+  color: var(--ink);
+  line-height:1.08;
+}
+.focus__date{
+  font-size:.68rem; font-weight:800; letter-spacing:.2em;
+  text-transform:uppercase; color: var(--tl-accent, var(--accent));
+}
+.focus__story{
+  color: var(--ink-soft);
+  font-size: clamp(.95rem,.92rem + .2vw,1.06rem);
+  line-height:1.75;
+}
+.focus__story p + p{ margin-top: var(--s-4); }
+
+/* location check-ins */
+.places{ display:flex; flex-wrap:wrap; gap: var(--s-3); }
+.place{
+  display:inline-flex; align-items:center; gap: var(--s-2);
+  padding: .5rem .9rem .5rem .7rem;
+  border-radius:999px;
+  border:1.5px dashed color-mix(in srgb, var(--tl-accent) 50%, var(--paper-3));
+  background: color-mix(in srgb, var(--tl-accent) 7%, var(--card));
+  color: var(--ink);
+  font-size:.82rem; font-weight:700;
+  transition: transform var(--dur-fast) var(--ease),
+              background-color var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.place__pin{ display:grid; place-items:center; color: var(--tl-accent); transition: color var(--dur-fast) var(--ease); }
+.place__pin svg{ width:15px; height:15px; }
+.place__count{
+  font-size:.62rem; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color: var(--ink-mute);
+}
+.place:hover{ border-color: var(--tl-accent); transform:translate3d(0,-2px,0); }
+.place[aria-pressed="true"]{
+  background: var(--tl-accent);
+  border-style:solid;
+  border-color: var(--tl-accent);
+  color:#fff;
+}
+.place[aria-pressed="true"] .place__pin{ color:#fff; }
+.place[aria-pressed="true"] .place__count{ color: rgba(255,255,255,.8); }
+
+/* sub-journeys */
+.subs{ display:flex; flex-direction:column; gap: var(--s-3); }
+.subs__item{
+  display:flex; gap: var(--s-3); align-items:flex-start;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--radius-sm);
+  border:1px solid var(--paper-3);
+  background: var(--card-2);
+}
+.subs__ix{
+  flex-shrink:0;
+  width:26px; height:26px; border-radius:50%;
+  display:grid; place-items:center;
+  font-size:.72rem; font-weight:800;
+  background: color-mix(in srgb, var(--tl-accent) 14%, var(--card));
+  color: var(--tl-accent);
+  border:1.5px solid color-mix(in srgb, var(--tl-accent) 35%, var(--paper-3));
+}
+.subs__title{ font-weight:700; color: var(--ink); font-size:.95rem; }
+.subs__meta{ font-size:.68rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color: var(--ink-mute); margin-top:2px; }
+
+/* hidden note — taped corner, read like a scrap of paper */
+.joke{
+  position:relative;
+  padding: var(--s-5) var(--s-5) var(--s-5) var(--s-6);
+  border-radius: 6px;
+  border:1.5px dashed color-mix(in srgb, var(--tl-accent) 45%, var(--paper-3));
+  background:
+    repeating-linear-gradient(0deg, transparent 0 27px, color-mix(in srgb, var(--tl-accent) 6%, transparent) 27px 28px),
+    color-mix(in srgb, var(--tl-accent) 5%, var(--card));
+}
+/* washi tape */
+.joke::before{
+  content:"";
+  position:absolute; top:-12px; left: var(--s-5);
+  width:78px; height:22px;
+  background: color-mix(in srgb, var(--tl-accent) 26%, var(--card));
+  border:1px solid color-mix(in srgb, var(--tl-accent) 30%, transparent);
+  transform: rotate(-3deg);
+}
+.joke__tag{
+  font-size:.62rem; font-weight:800; letter-spacing:.18em;
+  text-transform:uppercase; color: var(--tl-accent);
+  margin-bottom: var(--s-2);
+}
+.joke__text{
+  font-style:italic;
+  color: var(--ink-soft);
+  font-size: clamp(.95rem,.9rem + .2vw,1.05rem);
+  line-height:1.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   6. REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+  .tl-card{ opacity:1; transform:none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ambient mesh -->
+<div class="mesh" aria-hidden="true">
+  <span class="mesh__blob mesh__blob--a"></span>
+  <span class="mesh__blob mesh__blob--b"></span>
+  <span class="mesh__blob mesh__blob--c"></span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HEADER + LIVE COUNTER
+     ══════════════════════════════════════════════════════════════ -->
+<header class="masthead">
+  <p class="masthead__eyebrow">since the beginning</p>
+  <h1 class="masthead__title">Every Road We Took</h1>
+  <p class="masthead__sub">every road, every 12 AM, every “let’s go again”</p>
+
+  <section class="counter" id="counter" aria-label="Time elapsed since the beginning">
+    <div class="counter__cell"><span class="counter__num" id="c-years">0</span><span class="counter__label">Years</span></div>
+    <div class="counter__cell"><span class="counter__num" id="c-months">0</span><span class="counter__label">Months</span></div>
+    <div class="counter__cell"><span class="counter__num" id="c-days">0</span><span class="counter__label">Days</span></div>
+    <div class="counter__cell"><span class="counter__num" id="c-hours">0</span><span class="counter__label">Hours</span></div>
+    <div class="counter__cell"><span class="counter__num" id="c-minutes">0</span><span class="counter__label">Minutes</span></div>
+    <p class="counter__since" id="c-since" style="grid-column:1/-1"></p>
+  </section>
+</header>
+
+<main>
+<!-- ══════════════════════════════════════════════════════════════
+     TIMELINE
+     ══════════════════════════════════════════════════════════════ -->
+<section class="timeline" id="timeline" aria-label="Our timeline">
+
+  <!-- self-drawing spine -->
+  <svg class="timeline__spine" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="spineGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1">
+        <stop id="spineStart" offset="0%"  stop-color="#2f80d8"/>
+        <stop id="spineEnd"   offset="100%" stop-color="#3b6fc4"/>
+      </linearGradient>
+    </defs>
+    <path class="timeline__spine-glow" id="spineGlow" d=""/>
+    <path class="timeline__spine-path" id="spinePath" d=""/>
+  </svg>
+
+  <ol class="timeline__list" id="timelineList">
+
+    <!-- ── 1 ── -->
+    <li class="tl-item" style="--tl-accent:#2f80d8" data-since="2025-06-07T21:00:00+07:00">
+      <span class="tl-node" aria-hidden="true"></span>
+      <button class="tl-card" type="button" aria-expanded="false">
+        <span class="tl-card__eyebrow">The Beginning</span>
+        <span class="tl-card__title">How We Met</span>
+        <span class="tl-card__desc">A simple hello that changed everything.</span>
+        <span class="tl-card__plus" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="tl-card__hint" aria-hidden="true">open</span>
+      </button>
+
+      <!-- rich content, lifted into the dialog -->
+      <div class="tl-rich" hidden>
+        <header class="focus__head"><span class="focus__date">The Beginning</span>
+        <h2 class="focus__title">How We Met</h2></header><div class="focus__media">
+          <div class="gallery">
+            <div class="gallery__tile gallery__tile--wide"><span class="gallery__label">hero photo</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 02</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 03</span></div>
+          </div>
+        </div>
+        <div class="focus__body">
+          <div class="focus__story">
+            <p>It started the way the best things do — quietly, and without either of us planning it. A hello that should have been forgettable, and instead became the thing everything else got measured against.</p>
+            <p>Neither of us knew yet that a year later we’d be driving through toll roads in the dark to be somewhere together on a birthday.</p>
+          </div>
+          <div class="places">
+            <button class="place" type="button" aria-pressed="false">
+              <span class="place__pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              Where it started
+            </button>
+          </div>
+          <aside class="joke">
+            <p class="joke__tag">Our favourite memory / inside joke</p>
+            <p class="joke__text">I still replay the exact way you said hello. It wasn’t smooth. It was perfect.</p>
+          </aside>
+        </div>
+      </div>
+    </li>
+
+    <!-- ── 2 ── -->
+    <li class="tl-item" style="--tl-accent:#3b6fc4" data-since="2025-08-14T18:30:00+07:00">
+      <span class="tl-node" aria-hidden="true"></span>
+      <button class="tl-card" type="button" aria-expanded="false">
+        <span class="tl-card__eyebrow">Early Days</span>
+        <span class="tl-card__title">Our First Date</span>
+        <span class="tl-card__desc">Almost got poisoned, but here we are!</span>
+        <span class="tl-card__plus" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="tl-card__hint" aria-hidden="true">open</span>
+      </button>
+
+      <div class="tl-rich" hidden>
+        <header class="focus__head"><span class="focus__date">Early Days</span>
+        <h2 class="focus__title">Our First Date</h2></header><div class="focus__media">
+          <div class="gallery">
+            <div class="gallery__tile gallery__tile--wide"><span class="gallery__label">the table</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 05</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 06</span></div>
+          </div>
+        </div>
+        <div class="focus__body">
+          <div class="focus__story">
+            <p>We picked the one place that nearly took us both out. You laughed until you cried, I panicked quietly, and somehow that became the story we tell people when they ask how we knew.</p>
+            <p>Every date after that had something to live up to. Most of them managed it.</p>
+          </div>
+          <div class="places">
+            <button class="place" type="button" aria-pressed="false">
+              <span class="place__pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              The near-miss café
+            </button>
+          </div>
+          <aside class="joke">
+            <p class="joke__tag">Our favourite memory / inside joke</p>
+            <p class="joke__text">“Almost got poisoned” is now our love language. I’d do it again for you.</p>
+          </aside>
+        </div>
+      </div>
+    </li>
+
+    <!-- ── 3 · Surabaya, with sub-journeys ── -->
+    <li class="tl-item" style="--tl-accent:#7ba3dc" data-since="2025-06-07T21:40:00+07:00">
+      <span class="tl-node" aria-hidden="true"></span>
+      <button class="tl-card" type="button" aria-expanded="false">
+        <span class="tl-card__eyebrow">7–8 June</span>
+        <span class="tl-card__title">Surabaya, on your birthday</span>
+        <span class="tl-card__desc">We left in the dark, through the toll road, and drove into Surabaya under the night lights.</span>
+        <span class="tl-card__plus" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="tl-card__hint" aria-hidden="true">open</span>
+      </button>
+
+      <div class="tl-rich" hidden>
+        <header class="focus__head"><span class="focus__date">7–8 June</span>
+        <h2 class="focus__title">Surabaya, on your birthday</h2></header><div class="focus__media">
+          <div class="gallery">
+            <div class="gallery__tile gallery__tile--wide"><span class="gallery__label">night lights, toll road</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 08</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 09</span></div>
+          </div>
+          <div class="subs">
+            <div class="subs__item"><span class="subs__ix">1</span><div><p class="subs__title">Pakuwon City Mall</p><p class="subs__meta">7 June · first stop</p></div></div>
+            <div class="subs__item"><span class="subs__ix">2</span><div><p class="subs__title">Her friend &amp; IKEA</p><p class="subs__meta">8 June · too much fun</p></div></div>
+            <div class="subs__item"><span class="subs__ix">3</span><div><p class="subs__title">Still awake at 12 AM</p><p class="subs__meta">8 June · not ready to leave</p></div></div>
+            <div class="subs__item"><span class="subs__ix">4</span><div><p class="subs__title">Home in the early morning</p><p class="subs__meta">8 June · half asleep, completely happy</p></div></div>
+          </div>
+        </div>
+        <div class="focus__body">
+          <div class="focus__story">
+            <p>We left in the dark. The toll lights went past one after another and you were right there beside me the whole way.</p>
+            <p>We rolled into Surabaya past midnight and you were still laughing, still not ready to go home. Cake, chaos, and you.</p>
+            <p>I remember thinking: I want a thousand more of these.</p>
+          </div>
+          <div class="places">
+            <button class="place" type="button" aria-pressed="false">
+              <span class="place__pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              Pakuwon City Mall
+              <span class="place__count">check in</span>
+            </button>
+            <button class="place" type="button" aria-pressed="false">
+              <span class="place__pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              IKEA
+              <span class="place__count">check in</span>
+            </button>
+            <button class="place" type="button" aria-pressed="false">
+              <span class="place__pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              The toll road
+              <span class="place__count">check in</span>
+            </button>
+          </div>
+          <aside class="joke">
+            <p class="joke__tag">Our favourite memory / inside joke</p>
+            <p class="joke__text">At 12 AM you said “one more hour.” We stayed until the sky turned. We always stay.</p>
+          </aside>
+        </div>
+      </div>
+    </li>
+
+    <!-- ── 4 ── -->
+    <li class="tl-item" style="--tl-accent:#4f9ae0" data-since="2025-07-05T19:00:00+07:00">
+      <span class="tl-node" aria-hidden="true"></span>
+      <button class="tl-card" type="button" aria-expanded="false">
+        <span class="tl-card__eyebrow">July – August</span>
+        <span class="tl-card__title">And then we went back</span>
+        <span class="tl-card__desc">Dates that ran until morning, sleeping in the car, then doing it all again.</span>
+        <span class="tl-card__plus" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="tl-card__hint" aria-hidden="true">open</span>
+      </button>
+
+      <div class="tl-rich" hidden>
+        <header class="focus__head"><span class="focus__date">July – August</span>
+        <h2 class="focus__title">And then we went back</h2></header><div class="focus__media">
+          <div class="gallery">
+            <div class="gallery__tile gallery__tile--wide"><span class="gallery__label">the car, at dawn</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 11</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 12</span></div>
+          </div>
+        </div>
+        <div class="focus__body">
+          <div class="focus__story">
+            <p>A few more runs to Surabaya. None of it was fancy. All of it was us.</p>
+            <p>Dates stretched until dawn, then a nap in the parked car before the drive back.</p>
+          </div>
+          <div class="places">
+            <button class="place" type="button" aria-pressed="false">
+              <span class="place__pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              The parked car
+              <span class="place__count">check in</span>
+            </button>
+          </div>
+          <aside class="joke">
+            <p class="joke__tag">Our favourite memory / inside joke</p>
+            <p class="joke__text">Sleeping in that car was somehow the most comfortable we’ve ever been anywhere.</p>
+          </aside>
+        </div>
+      </div>
+    </li>
+
+    <!-- ── 5 · Malaysia ── -->
+    <li class="tl-item" style="--tl-accent:#5aa8e8" data-since="2026-09-02T09:00:00+08:00">
+      <span class="tl-node" aria-hidden="true"></span>
+      <button class="tl-card" type="button" aria-expanded="false">
+        <span class="tl-card__eyebrow">2 September → Now</span>
+        <span class="tl-card__title">Malaysia</span>
+        <span class="tl-card__desc">Different country, same us — still talking every day.</span>
+        <span class="tl-card__plus" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="tl-card__hint" aria-hidden="true">open</span>
+      </button>
+
+      <div class="tl-rich" hidden>
+        <header class="focus__head"><span class="focus__date">2 September → Now</span>
+        <h2 class="focus__title">Malaysia</h2></header><div class="focus__media">
+          <div class="gallery">
+            <div class="gallery__tile gallery__tile--wide"><span class="gallery__label">screenshots, every night</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 14</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 15</span></div>
+          </div>
+        </div>
+        <div class="focus__body">
+          <div class="focus__story">
+            <p>You went off to Malaysia and you’ve been having the time of your life. I’m genuinely, ridiculously happy for you — and I’m also counting the days.</p>
+            <p>Different country, same us. Still finding each other through a screen.</p>
+          </div>
+          <div class="places">
+            <button class="place" type="button" aria-pressed="false">
+              <span class="place__pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              Malaysia
+              <span class="place__count">stamped 02 sep</span>
+            </button>
+          </div>
+          <aside class="joke">
+            <p class="joke__tag">Our favourite memory / inside joke</p>
+            <p class="joke__text">Our calls run way too long and neither of us wants to be the one to hang up first.</p>
+          </aside>
+        </div>
+      </div>
+    </li>
+
+    <!-- ── 6 · Today ── -->
+    <li class="tl-item" style="--tl-accent:#2f80d8" data-since="2026-10-13T00:00:00+07:00">
+      <span class="tl-node" aria-hidden="true"></span>
+      <button class="tl-card" type="button" aria-expanded="false">
+        <span class="tl-card__eyebrow">Right Now</span>
+        <span class="tl-card__title">Today</span>
+        <span class="tl-card__desc">Still us, still together, still growing.</span>
+        <span class="tl-card__plus" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="tl-card__hint" aria-hidden="true">open</span>
+      </button>
+
+      <div class="tl-rich" hidden>
+        <header class="focus__head"><span class="focus__date">Right Now</span>
+        <h2 class="focus__title">Today</h2></header><div class="focus__media">
+          <div class="gallery">
+            <div class="gallery__tile gallery__tile--wide"><span class="gallery__label">right now, today</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 17</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 18</span></div>
+          </div>
+        </div>
+        <div class="focus__body">
+          <div class="focus__story">
+            <p>Still us. Still together. Still growing — which is the honest version, and the better one.</p>
+          </div>
+          <aside class="joke">
+            <p class="joke__tag">Our favourite memory / inside joke</p>
+            <p class="joke__text">We’ve had a whole year of “remember when” and we’re nowhere near done.</p>
+          </aside>
+        </div>
+      </div>
+    </li>
+
+    <!-- ── 7 · Our anniversary ── -->
+    <li class="tl-item" style="--tl-accent:#2f80d8" data-since="2026-10-21T00:00:00+07:00">
+      <span class="tl-node" aria-hidden="true"></span>
+      <button class="tl-card" type="button" aria-expanded="false">
+        <span class="tl-card__eyebrow">21 October</span>
+        <span class="tl-card__title">Our Anniversary</span>
+        <span class="tl-card__desc">The day we keep coming back to, and the one we get to count properly this year.</span>
+        <span class="tl-card__plus" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="tl-card__hint" aria-hidden="true">open</span>
+      </button>
+
+      <div class="tl-rich" hidden>
+        <header class="focus__head">
+          <span class="focus__date">21 October</span>
+          <h2 class="focus__title">Our Anniversary</h2>
+        </header>
+        <div class="focus__media">
+          <div class="gallery">
+            <div class="gallery__tile gallery__tile--wide"><span class="gallery__label">the day itself</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 20</span></div>
+            <div class="gallery__tile"><span class="gallery__label">photo 21</span></div>
+          </div>
+        </div>
+        <div class="focus__body">
+          <div class="focus__story">
+            <p>Every road on this page led here. The toll lights, the midnight drives, the dates that ran until morning, the calls that crossed a timezone — all of it pointed at this one date.</p>
+            <p>This year we get to count it properly, together, with the whole map behind us.</p>
+          </div>
+          <div class="places">
+            <button class="place" type="button" aria-pressed="false">
+              <span class="place__pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              Wherever you are
+              <span class="place__count">check in</span>
+            </button>
+          </div>
+          <aside class="joke">
+            <p class="joke__tag">Our favourite memory / inside joke</p>
+            <p class="joke__text">You already know what I’m getting you. Don’t pretend to be surprised.</p>
+          </aside>
+        </div>
+      </div>
+    </li>
+
+    <!-- ── 8 · Future ── -->
+    <li class="tl-item" style="--tl-accent:#7ba3dc" data-since="2027-06-08T00:00:00+07:00">
+      <span class="tl-node" aria-hidden="true"></span>
+      <button class="tl-card" type="button" aria-expanded="false">
+        <span class="tl-card__eyebrow">Everything After</span>
+        <span class="tl-card__title">Our Future</span>
+        <span class="tl-card__desc">Our story continues…</span>
+        <span class="tl-card__plus" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="tl-card__hint" aria-hidden="true">open</span>
+      </button>
+
+      <div class="tl-rich" hidden>
+        <header class="focus__head"><span class="focus__date">Everything After</span>
+        <h2 class="focus__title">Our Future</h2></header><div class="focus__media">
+          <div class="gallery">
+            <div class="gallery__tile gallery__tile--wide"><span class="gallery__label">the next chapter</span></div>
+            <div class="gallery__tile"><span class="gallery__label">blank</span></div>
+            <div class="gallery__tile"><span class="gallery__label">blank</span></div>
+          </div>
+        </div>
+        <div class="focus__body">
+          <div class="focus__story">
+            <p>Our story continues — on every road, in every timezone, at every 12 AM that finds us still awake together.</p>
+          </div>
+          <aside class="joke">
+            <p class="joke__tag">Our favourite memory / inside joke</p>
+            <p class="joke__text">Whatever comes next, I already know I want it with you.</p>
+          </aside>
+        </div>
+      </div>
+    </li>
+
+  </ol>
+</section>
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════
+     LIGHTBOX
+     ══════════════════════════════════════════════════════════════ -->
+<dialog class="focus" id="focusDialog" aria-label="Milestone detail">
+  <div class="focus__panel" id="focusPanel">
+    <div class="focus__bar">
+      <span class="focus__bar-eyebrow" id="focusBarEyebrow">timeline</span>
+      <button class="focus__close" type="button" id="focusClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <!-- rich content injected here -->
+    <div class="focus__grid" id="focusContent"></div>
+  </div>
+</dialog>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   ANNIVERSARY TIMELINE — vanilla, dependency-free
+   ─────────────────────────────────────────────────────────────────
+   Only `transform` and `opacity` are ever transitioned/animated, so
+   nothing on the page can cause a reflow. All scroll work is batched
+   into a single rAF callback, and IntersectionObserver does the rest.
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── 0. “The Beginning” ───────────────────────────────────────
+     Change this one ISO string to move the whole counter.           */
+  var BEGINNING = new Date('2025-06-07T21:00:00+07:00');
+
+  /* ══════════════════════════════════════════════════════════════
+     1. LIVE ELAPSED-TIME COUNTER
+     ══════════════════════════════════════════════════════════════ */
+  var OUT = {
+    years:   document.getElementById('c-years'),
+    months:  document.getElementById('c-months'),
+    days:    document.getElementById('c-days'),
+    hours:   document.getElementById('c-hours'),
+    minutes: document.getElementById('c-minutes'),
+    since:   document.getElementById('c-since')
+  };
+
+  function daysInMonth(year, monthIndex) {
+    return new Date(year, monthIndex + 1, 0).getDate();
+  }
+
+  /* calendar-correct years/months/days, then hours/minutes remainder */
+  function elapsed(from, to) {
+    var y = to.getFullYear() - from.getFullYear();
+    var mo = to.getMonth() - from.getMonth();
+    var d = to.getDate() - from.getDate();
+    var h = to.getHours() - from.getHours();
+    var mi = to.getMinutes() - from.getMinutes();
+
+    if (mi < 0) { mi += 60; h -= 1; }
+    if (h < 0)  { h += 24; d -= 1; }
+    if (d < 0)  { d += daysInMonth(to.getFullYear(), to.getMonth() - 1); mo -= 1; }
+    if (mo < 0) { mo += 12; y -= 1; }
+    return { y: y, mo: mo, d: d, h: h, mi: mi };
+  }
+
+  var lastSignature = '';
+
+  function renderCounter() {
+    var now = new Date();
+    var t = elapsed(BEGINNING, now);
+
+    /* only touch the DOM when a displayed value actually changes */
+    var signature = [t.y, t.mo, t.d, t.h, t.mi].join('|');
+    if (signature === lastSignature) return;
+    lastSignature = signature;
+
+    OUT.years.textContent   = t.y;
+    OUT.months.textContent  = t.mo;
+    OUT.days.textContent    = t.d;
+    OUT.hours.textContent   = t.h;
+    OUT.minutes.textContent = t.mi;
+
+    OUT.since.textContent = 'counting from ' + BEGINNING.toLocaleDateString(
+      undefined, { day: 'numeric', month: 'long', year: 'numeric' }
+    );
+  }
+
+  renderCounter();
+  window.setInterval(renderCounter, 1000);
+
+  /* ══════════════════════════════════════════════════════════════
+     2. TIMELINE CORE
+     ══════════════════════════════════════════════════════════════ */
+  var section  = document.getElementById('timeline');
+  var list     = document.getElementById('timelineList');
+  var path     = document.getElementById('spinePath');
+  var glow     = document.getElementById('spineGlow');
+  var gradTop  = document.getElementById('spineStart');
+  var gradBot  = document.getElementById('spineEnd');
+
+  var items  = Array.prototype.slice.call(list.querySelectorAll('.tl-item'));
+  var cards  = items.map(function (i) { return i.querySelector('.tl-card'); });
+  var nodes  = items.map(function (i) { return i.querySelector('.tl-node'); });
+  var active = -1;
+
+  /* ── 2a. build the spine path from the real node positions ────── */
+  var pathLength = 0;
+
+  function buildSpine() {
+    if (!nodes.length) return;
+    var base = section.getBoundingClientRect();
+    var pts = nodes.map(function (n) {
+      var r = n.getBoundingClientRect();
+      return {
+        x: (r.left + r.width / 2) - base.left,
+        y: (r.top + r.height / 2) - base.top
+      };
+    });
+
+    /* polyline through every node centre — re-issued on every layout
+       change, so the spine can morph freely */
+    var d = pts.map(function (p, i) {
+      return (i ? 'L' : 'M') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
+    }).join(' ');
+
+    path.setAttribute('d', d);
+    glow.setAttribute('d', d);
+
+    try { pathLength = path.getTotalLength(); } catch (e) { pathLength = 0; }
+
+    path.style.strokeDasharray  = pathLength;
+    glow.style.strokeDasharray  = pathLength;
+    drawSpine();
+  }
+
+  /* draw the line up to (and just past) the in-focus node */
+  function drawSpine() {
+    if (!pathLength) return;
+    var base = section.getBoundingClientRect();
+
+    /* progress = how far the viewport has travelled through the section */
+    var centre = window.innerHeight * 0.5;
+    var progress = (centre - base.top) / (base.height || 1);
+    progress = Math.max(0, Math.min(1, progress));
+
+    /* always lead slightly ahead of the current focal card */
+    var lead = 0.04;
+    var visible = pathLength * Math.min(1, progress + lead);
+
+    var offset = pathLength - visible;
+    path.style.strokeDashoffset = offset;
+    glow.style.strokeDashoffset = offset;
+  }
+
+  /* ── 2b. which milestone owns the viewport right now ──────────── */
+  function computeActive() {
+    var centre = window.innerHeight * 0.42;
+    var best = 0, bestDist = Infinity;
+    for (var i = 0; i < nodes.length; i++) {
+      var r = nodes[i].getBoundingClientRect();
+      var dist = Math.abs((r.top + r.height / 2) - centre);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    }
+    setActive(best);
+  }
+
+  function setActive(index) {
+    if (index === active) return;
+    active = index;
+
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.toggle('is-active', i === index);
+    }
+
+    /* recolour the spine to the focal milestone’s accent */
+    var accent = getComputedStyle(items[index]).getPropertyValue('--tl-accent').trim();
+    if (accent) {
+      gradTop.setAttribute('stop-color', accent);
+      gradBot.setAttribute('stop-color', accent);
+    }
+  }
+
+  /* ── 2c. one rAF-batched scroll handler for everything ────────── */
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function () {
+      drawSpine();
+      computeActive();
+      ticking = false;
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function () {
+    buildSpine();
+    computeActive();
+  });
+
+  /* ── 2d. entry animation — IntersectionObserver, reveal once ──── */
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.15 });
+
+    items.forEach(function (item) { io.observe(item); });
+  } else {
+    items.forEach(function (item) { item.classList.add('is-in'); });
+  }
+
+  /* ── 2e. keyboard entry for cards (Enter/Space) ───────────────── */
+  cards.forEach(function (card) {
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openFocus(card);
+      }
+    });
+  });
+
+  /* ══════════════════════════════════════════════════════════════
+     3. LIGHTBOX — native <dialog>
+     ══════════════════════════════════════════════════════════════ */
+  var dlg      = document.getElementById('focusDialog');
+  var dlgBody  = document.getElementById('focusContent');
+  var dlgBar   = document.getElementById('focusBarEyebrow');
+  var dlgClose = document.getElementById('focusClose');
+  var lastTrigger = null;
+
+  function openFocus(card) {
+    var item = card.closest('.tl-item');
+    var rich = item.querySelector('.tl-rich');
+    if (!rich) return;
+
+    lastTrigger = card;
+
+    /* accent + date flow into the dialog via the same custom property */
+    var accent = getComputedStyle(item).getPropertyValue('--tl-accent').trim();
+    dlg.style.setProperty('--tl-accent', accent || '#2f80d8');
+    dlgBar.textContent = (item.querySelector('.tl-card__eyebrow') || {}).textContent || 'timeline';
+
+    /* clone the rich block out of the card and into the dialog */
+    dlgBody.innerHTML = '';
+    var clone = rich.cloneNode(true);
+    clone.removeAttribute('hidden');
+    dlgBody.appendChild(clone);
+
+    card.setAttribute('aria-expanded', 'true');
+
+    /* the cloned title becomes the dialog's accessible name */
+    var clonedTitle = clone.querySelector('.focus__title');
+    if (clonedTitle) {
+      clonedTitle.id = 'focusTitle';
+      dlg.setAttribute('aria-labelledby', 'focusTitle');
+    }
+
+    dlg.showModal();
+    /* two frames so the browser has painted the closed state first */
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        dlg.classList.add('is-open');
+      });
+    });
+
+    dlgClose.focus();
+  }
+
+  function closeFocus() {
+    dlg.classList.remove('is-open');
+
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      dlg.close();
+      dlgBody.innerHTML = '';
+      if (lastTrigger) lastTrigger.setAttribute('aria-expanded', 'false');
+      if (lastTrigger) lastTrigger.focus();
+    }
+
+    dlg.addEventListener('transitionend', finish, { once: true });
+    /* safety net in case the transition never fires */
+    window.setTimeout(finish, 600);
+  }
+
+  /* card click → open */
+  cards.forEach(function (card) {
+    card.addEventListener('click', function () { openFocus(card); });
+  });
+
+  dlgClose.addEventListener('click', closeFocus);
+
+  /* Esc → animate out instead of snapping shut */
+  dlg.addEventListener('cancel', function (e) {
+    e.preventDefault();
+    closeFocus();
+  });
+
+  /* click the backdrop (the dialog element itself) → close */
+  dlg.addEventListener('click', function (e) {
+    if (e.target === dlg) closeFocus();
+  });
+
+  /* location check-ins — toggle “stamped” state */
+  dlgBody.addEventListener('click', function (e) {
+    var place = e.target.closest('.place');
+    if (!place) return;
+    var on = place.getAttribute('aria-pressed') === 'true';
+    place.setAttribute('aria-pressed', on ? 'false' : 'true');
+  });
+
+  /* ══════════════════════════════════════════════════════════════
+     4. BOOT
+     ══════════════════════════════════════════════════════════════ */
+  buildSpine();
+  computeActive();
+  onScroll();
+
+  /* fonts arrive after first paint and shift metrics — rebuild once */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { buildSpine(); });
+  }
+})();
+</script>
+</body>
+</html>

@@ -128,7 +128,7 @@ function Options() {
                 className="font-romantic type-title ink-mark inline-block"
                 delay={0.2}
               />
-              <p className="font-romantic-alt text-rose-600 type-lead italic mt-3">
+              <p className="text-rose-600 type-lead mt-3">
                 every path leads to more of us
               </p>
             </div>

@@ -131,7 +131,7 @@ function AudioPulseLetter({ text }: { text: string }) {
     <div className="relative rounded-xl border-2 border-rose-700 bg-cream-50 overflow-hidden">
       <ScrollArea className="h-[clamp(14rem,40vh,26rem)]">
         <p
-          className="font-romantic-alt text-sage-700 type-body whitespace-pre-line px-4 py-3"
+          className="text-sage-700 type-body px-4 py-3"
           style={{
             textShadow: `0 0 ${(6 + beat * 14).toFixed(1)}px rgba(47, 128, 216, ${glow.toFixed(3)})`,
           }}
