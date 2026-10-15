@@ -185,6 +185,22 @@
     line-height: 1.1;
   }
 
+  /* Letter heading pair. "happy anniversary" is the emphasised line;
+     "to my amore" sits above it, offset right and exactly 3px smaller
+     at every viewport, so the hierarchy is deliberate rather than
+     accidental. */
+  .msg-anniversary {
+    font-family: var(--font-romantic);
+    font-size: clamp(2.4rem, 1.5rem + 3.2vw, 4.4rem);
+    line-height: 1.02;
+  }
+
+  .msg-amore {
+    font-family: var(--font-romantic-alt);
+    font-size: calc(clamp(2.4rem, 1.5rem + 3.2vw, 4.4rem) - 3px);
+    line-height: 1.05;
+  }
+
   /* Opt-in script roles */
   .type-accent {
     font-family: var(--font-script);

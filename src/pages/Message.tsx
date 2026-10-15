@@ -61,17 +61,25 @@ function Message() {
 
                 {/* Letter */}
                 <StaggerItem direction="right" delay={0.2} className="w-full md:w-1/2 flex flex-col">
-                  <div className="text-center mb-6">
-                    <RevealText
-                      text="to my amore"
-                      className="font-romantic type-title text-rose-700"
-                      delay={0.3}
-                    />
-                    <RevealText
-                      text="happy anniversary"
-                      className="font-romantic-alt text-rose-600 type-lead italic mt-1"
-                      delay={0.4}
-                    />
+                  {/* RevealText renders an inline-block span, so consecutive
+                      ones flow side by side. Wrap each in a block to stack. */}
+                  {/* RevealText renders an inline-block span, so consecutive
+                      ones flow side by side. Wrap each in a block to stack. */}
+                  <div className="mb-7 flex flex-col items-start text-left">
+                    <div className="ml-4 sm:ml-10">
+                      <RevealText
+                        text="to my amore..."
+                        className="msg-amore text-rose-600 italic"
+                        delay={0.3}
+                      />
+                    </div>
+                    <div className="ml-8 sm:ml-20">
+                      <RevealText
+                        text="happy anniversary"
+                        className="msg-anniversary text-rose-700"
+                        delay={0.4}
+                      />
+                    </div>
                   </div>
 
                   {/* Audio-reactive fade mask (simulated beat) */}

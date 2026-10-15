@@ -7,6 +7,8 @@ import date from "../assets/date.png";
 import moments from "../assets/moments.png";
 import together from "../assets/together.png";
 import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
+import DateWheel from '@/components/DateWheel';
+import QuoteStrip from '@/components/QuoteStrip';
 
 interface CardProps {
   imgSrc: string;
@@ -158,6 +160,27 @@ function Options() {
             </button>
           </div>
         </ScrollReveal>
+
+        {/* empty band, now populated: a quote strip + a little spin game */}
+        <section className="relative z-10 px-4 pb-4" aria-label="A quote and a little game">
+          <div className="max-w-5xl mx-auto flex flex-col items-center gap-14 sm:gap-16">
+            <ScrollReveal direction="up" delay={0.1} className="w-full">
+              <QuoteStrip />
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.2} className="w-full">
+              <div className="flex flex-col items-center gap-8">
+                <div className="text-center">
+                  <p className="press-label mb-2">can't decide?</p>
+                  <h2 className="font-romantic type-title text-rose-700">
+                    let the wheel choose
+                  </h2>
+                </div>
+                <DateWheel />
+              </div>
+            </ScrollReveal>
+          </div>
+        </section>
 
         <footer className="relative z-10 py-8 px-4 flex justify-center">
           <ScrollReveal direction="up" delay={1}>
