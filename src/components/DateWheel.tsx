@@ -127,6 +127,73 @@ export default function DateWheel() {
                   </svg>
                 </motion.button>
               )}
+              
+              <motion.div
+                ref={wheelRef}
+                className="relative rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg [will-change:transform]"
+                animate={{ rotate: rotation, scale: spinning ? 1 : (hovering ? 1.05 : 1) }}
+                transition={{
+                  rotate: reduced ? { duration: 0.9, ease: "easeOut" } : { duration: SPIN_MS / 1000, ease: [0.12, 0.72, 0.06, 1] },
+                  scale: { duration: 0.3, ease: "easeOut" }
+                }}
+                onMouseEnter={() => setHovering(true)}
+                onMouseLeave={() => setHovering(false)}
+                onClick={spinning ? undefined : handleClose}
+              >
+                <svg
+                  viewBox="0 0 280 280"
+                  className="block h-[clamp(16rem,40vw,22rem)] w-[clamp(16rem,40vw,22rem)]"
+                  role="img"
+                  aria-label="Wheel of date ideas"
+                >
+                  {IDEAS.map((idea, i) => {
+                    const angle = i * 45;
+                    const textAngle = i * 45 + 22.5;
+                    const textRadius = 110;
+                    const textX = 140 + 110 * Math.cos(((i * 45 + 22.5 - 90) * Math.PI) / 180);
+                    const textY = 140 + 110 * Math.sin((i * 45 + 22.5 - 90) * Math.PI / 180);
+                    
+                    const lit = picked === i;
+                    return (
+                      <g key={i}>
+                        <path
+                          d={wedge(i, 140, 160, 40)}
+                          fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
+                          stroke="#123a6b"
+                          strokeWidth="1.6"
+                        />
+                        <line
+                          x1={140} y1={140}
+                          x2={140 + 110 * Math.cos(i * 45 * Math.PI / 180)}
+                          y2={140 + 160 * Math.sin(i * 45 * Math.PI / 180)}
+                          stroke="#123a6b" strokeWidth="1.4"
+                        />
+                        <text
+                          x={textX}
+                          y={textY}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fill={lit ? "#f4f8fd" : "#123a6b"}
+                          style={{
+                            font: "700 14px 'Plus Jakarta Sans', system-ui, sans-serif",
+                            letterSpacing: "0.3px",
+                            userSelect: "none"
+                          }}
+                        >
+                          {idea.split("\n").map((ln, k) => (
+                            <tspan key={k} x={textX} dy={k === 0 ? -8 : 16}>{ln}</tspan>
+                          ))}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  <circle cx="140" cy="140" r={40} fill="#f4f8fd" stroke="#123a6b" strokeWidth="2.6" />
+                  <text x="140" y="146" textAnchor="middle" fill="#2f80d8" style={{ font: "400 32px 'Great Vibes', cursive" }}>
+                    us
+                  </text>
+                </svg>
+              </motion.div>
             </motion.div>
           </motion.div>
         )}
