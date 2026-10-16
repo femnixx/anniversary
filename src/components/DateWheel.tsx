@@ -31,7 +31,7 @@ const N = 8;
 const STEP = 360 / N;
 const SPIN_MS = 4000;
 
-function polar(deg: number, r: number, center: number = 140) {
+function polar(deg: number, r: number, center: number = 160) {
   const a = ((deg - 90) * Math.PI) / 180;
   return [center + r * Math.cos(a), center + r * Math.sin(a)];
 }
@@ -141,32 +141,32 @@ export default function DateWheel() {
                 onClick={spinning ? undefined : handleClose}
               >
                 <svg
-                  viewBox="0 0 280 280"
-                  className="block h-[clamp(16rem,40vw,22rem)] w-[clamp(16rem,40vw,22rem)]"
+                  viewBox="0 0 320 320"
+                  className="block h-[clamp(20rem,40vw,24rem)] w-[clamp(20rem,40vw,24rem)]"
                   role="img"
                   aria-label="Wheel of date ideas"
                 >
                   {IDEAS.map((idea, i) => {
                     const angle = i * 45;
                     const textAngle = i * 45 + 22.5;
-                    const textRadius = 110;
-                    const textX = 140 + 110 * Math.cos(((i * 45 + 22.5 - 90) * Math.PI) / 180);
-                    const textY = 140 + 110 * Math.sin((i * 45 + 22.5 - 90) * Math.PI / 180);
+                    const textRadius = 120;
+                    const textX = 160 + 120 * Math.cos(((i * 45 + 22.5 - 90) * Math.PI) / 180);
+                    const textY = 160 + 120 * Math.sin((i * 45 + 22.5 - 90) * Math.PI / 180);
                     
                     const lit = picked === i;
                     return (
                       <g key={i}>
                         <path
-                          d={wedge(i, 140, 160, 40)}
+                          d={wedge(i, 160, 180, 50)}
                           fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
                           stroke="#123a6b"
-                          strokeWidth="1.6"
+                          strokeWidth="2.0"
                         />
                         <line
-                          x1={140} y1={140}
-                          x2={140 + 110 * Math.cos(i * 45 * Math.PI / 180)}
-                          y2={140 + 160 * Math.sin(i * 45 * Math.PI / 180)}
-                          stroke="#123a6b" strokeWidth="1.4"
+                          x1={160} y1={160}
+                          x2={160 + 120 * Math.cos(i * 45 * Math.PI / 180)}
+                          y2={160 + 180 * Math.sin(i * 45 * Math.PI / 180)}
+                          stroke="#123a6b" strokeWidth="1.6"
                         />
                         <text
                           x={textX}
@@ -175,21 +175,21 @@ export default function DateWheel() {
                           dominantBaseline="middle"
                           fill={lit ? "#f4f8fd" : "#123a6b"}
                           style={{
-                            font: "700 14px 'Plus Jakarta Sans', system-ui, sans-serif",
-                            letterSpacing: "0.3px",
+                            font: "700 20px 'Plus Jakarta Sans', system-ui, sans-serif",
+                            letterSpacing: "0.5px",
                             userSelect: "none"
                           }}
                         >
                           {idea.split("\n").map((ln, k) => (
-                            <tspan key={k} x={textX} dy={k === 0 ? -8 : 16}>{ln}</tspan>
+                            <tspan key={k} x={textX} dy={k === 0 ? -12 : 24}>{ln}</tspan>
                           ))}
                         </text>
                       </g>
                     );
                   })}
 
-                  <circle cx="140" cy="140" r={40} fill="#f4f8fd" stroke="#123a6b" strokeWidth="2.6" />
-                  <text x="140" y="146" textAnchor="middle" fill="#2f80d8" style={{ font: "400 32px 'Great Vibes', cursive" }}>
+                  <circle cx="160" cy="160" r={50} fill="#f4f8fd" stroke="#123a6b" strokeWidth="3.0" />
+                  <text x="160" y="166" textAnchor="middle" fill="#2f80d8" style={{ font: "400 36px 'Great Vibes', cursive" }}>
                     us
                   </text>
                 </svg>
@@ -208,7 +208,7 @@ export default function DateWheel() {
           <motion.div
             ref={wheelRef}
             className="relative rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg [will-change:transform] cursor-pointer"
-            animate={{ rotate: rotation, scale: spinning ? 1 : (expanded ? 1.8 : (hovering ? 1.05 : 1)) }}
+            animate={{ rotate: rotation, scale: spinning ? 1 : (expanded ? 2.0 : (hovering ? 1.05 : 1)) }}
             transition={{
               rotate: reduced ? { duration: 0.9, ease: "easeOut" } : { duration: SPIN_MS / 1000, ease: [0.12, 0.72, 0.06, 1] },
               scale: { duration: 0.3, ease: "easeOut" }
@@ -218,32 +218,32 @@ export default function DateWheel() {
             onMouseLeave={() => setHovering(false)}
           >
             <svg
-              viewBox="0 0 280 280"
-              className="block h-[clamp(16rem,40vw,22rem)] w-[clamp(16rem,40vw,22rem)]"
+              viewBox="0 0 320 320"
+              className="block h-[clamp(20rem,40vw,24rem)] w-[clamp(20rem,40vw,24rem)]"
               role="img"
               aria-label="Wheel of date ideas"
             >
               {IDEAS.map((idea, i) => {
                 const angle = i * 45;
                 const textAngle = i * 45 + 22.5;
-                const textRadius = 110;
-                const textX = 140 + 110 * Math.cos(((i * 45 + 22.5 - 90) * Math.PI) / 180);
-                const textY = 140 + 110 * Math.sin((i * 45 + 22.5 - 90) * Math.PI / 180);
+                const textRadius = 120;
+                const textX = 160 + 120 * Math.cos(((i * 45 + 22.5 - 90) * Math.PI) / 180);
+                const textY = 160 + 120 * Math.sin((i * 45 + 22.5 - 90) * Math.PI / 180);
                 
                 const lit = picked === i;
                 return (
                   <g key={i}>
                     <path
-                      d={wedge(i, 140, 160, 40)}
+                      d={wedge(i, 160, 180, 50)}
                       fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
                       stroke="#123a6b"
-                      strokeWidth="1.6"
+                      strokeWidth="2.0"
                     />
                     <line
-                      x1={140} y1={140}
-                      x2={140 + 110 * Math.cos(i * 45 * Math.PI / 180)}
-                      y2={140 + 160 * Math.sin(i * 45 * Math.PI / 180)}
-                      stroke="#123a6b" strokeWidth="1.4"
+                      x1={160} y1={160}
+                      x2={160 + 120 * Math.cos(i * 45 * Math.PI / 180)}
+                      y2={160 + 180 * Math.sin(i * 45 * Math.PI / 180)}
+                      stroke="#123a6b" strokeWidth="1.6"
                     />
                     <text
                       x={textX}
@@ -252,21 +252,21 @@ export default function DateWheel() {
                       dominantBaseline="middle"
                       fill={lit ? "#f4f8fd" : "#123a6b"}
                       style={{
-                        font: "700 14px 'Plus Jakarta Sans', system-ui, sans-serif",
-                        letterSpacing: "0.3px",
+                        font: "700 20px 'Plus Jakarta Sans', system-ui, sans-serif",
+                        letterSpacing: "0.5px",
                         userSelect: "none"
                       }}
                     >
                       {idea.split("\n").map((ln, k) => (
-                        <tspan key={k} x={textX} dy={k === 0 ? -8 : 16}>{ln}</tspan>
+                        <tspan key={k} x={textX} dy={k === 0 ? -12 : 24}>{ln}</tspan>
                       ))}
                     </text>
                   </g>
                 );
               })}
 
-              <circle cx="140" cy="140" r={40} fill="#f4f8fd" stroke="#123a6b" strokeWidth="2.6" />
-              <text x="140" y="146" textAnchor="middle" fill="#2f80d8" style={{ font: "400 32px 'Great Vibes', cursive" }}>
+              <circle cx="160" cy="160" r={50} fill="#f4f8fd" stroke="#123a6b" strokeWidth="3.0" />
+              <text x="160" y="166" textAnchor="middle" fill="#2f80d8" style={{ font: "400 36px 'Great Vibes', cursive" }}>
                 us
               </text>
             </svg>
