@@ -20,20 +20,19 @@ import { motion } from "framer-motion";
 
 interface DateIdea {
   id: string;
-  summary: string;
+  emoji: string;
   description: string;
-  icon: string;
 }
 
 const IDEAS: DateIdea[] = [
-  { id: "sunrise", summary: "Sunrise Drive", description: "sunrise drive with no map", icon: "🌅" },
-  { id: "cafe", summary: "Café Date", description: "that café we keep mentioning", icon: "☕" },
-  { id: "movie", summary: "Movie Night", description: "movie night, your pick", icon: "🎬" },
-  { id: "walk", summary: "NoDest Walk", description: "a walk with no destination", icon: "🚶" },
-  { id: "cook", summary: "New Recipe", description: "cook something we've never tried", icon: "🍳" },
-  { id: "karaoke", summary: "Karaoke Badly", description: "karaoke, badly", icon: "🎤" },
-  { id: "market", summary: "Street Food", description: "market run + street food", icon: "🍢" },
-  { id: "stayin", summary: "Stay In", description: "stay in and do absolutely nothing", icon: "🛋️" },
+  { id: "sunrise", emoji: "🚗", description: "sunrise drive with no map" },
+  { id: "cafe", emoji: "☕", description: "that café we keep mentioning" },
+  { id: "movie", emoji: "🎬", description: "movie night, your pick" },
+  { id: "walk", emoji: "🚶‍♂️", description: "a walk with no destination" },
+  { id: "cook", emoji: "🍳", description: "cook something we've never tried" },
+  { id: "karaoke", emoji: "🎤", description: "karaoke, badly" },
+  { id: "market", emoji: "🍔", description: "market run + street food" },
+  { id: "stayin", emoji: "🏠", description: "stay in and do absolutely nothing" },
 ];
 
 const N = IDEAS.length;
@@ -41,7 +40,7 @@ const STEP = 360 / N;
 const C = 110; // viewBox centre
 const R_OUT = 104; // outer radius
 const R_IN = 30; // hub radius
-const R_TEXT = 76; // label radius
+const R_TEXT = R_IN + (R_OUT - R_IN) * 0.55; // emoji center radius (~71)
 
 /* Extra turns the wheel makes before it settles. */
 const SPIN_EXTRA_TURNS = 5;
@@ -154,26 +153,17 @@ const WheelSvg = ({
                 stroke="#123a6b"
                 strokeWidth="1.4"
               />
-              {/* Inner text: short summary only, positioned with radial rotation */}
+              {/* Emoji centered in the wedge — no rotation, always upright */}
               {showLabels && (
                 <text
                   x={tx}
                   y={ty}
                   textAnchor="middle"
+                  dominantBaseline="central"
                   fill={lit ? "#f4f8fd" : "#123a6b"}
-                  style={{
-                    font: "700 9.5px 'Plus Jakarta Sans', system-ui, sans-serif",
-                    letterSpacing: "0.4px",
-                    transform: `rotate(${midAngle}deg) translate(${R_TEXT - R_IN}px) rotate(${-midAngle}deg)`,
-                    transformBox: "auto",
-                    transformOrigin: "center",
-                  }}
+                  fontSize="24px"
                 >
-                  {idea.summary.split(" ").map((word, k) => (
-                    <tspan key={k} x={tx} dy={10}>
-                      {word}
-                    </tspan>
-                  ))}
+                  {idea.emoji}
                 </text>
               )}
             </g>
