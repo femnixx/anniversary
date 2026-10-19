@@ -113,149 +113,176 @@ export default function DateWheel() {
 
   return (
     <div
-      className={`relative mx-auto transition-all duration-700 ease-out ${
-        isPreviewMode
-          ? "w-[clamp(14rem,36vw,17rem)] cursor-pointer rounded-full"
-          : "w-[clamp(20rem,48vw,26rem)]"
-      }`}
+      className="relative mx-auto flex flex-col items-center gap-3"
       ref={wheelRef}
     >
-      {/* Preview mode: click the whole wheel to focus */}
-      {isPreviewMode && (
+      {/* 3. Preview vs focused: the size is driven by isPreviewMode, with
+           a smooth transition so the zoom-in reads as deliberate. */}
+      <div
+        className={`
+          relative mx-auto rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg
+          flex items-center justify-center
+          transition-all duration-700 ease-out
+          ${
+            isPreviewMode
+              ? "w-[clamp(14rem,36vw,17rem)] cursor-pointer ring-2 ring-rose-200 hover:ring-rose-400"
+              : "w-[clamp(20rem,48vw,26rem)] cursor-pointer"
+          }
+        `}
+      >
+        {/* Preview: a subtle pulse hints that the wheel is tappable */}
+        {isPreviewMode && (
+          <motion.div
+            className="absolute -inset-1.5 rounded-full border-2 border-dashed border-rose-400 opacity-50"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Pointer marker at top */}
+        <div className="absolute left-1/2 -top-2 z-10 -translate-x-1/2" aria-hidden="true">
+          <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
+        </div>
+
+        {/* Click capture: preview → focus, focused → spin */}
         <div
-          className="absolute inset-0 rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg"
-          onClick={handlePreviewClick}
-          role="button"
-          tabIndex={0}
-          aria-label="Focus the adventure wheel"
+          className="absolute inset-0 rounded-full cursor-pointer"
+          onClick={isPreviewMode ? handlePreviewClick : handleSpinClick}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
+            if (isPreviewMode && (e.key === "Enter" || e.key === " ")) {
               e.preventDefault();
               handlePreviewClick();
             }
           }}
+          role={isPreviewMode ? "button" : undefined}
+          tabIndex={isPreviewMode ? 0 : -1}
+          aria-label={isPreviewMode ? "Focus the adventure wheel" : "Spin the wheel"}
         />
-      )}
 
-      {/* The wheel ring itself — click to spin once focused */}
-      <div
-        className={`
-          relative mx-auto rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg
-          ${isPreviewMode ? "w-full h-full" : "w-full h-full scale-100"}
-          will-change-transform
-        `}
-        onClick={isPreviewMode ? undefined : handleSpinClick}
-        style={{
-          /* 4. Rotation via CSS transform with smooth transition */
-          transform: `rotate(${rotationDegree}deg)`,
-          transition: isSpinning
-            ? "transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)"
-            : reduced
-              ? "transform 0.9s ease-out"
-              : "transform 0.3s ease-out",
-        }}
-      >
-        <svg
-          viewBox="0 0 220 220"
-          className="block h-full w-full"
-          role="img"
-          aria-label="Wheel of date ideas"
-        >
-          {/* 2. Render logic: slices only in preview, labels in focused mode */}
-          {IDEAS.map((idea, i) => {
-            const lit = picked === i;
-            const midAngle = i * STEP + STEP / 2;
-            const [tx, ty] = polar(midAngle, R_TEXT);
-
-            return (
-              <g key={idea.label}>
-                <path
-                  d={wedge(i)}
-                  fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
-                  stroke="#123a6b"
-                  strokeWidth="1.6"
-                />
-                {/* Slice divider lines */}
-                <line
-                  x1={polar(i * STEP, R_IN)[0]}
-                  y1={polar(i * STEP, R_IN)[1]}
-                  x2={polar(i * STEP, R_OUT)[0]}
-                  y2={polar(i * STEP, R_OUT)[1]}
-                  stroke="#123a6b"
-                  strokeWidth="1.4"
-                />
-                {/* Labels only in interactive / focused mode */}
-                {!isPreviewMode && (
-                  <text
-                    x={tx}
-                    y={ty}
-                    textAnchor="middle"
-                    fill={lit ? "#f4f8fd" : "#123a6b"}
-                    style={{
-                      font: "700 8.4px 'Plus Jakarta Sans', system-ui, sans-serif",
-                      letterSpacing: "0.4px",
-                      /* Orient the text to read outward from the centre */
-                      transform: `rotate(${midAngle}deg) translate(${R_TEXT - R_IN}px) rotate(${-midAngle}deg)`,
-                      transformBox: "auto",
-                      transformOrigin: "center",
-                    }}
-                  >
-                    {idea.label.split(" ").map((word, k) => (
-                      <tspan key={k} x={tx} dy={9.4}>
-                        {word}
-                      </tspan>
-                    ))}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-
-          {/* Hub (always visible) */}
-          <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth="2.6" />
-          <text
-            x={C}
-            y={C + 3.6}
-            textAnchor="middle"
-            fill="#2f80d8"
-            style={{ font: "400 21px 'Great Vibes', cursive" }}
-          >
-            us
-          </text>
-
-          {/* Central SPIN button (only when focused) */}
-          {!isPreviewMode && (
-            <g>
-              <circle cx={C} cy={C} r={14} fill="#ffffff" stroke="#123a6b" strokeWidth="1.6" />
-              <text
-                x={C}
-                y={C + 4.6}
-                textAnchor="middle"
-                fill={isSpinning ? "#94a3bc" : "#2f80d8"}
-                style={{
-                  font: "700 11px 'Plus Jakarta Sans', system-ui, sans-serif",
-                  letterSpacing: "1px",
-                }}
-              >
-                {isSpinning ? "spin…" : "SPIN"}
-              </text>
-            </g>
-          )}
-        </svg>
-
-        {/* Pointer marker at top */}
+        {/* The wheel ring — rotates via transform */}
         <div
-          className="absolute left-1/2 -top-1 z-10 -translate-x-1/2"
-          aria-hidden="true"
+          className="relative rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg will-change-transform"
+          style={{
+            /* 4. Rotation via CSS transform with smooth transition */
+            transform: `rotate(${rotationDegree}deg)`,
+            transition: isSpinning
+              ? "transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)"
+              : reduced
+                ? "transform 0.9s ease-out"
+                : "transform 0.3s ease-out",
+          }}
         >
-          <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
+          <svg
+            viewBox="0 0 220 220"
+            className="block h-[clamp(11rem,32vw,15rem)] w-[clamp(11rem,32vw,15rem)]"
+            role="img"
+            aria-label="Wheel of date ideas"
+          >
+            {/* 2. Render logic: slices always visible, labels only in focused mode */}
+            {IDEAS.map((idea, i) => {
+              const lit = picked === i;
+              const midAngle = i * STEP + STEP / 2;
+              const [tx, ty] = polar(midAngle, R_TEXT);
+
+              return (
+                <g key={idea.label}>
+                  <path
+                    d={wedge(i)}
+                    fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
+                    stroke="#123a6b"
+                    strokeWidth="1.6"
+                  />
+                  {/* Slice divider lines */}
+                  <line
+                    x1={polar(i * STEP, R_IN)[0]}
+                    y1={polar(i * STEP, R_IN)[1]}
+                    x2={polar(i * STEP, R_OUT)[0]}
+                    y2={polar(i * STEP, R_OUT)[1]}
+                    stroke="#123a6b"
+                    strokeWidth="1.4"
+                  />
+                  {/* Labels only in interactive / focused mode */}
+                  {!isPreviewMode && (
+                    <text
+                      x={tx}
+                      y={ty}
+                      textAnchor="middle"
+                      fill={lit ? "#f4f8fd" : "#123a6b"}
+                      style={{
+                        font: "700 9.5px 'Plus Jakarta Sans', system-ui, sans-serif",
+                        letterSpacing: "0.4px",
+                        /* Orient the text to read outward from the centre */
+                        transform: `rotate(${midAngle}deg) translate(${R_TEXT - R_IN}px) rotate(${-midAngle}deg)`,
+                        transformBox: "auto",
+                        transformOrigin: "center",
+                      }}
+                    >
+                      {idea.label.split(" ").map((word, k) => (
+                        <tspan key={k} x={tx} dy={10}>
+                          {word}
+                        </tspan>
+                      ))}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+
+            {/* Hub (always visible) */}
+            <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth="2.6" />
+            <text
+              x={C}
+              y={C + 3.6}
+              textAnchor="middle"
+              fill="#2f80d8"
+              style={{ font: "400 21px 'Great Vibes', cursive" }}
+            >
+              us
+            </text>
+
+            {/* Central SPIN button (only when focused) */}
+            {!isPreviewMode && (
+              <g>
+                <circle
+                  cx={C}
+                  cy={C}
+                  r={isSpinning ? 18 : 20}
+                  fill={isSpinning ? "#f1f5f9" : "#ffffff"}
+                  stroke="#123a6b"
+                  strokeWidth="2"
+                />
+                <text
+                  x={C}
+                  y={C + 5.6}
+                  textAnchor="middle"
+                  fill={isSpinning ? "#94a3bc" : "#2f80d8"}
+                  style={{
+                    font: "700 12px 'Plus Jakarta Sans', system-ui, sans-serif",
+                    letterSpacing: "1.2px",
+                  }}
+                >
+                  {isSpinning ? "SPIN…" : "SPIN"}
+                </text>
+              </g>
+            )}
+          </svg>
         </div>
       </div>
+
+      {/* Hint text */}
+      <p className="press-label opacity-60 text-center">
+        {isPreviewMode
+          ? "tap the wheel to focus →"
+          : isSpinning
+            ? "where will it land…"
+            : "tap the wheel or SPIN to go"}
+      </p>
 
       {/* Result of the last spin */}
       {label && !isSpinning && (
         <motion.div
-          className="ink-chip max-w-[20rem] text-center normal-case tracking-normal mt-4 mx-auto"
+          className="ink-chip max-w-[20rem] text-center normal-case tracking-normal"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 320, damping: 22 }}
