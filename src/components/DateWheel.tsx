@@ -6,31 +6,44 @@ import { motion } from "framer-motion";
 /* ═══════════════════════════════════════════════════════════════
    Spin-for-our-next-adventure wheel.
 
-   Eight wedges drawn in SVG. Only `transform` is ever transitioned,
-   so the spin costs no layout. The landing wedge is derived from the
-   final rotation rather than random-chosen, so what you see is what
-   the maths says it is.
+   Three states:
+     PREVIEW   – a quiet, label-free disc you can click to focus.
+     FOCUSED   – the wheel scrolls into view, scales up, and the slice
+                 labels are revealed with outward-oriented text.
+     SPINNING  – a CSS rotation animation decelerates to a winner.
+
+   Only `transform` is ever transitioned on the wheel itself, so the
+   spin costs no layout. The landing wedge is derived from the final
+   rotation rather than chosen at random, so what you see is what the
+   maths says it is.
    ═══════════════════════════════════════════════════════════════ */
 
-const IDEAS = [
-  "sunrise drive\nwith no map",
-  "that café\nwe keep mentioning",
-  "movie night,\nyour pick",
-  "a walk with\nno destination",
-  "cook something\nwe've never tried",
-  "karaoke,\nbadly",
-  "market run\n+ street food",
-  "stay in and\ndo absolutely nothing",
+interface DateIdea {
+  label: string;
+  icon: string;
+}
+
+const IDEAS: DateIdea[] = [
+  { label: "sunrise drive with no map", icon: "🌅" },
+  { label: "that café we keep mentioning", icon: "☕" },
+  { label: "movie night, your pick", icon: "🎬" },
+  { label: "a walk with no destination", icon: "🚶" },
+  { label: "cook something we've never tried", icon: "🍳" },
+  { label: "karaoke, badly", icon: "🎤" },
+  { label: "market run + street food", icon: "🍢" },
+  { label: "stay in and do absolutely nothing", icon: "🛋️" },
 ];
 
 const N = IDEAS.length;
 const STEP = 360 / N;
-const C = 110;        // viewBox centre
-const R_OUT = 104;    // outer radius
-const R_IN = 30;      // hub radius
-const R_TEXT = 74;    // label radius
+const C = 110; // viewBox centre
+const R_OUT = 104; // outer radius
+const R_IN = 30; // hub radius
+const R_TEXT = 76; // label radius
 
-const SPIN_MS = 3200;
+/* Extra turns the wheel makes before it settles. */
+const SPIN_EXTRA_TURNS = 5;
+const SPIN_DURATION = 4000;
 
 function polar(deg: number, r: number) {
   const a = ((deg - 90) * Math.PI) / 180;
@@ -55,149 +68,201 @@ function wedge(i: number) {
 }
 
 export default function DateWheel() {
-  const [rotation, setRotation] = useState(0);
-  const [spinning, setSpinning] = useState(false);
+  // 1. Component states
+  const [isPreviewMode, setIsPreviewMode] = useState(true);
+  const [rotationDegree, setRotationDegree] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
   const [picked, setPicked] = useState<number | null>(null);
-  const timer = useRef<number | undefined>(undefined);
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const spinTimer = useRef<number | undefined>(undefined);
 
-  const spin = useCallback(() => {
-    if (spinning) return;
-
-    /* choose the winner first, then solve the rotation that lands it
-       under the pointer, so the result is never off by a wedge */
-    const target = Math.floor(Math.random() * N);
-
-    /* absolute angle that puts `target` at the top (0deg) */
-    const needed = (360 - (target * STEP + STEP / 2) + 360) % 360;
-
-    /* always travel forward by at least two and a half more turns, and
-       always land on an angle congruent to `needed`. The earlier
-       version normalised with % 360, which threw the turns away and
-       left the wheel nudging instead of spinning. */
-    const MIN_TURNS = 2.5;
-    const minFinal = rotation + 360 * MIN_TURNS;
-    let final = Math.floor(minFinal / 360) * 360 + needed;
-    while (final < minFinal) final += 360;
-
-    setSpinning(true);
-    setPicked(null);
-    setRotation(final);
-
-    timer.current = window.setTimeout(() => {
-      setSpinning(false);
-      setPicked(target);
-    }, SPIN_MS);
-  }, [spinning, rotation]);
+  useEffect(() => () => window.clearTimeout(spinTimer.current), []);
 
   const reduced =
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  return (
-    <div className="flex flex-col items-center gap-5">
-      {/* wheel */}
-      <div className="relative">
-        {/* pointer */}
-        <div className="absolute left-1/2 -top-1 z-20 -translate-x-1/2" aria-hidden="true">
-          <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
-        </div>
+  // 4. Rotation calculation
+  const handleSpinClick = useCallback(() => {
+    if (isSpinning) return;
 
-        <motion.div
-          className="relative rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg [will-change:transform]"
-          animate={{ rotate: rotation }}
-          /* Reduced motion still gets a tween — a zero duration applied the
-             final angle in a single frame, which reads as a glitch rather
-             than as "no animation". Shorter and gentler instead. */
-          transition={
-            reduced
-              ? { duration: 0.9, ease: "easeOut" }
-              : { duration: SPIN_MS / 1000, ease: [0.12, 0.72, 0.06, 1] }
-          }
+    /* always spin forward by at least SPIN_EXTRA_TURNS full rotations,
+       plus a random 0–359deg offset so every spin is unique */
+    const newDegrees = rotationDegree + 360 * SPIN_EXTRA_TURNS + Math.floor(Math.random() * 360);
+
+    setIsSpinning(true);
+    setPicked(null);
+    setRotationDegree(newDegrees);
+
+    spinTimer.current = window.setTimeout(() => {
+      setIsSpinning(false);
+      /* Which slice is at the top (0deg) after the final rotation? */
+      const landed = Math.round(((360 - (newDegrees % 360)) / STEP) % N);
+      setPicked((landed + N) % N);
+    }, SPIN_DURATION);
+  }, [isSpinning, rotationDegree]);
+
+  // 3. Interaction & viewport focus
+  const handlePreviewClick = useCallback(() => {
+    setIsPreviewMode(false);
+    wheelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
+
+  const label = picked !== null ? IDEAS[picked].label : null;
+
+  return (
+    <div
+      className={`relative mx-auto transition-all duration-700 ease-out ${
+        isPreviewMode
+          ? "w-[clamp(14rem,36vw,17rem)] cursor-pointer rounded-full"
+          : "w-[clamp(20rem,48vw,26rem)]"
+      }`}
+      ref={wheelRef}
+    >
+      {/* Preview mode: click the whole wheel to focus */}
+      {isPreviewMode && (
+        <div
+          className="absolute inset-0 rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg"
+          onClick={handlePreviewClick}
+          role="button"
+          tabIndex={0}
+          aria-label="Focus the adventure wheel"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handlePreviewClick();
+            }
+          }}
+        />
+      )}
+
+      {/* The wheel ring itself — click to spin once focused */}
+      <div
+        className={`
+          relative mx-auto rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg
+          ${isPreviewMode ? "w-full h-full" : "w-full h-full scale-100"}
+          will-change-transform
+        `}
+        onClick={isPreviewMode ? undefined : handleSpinClick}
+        style={{
+          /* 4. Rotation via CSS transform with smooth transition */
+          transform: `rotate(${rotationDegree}deg)`,
+          transition: isSpinning
+            ? "transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)"
+            : reduced
+              ? "transform 0.9s ease-out"
+              : "transform 0.3s ease-out",
+        }}
+      >
+        <svg
+          viewBox="0 0 220 220"
+          className="block h-full w-full"
+          role="img"
+          aria-label="Wheel of date ideas"
         >
-          <svg viewBox="0 0 220 220" className="block h-[clamp(13rem,32vw,17rem)] w-[clamp(13rem,32vw,17rem)]" role="img" aria-label="Wheel of date ideas">
-            {IDEAS.map((idea, i) => {
-              const [tx, ty] = polar(i * STEP + STEP / 2, R_TEXT);
-              const [line0x, line0y] = polar(i * STEP, R_IN);
-              const [line1x, line1y] = polar(i * STEP, R_OUT);
-              const lit = picked === i;
-              return (
-                <g key={idea}>
-                  <path
-                    d={wedge(i)}
-                    fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
-                    stroke="#123a6b"
-                    strokeWidth="1.6"
-                  />
-                  <line
-                    x1={line0x} y1={line0y} x2={line1x} y2={line1y}
-                    stroke="#123a6b" strokeWidth="1.4"
-                  />
+          {/* 2. Render logic: slices only in preview, labels in focused mode */}
+          {IDEAS.map((idea, i) => {
+            const lit = picked === i;
+            const midAngle = i * STEP + STEP / 2;
+            const [tx, ty] = polar(midAngle, R_TEXT);
+
+            return (
+              <g key={idea.label}>
+                <path
+                  d={wedge(i)}
+                  fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
+                  stroke="#123a6b"
+                  strokeWidth="1.6"
+                />
+                {/* Slice divider lines */}
+                <line
+                  x1={polar(i * STEP, R_IN)[0]}
+                  y1={polar(i * STEP, R_IN)[1]}
+                  x2={polar(i * STEP, R_OUT)[0]}
+                  y2={polar(i * STEP, R_OUT)[1]}
+                  stroke="#123a6b"
+                  strokeWidth="1.4"
+                />
+                {/* Labels only in interactive / focused mode */}
+                {!isPreviewMode && (
                   <text
-                    x={tx} y={ty}
+                    x={tx}
+                    y={ty}
                     textAnchor="middle"
                     fill={lit ? "#f4f8fd" : "#123a6b"}
                     style={{
                       font: "700 8.4px 'Plus Jakarta Sans', system-ui, sans-serif",
                       letterSpacing: "0.4px",
+                      /* Orient the text to read outward from the centre */
+                      transform: `rotate(${midAngle}deg) translate(${R_TEXT - R_IN}px) rotate(${-midAngle}deg)`,
+                      transformBox: "auto",
+                      transformOrigin: "center",
                     }}
                   >
-                    {idea.split("\n").map((ln, k) => (
-                      <tspan key={k} x={tx} dy={k === 0 ? -3.4 : 9.4}>{ln}</tspan>
+                    {idea.label.split(" ").map((word, k) => (
+                      <tspan key={k} x={tx} dy={9.4}>
+                        {word}
+                      </tspan>
                     ))}
                   </text>
-                </g>
-              );
-            })}
+                )}
+              </g>
+            );
+          })}
 
-            {/* hub */}
-            <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth="2.6" />
-            <text x={C} y={C + 3.6} textAnchor="middle" fill="#2f80d8"
-              style={{ font: "400 21px 'Great Vibes', cursive" }}>
-              us
-            </text>
-          </svg>
-        </motion.div>
-      </div>
-
-      <motion.button
-        type="button"
-        className="romantic-button romantic-button-primary"
-        onClick={spin}
-        disabled={spinning}
-        whileTap={{ scale: 0.97 }}
-      >
-        <span className="flex items-center gap-2 font-ui">
-          {spinning ? (
-            "spinning…"
-          ) : (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M21 12a9 9 0 1 1-3.2-6.9M21 3v5h-5" />
-              </svg>
-              spin for our next adventure
-            </>
-          )}
-        </span>
-      </motion.button>
-
-      <div className="min-h-[3.5rem] flex items-center justify-center" aria-live="polite">
-        {picked !== null ? (
-          <motion.div
-            className="ink-chip max-w-[22rem] text-center normal-case tracking-normal"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 320, damping: 22 }}
+          {/* Hub (always visible) */}
+          <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth="2.6" />
+          <text
+            x={C}
+            y={C + 3.6}
+            textAnchor="middle"
+            fill="#2f80d8"
+            style={{ font: "400 21px 'Great Vibes', cursive" }}
           >
-            <span className="normal-case">{IDEAS[picked].replace("\n", " ")}</span>
-          </motion.div>
-        ) : (
-          <p className="type-sm text-sage-500 text-center max-w-xs">
-            {spinning ? "where will it land…" : "no arguing with the wheel"}
-          </p>
-        )}
+            us
+          </text>
+
+          {/* Central SPIN button (only when focused) */}
+          {!isPreviewMode && (
+            <g>
+              <circle cx={C} cy={C} r={14} fill="#ffffff" stroke="#123a6b" strokeWidth="1.6" />
+              <text
+                x={C}
+                y={C + 4.6}
+                textAnchor="middle"
+                fill={isSpinning ? "#94a3bc" : "#2f80d8"}
+                style={{
+                  font: "700 11px 'Plus Jakarta Sans', system-ui, sans-serif",
+                  letterSpacing: "1px",
+                }}
+              >
+                {isSpinning ? "spin…" : "SPIN"}
+              </text>
+            </g>
+          )}
+        </svg>
+
+        {/* Pointer marker at top */}
+        <div
+          className="absolute left-1/2 -top-1 z-10 -translate-x-1/2"
+          aria-hidden="true"
+        >
+          <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
+        </div>
       </div>
+
+      {/* Result of the last spin */}
+      {label && !isSpinning && (
+        <motion.div
+          className="ink-chip max-w-[20rem] text-center normal-case tracking-normal mt-4 mx-auto"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 320, damping: 22 }}
+        >
+          <span className="normal-case">{label}</span>
+        </motion.div>
+      )}
     </div>
   );
 }
