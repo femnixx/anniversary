@@ -6,31 +6,34 @@ import { motion } from "framer-motion";
 /* ==================================================================
    Spin-for-our-next-adventure wheel.
 
-   Three states:
-     PREVIEW   – a quiet, label-free disc you can click to focus.
-     FOCUSED   – fullscreen modal with the large wheel and labels.
-     SPINNING  – a CSS rotation animation decelerates to a winner.
+   States:
+     PREVIEW  – a quiet, label-free disc you can click to focus.
+     FULLSCREEN – fixed overlay with dimmed backdrop; the wheel spins
+                  with decelerating CSS rotation and lands on a winner.
+     RESULT  – the winning description appears as a headline below.
+                Re-spin any number of times. Close → back to PREVIEW.
 
    Only `transform` is ever transitioned on the wheel itself, so the
    spin costs no layout. The landing wedge is derived from the final
-   rotation rather than chosen at random, so what you see is what the
-   maths says it is.
+   rotation rather than chosen at random.
    ================================================================== */
 
 interface DateIdea {
-  label: string;
+  id: string;
+  summary: string;
+  description: string;
   icon: string;
 }
 
 const IDEAS: DateIdea[] = [
-  { label: "sunrise drive with no map", icon: "🌅" },
-  { label: "that café we keep mentioning", icon: "☕" },
-  { label: "movie night, your pick", icon: "🎬" },
-  { label: "a walk with no destination", icon: "🚶" },
-  { label: "cook something we've never tried", icon: "🍳" },
-  { label: "karaoke, badly", icon: "🎤" },
-  { label: "market run + street food", icon: "🍢" },
-  { label: "stay in and do absolutely nothing", icon: "🛋️" },
+  { id: "sunrise", summary: "Sunrise Drive", description: "sunrise drive with no map", icon: "🌅" },
+  { id: "cafe", summary: "Café Date", description: "that café we keep mentioning", icon: "☕" },
+  { id: "movie", summary: "Movie Night", description: "movie night, your pick", icon: "🎬" },
+  { id: "walk", summary: "NoDest Walk", description: "a walk with no destination", icon: "🚶" },
+  { id: "cook", summary: "New Recipe", description: "cook something we've never tried", icon: "🍳" },
+  { id: "karaoke", summary: "Karaoke Badly", description: "karaoke, badly", icon: "🎤" },
+  { id: "market", summary: "Street Food", description: "market run + street food", icon: "🍢" },
+  { id: "stayin", summary: "Stay In", description: "stay in and do absolutely nothing", icon: "🛋️" },
 ];
 
 const N = IDEAS.length;
@@ -72,6 +75,9 @@ const WheelSvg = ({
   rotationDegree,
   isSpinning,
   picked,
+  hoveredIndex,
+  onSliceHover,
+  onSliceClick,
   onSpinClick,
 }: {
   showLabels: boolean;
@@ -79,6 +85,9 @@ const WheelSvg = ({
   rotationDegree: number;
   isSpinning: boolean;
   picked: number | null;
+  hoveredIndex: number | null;
+  onSliceHover: (index: number | null) => void;
+  onSliceClick: (index: number) => void;
   onSpinClick: () => void;
 }) => {
   const reduced =
@@ -100,6 +109,14 @@ const WheelSvg = ({
       }}
       onClick={showSpinButton ? onSpinClick : undefined}
     >
+      {/* Pointer marker at top — shows which slice is the winner */}
+      <div
+        className="absolute left-1/2 -top-1.5 z-10 -translate-x-1/2"
+        aria-hidden="true"
+      >
+        <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
+      </div>
+
       <svg
         viewBox="0 0 220 220"
         className="block h-[clamp(14rem,36vw,18rem)] w-[clamp(14rem,36vw,18rem)]"
@@ -112,10 +129,20 @@ const WheelSvg = ({
           const [tx, ty] = polar(midAngle, R_TEXT);
 
           return (
-            <g key={idea.label}>
+            <g
+              key={idea.id}
+              onMouseEnter={() => onSliceHover(i)}
+              onMouseLeave={() => onSliceHover(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isSpinning && showSpinButton) onSliceClick(i);
+              }}
+              style={{ cursor: showSpinButton && !isSpinning ? "pointer" : "default" }}
+            >
+              <title>{idea.description}</title>
               <path
                 d={wedge(i)}
-                fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
+                fill={lit ? "#2f80d8" : hoveredIndex === i ? "#f0f7ff" : i % 2 ? "#eaf3fc" : "#dce9f7"}
                 stroke="#123a6b"
                 strokeWidth="1.6"
               />
@@ -127,6 +154,7 @@ const WheelSvg = ({
                 stroke="#123a6b"
                 strokeWidth="1.4"
               />
+              {/* Inner text: short summary only, positioned with radial rotation */}
               {showLabels && (
                 <text
                   x={tx}
@@ -141,7 +169,7 @@ const WheelSvg = ({
                     transformOrigin: "center",
                   }}
                 >
-                  {idea.label.split(" ").map((word, k) => (
+                  {idea.summary.split(" ").map((word, k) => (
                     <tspan key={k} x={tx} dy={10}>
                       {word}
                     </tspan>
@@ -164,7 +192,7 @@ const WheelSvg = ({
           us
         </text>
 
-        {/* Central SPIN button — only shown when in interactive (focused) mode */}
+        {/* Central SPIN button — only shown in interactive (focused) mode */}
         {showSpinButton && (
           <>
             <circle
@@ -199,6 +227,8 @@ export default function DateWheel() {
   const [rotationDegree, setRotationDegree] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [picked, setPicked] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const spinTimer = useRef<number | undefined>(undefined);
@@ -214,6 +244,8 @@ export default function DateWheel() {
     setRotationDegree(0);
     setPicked(null);
     setIsSpinning(false);
+    setHoveredIndex(null);
+    setTooltipPos(null);
     setIsPreviewMode(true);
   }, []);
 
@@ -225,6 +257,8 @@ export default function DateWheel() {
 
     setIsSpinning(true);
     setPicked(null);
+    setHoveredIndex(null);
+    setTooltipPos(null);
     setRotationDegree(newDegrees);
 
     spinTimer.current = window.setTimeout(() => {
@@ -234,7 +268,33 @@ export default function DateWheel() {
     }, SPIN_DURATION);
   }, [isSpinning, rotationDegree]);
 
-  const label = picked !== null ? IDEAS[picked].label : null;
+  const handleSliceClick = useCallback(
+    (index: number) => {
+      if (isSpinning) return;
+      setRotationDegree(0);
+      setPicked(index);
+      setIsSpinning(false);
+      setHoveredIndex(null);
+      setTooltipPos(null);
+    },
+    [isSpinning],
+  );
+
+  const handleSliceHover = useCallback((index: number | null) => {
+    setHoveredIndex(index);
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    if (isSpinning || isPreviewMode) return;
+    setTooltipPos({ x: e.clientX, y: e.clientY });
+  }, [isSpinning, isPreviewMode]);
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredIndex(null);
+    setTooltipPos(null);
+  }, []);
+
+  const label = picked !== null ? IDEAS[picked].description : null;
 
   /* 1. STATE RENDERING LOGIC: Only ONE wheel instance at any time. */
   if (isPreviewMode) {
@@ -271,6 +331,9 @@ export default function DateWheel() {
             rotationDegree={0}
             isSpinning={false}
             picked={null}
+            hoveredIndex={null}
+            onSliceHover={() => {}}
+            onSliceClick={() => {}}
             onSpinClick={() => {}}
           />
         </motion.div>
@@ -281,44 +344,71 @@ export default function DateWheel() {
   }
 
   /* 2. FOCUSED: fullscreen modal overlay with the large wheel.
-     The wheel renders labels, handles spins, and the result reveals after landing. */
+     The wheel renders summaries, handles spins, and the result reveals after landing. */
   return (
     <>
-      {/* Dim backdrop — click to close */}
+      {/* 2a. Fixed overlay: dim backdrop with blur */}
       <div
         className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
         onClick={handleClose}
         aria-label="Close"
+        role="button"
       />
 
-      {/* Centered wheel container inside the modal */}
+      {/* 2b. Centered wheel container inside the modal */}
       <div className="fixed inset-0 z-[9999] flex items-center justify-center">
         <div
-          className="relative flex items-center justify-center"
+          className="relative flex flex-col items-center justify-center gap-4"
           onClick={(e) => e.stopPropagation()}
         >
           {/* 4. Close button */}
           <button
             onClick={handleClose}
-            className="absolute -top-14 right-0 rounded-full bg-cream-50 px-3 py-1 text-rose-700 shadow hover:bg-rose-50 press-label"
+            className="absolute -top-16 right-0 rounded-full bg-cream-50 px-3 py-1 text-rose-700 shadow hover:bg-rose-50 press-label"
             aria-label="Close wheel"
           >
             ✕
           </button>
 
-          <WheelSvg
-            showLabels={!isSpinning}
-            showSpinButton={true}
-            rotationDegree={rotationDegree}
-            isSpinning={isSpinning}
-            picked={picked}
-            onSpinClick={handleSpinClick}
-          />
+          <div
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
+            <WheelSvg
+              showLabels={!isSpinning}
+              showSpinButton={true}
+              rotationDegree={rotationDegree}
+              isSpinning={isSpinning}
+              picked={picked}
+              hoveredIndex={hoveredIndex}
+              onSliceHover={handleSliceHover}
+              onSliceClick={handleSliceClick}
+              onSpinClick={handleSpinClick}
+            />
+          </div>
 
-          {/* Result of the last spin */}
+          {/* 3. Hover tooltip — floating label showing full description */}
+          {hoveredIndex !== null && tooltipPos && (
+            <motion.div
+              className="pointer-events-none fixed z-[10000] rounded-lg bg-cream-50 px-3 py-2 text-xs text-rose-800 shadow-xl"
+              style={{
+                left: tooltipPos.x + 16,
+                top: tooltipPos.y + 16,
+                maxWidth: "200px",
+              }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.15 }}
+            >
+              {IDEAS[hoveredIndex].description}
+            </motion.div>
+          )}
+
+          {/* Result headline — prominent description of the spun/clicked slice */}
           {label && !isSpinning && (
             <motion.div
-              className="ink-chip normal-case tracking-normal"
+              className="press-label text-2xl font-bold text-rose-800"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 320, damping: 22 }}
@@ -328,7 +418,7 @@ export default function DateWheel() {
           )}
 
           {/* Hint text */}
-          <p className="press-label absolute -bottom-12 left-1/2 -translate-x-1/2 opacity-60 text-center">
+          <p className="press-label opacity-60 text-center">
             {isSpinning
               ? "where will it land…"
               : label
