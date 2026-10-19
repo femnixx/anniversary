@@ -142,29 +142,31 @@ function Options() {
             ))}
           </div>
 
-          {halo && (
-            <p className="text-center mt-8">
-              <span className="ink-chip">
-                <span className="ink-dot" style={{ background: halo }} />
-                halo from your last photo
-              </span>
-            </p>
-          )}
-
-          <div className="flex justify-center mt-10">
-            <button
-              className="romantic-button romantic-button-ghost"
-              onClick={() => navigate('/message')}
-            >
-              back to the letter
-            </button>
+          <div className="flex flex-col items-center gap-4 mt-8 lg:gap-6 lg:mt-12">
+            {halo && (
+              <p className="text-center">
+                <span className="ink-chip">
+                  <span className="ink-dot" style={{ background: halo }} />
+                  halo from your last photo
+                </span>
+              </p>
+            )}
           </div>
         </ScrollReveal>
 
         {/* empty band, now populated: a quote strip + a little spin game */}
-        <section className="relative z-10 px-4 pb-4" aria-label="A quote and a little game">
-          <div className="max-w-5xl mx-auto flex flex-col items-center gap-14 sm:gap-16">
-            <ScrollReveal direction="up" delay={0.1} className="w-full">
+        <section
+          className="relative z-10 px-4 pt-6 sm:pt-8 pb-4"
+          aria-label="A quote and a little game"
+        >
+          <div className="max-w-5xl mx-auto flex flex-col items-center gap-10 sm:gap-12 lg:gap-14">
+            <ScrollReveal direction="up" delay={0.1} className="w-full flex flex-col items-center gap-6">
+              <button
+                className="romantic-button romantic-button-ghost"
+                onClick={() => navigate('/message')}
+              >
+                back to the letter
+              </button>
               <QuoteStrip />
             </ScrollReveal>
 

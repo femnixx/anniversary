@@ -23,6 +23,8 @@
     "@heroicons/vue": "^2.2.0",
     "@mui/lab": "^7.0.1-beta.18",
     "@mui/material": "^7.3.4",
+    "@neon/config": "^1.9.2",
+    "@neon/env": "^1.6.3",
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@tailwindcss/vite": "^4.1.14",
     "class-variance-authority": "^0.7.1",
@@ -35,6 +37,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.4",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.14",
     "tailwindcss-animate": "^1.0.7"

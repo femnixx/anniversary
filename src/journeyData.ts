@@ -180,32 +180,36 @@ export const MILESTONES: Milestone[] = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   Photo discovery — anything dropped into src/assets/moments/ is
-   picked up automatically. No renaming required.
+   Photo discovery — every photo is stored on Neon Object Storage
+   (bucket "media", public_read). The manifest written by
+   scripts/upload-moments.mjs lists each one with its storage key, so
+   the app fetches images from storage instead of from the project
+   folder. The local src/assets/moments/ folder is now only the
+   upload source — drop new photos there and re-run the upload script.
 
    A date-prefixed name like 2025-06-07_pakuwon.jpg is a bonus: it
    lets that photo pin itself to the matching milestone. Every other
    file still counts — it simply joins the shared pool that fills in
    any milestone without its own photo.
    ═══════════════════════════════════════════════════════════════ */
-const photoModules = import.meta.glob<{ default: string }>(
-  "./assets/moments/*.{jpg,jpeg,png,webp,avif}",
-  { eager: true, query: "?url", import: "default" }
-);
+import manifest from "./assets/moments/manifest.json";
 
-const DATE_PREFIX = /^(\d{4}-\d{2}-\d{2})(?:_(.+) )?$/;
+const STORAGE_ENDPOINT = import.meta.env.VITE_NEON_S3_ENDPOINT ?? "";
+const STORAGE_BUCKET = import.meta.env.VITE_NEON_S3_BUCKET ?? "media";
 
-export const PHOTOS: Photo[] = Object.entries(photoModules).map(([path, url]) => {
-  const file = path.split("/").pop() ?? "";
-  const base = file.replace(/\.[^.]+$/, "");
+function storageUrl(key: string): string {
+  if (!STORAGE_ENDPOINT) return "";
+  const base = STORAGE_ENDPOINT.replace(/\/$/, "");
+  return `${base}/${STORAGE_BUCKET}/${key}`;
+}
 
-  const dated = base.match(DATE_PREFIX);
-  if (dated) {
-    return { slug: dated[2] ?? "", date: dated[1], hasDate: true, url, file };
-  }
-  /* no date prefix: the whole name becomes the slug, no date */
-  return { slug: base.replace(/[_-]+/g, "-"), date: "", hasDate: false, url, file };
-});
+export const PHOTOS: Photo[] = Object.entries(manifest).map(([file, m]) => ({
+  slug: m.slug,
+  date: m.date,
+  hasDate: m.hasDate,
+  url: storageUrl(m.key),
+  file,
+}));
 
 /* stable small hash, so a pool pick never shuffles between renders */
 function hash(str: string): number {

@@ -31,20 +31,32 @@ function getFontSize(font: string): number {
   return match ? parseInt(match[1], 10) : 30;
 }
 
+/**
+ * Render text to a canvas texture, shrinking the font until the label
+ * fits inside `maxWidth` (in canvas pixels). Without a cap, long labels
+ * produce a texture wider than the photo plane and overflow the card.
+ */
 function createTextTexture(
   gl: GL,
   text: string,
   font: string = 'bold 30px monospace',
-  color: string = 'black'
+  color: string = 'black',
+  maxWidth: number = Infinity
 ): { texture: Texture; width: number; height: number } {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Could not get 2d context');
 
-  context.font = font;
-  const metrics = context.measureText(text);
+  let fontSize = getFontSize(font);
+  let metrics = measure(text, font);
+  // Shrink until it fits (or we hit a readable floor).
+  while (metrics.width > maxWidth && fontSize > 12) {
+    fontSize -= 2;
+    font = font.replace(/\d+px/, `${fontSize}px`);
+    metrics = measure(text, font);
+  }
+
   const textWidth = Math.ceil(metrics.width);
-  const fontSize = getFontSize(font);
   const textHeight = Math.ceil(fontSize * 1.2);
 
   canvas.width = textWidth + 20;
@@ -60,6 +72,14 @@ function createTextTexture(
   const texture = new Texture(gl, { generateMipmaps: false });
   texture.image = canvas;
   return { texture, width: canvas.width, height: canvas.height };
+}
+
+function measure(text: string, font: string): { width: number } {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return { width: 0 };
+  ctx.font = font;
+  return ctx.measureText(text);
 }
 
 interface TitleProps {
@@ -92,7 +112,21 @@ class Title {
   }
 
   createMesh() {
-    const { texture, width, height } = createTextTexture(this.gl, this.text, this.font, this.textColor);
+    // Cap the label texture width so the rendered text never overflows
+    // the photo plane. The text is drawn at 15% of the plane height,
+    // so the texture must satisfy:
+    //   plane.scale.y * 0.15 * (width/height) <= plane.scale.x
+    // i.e. width <= plane.scale.x * height / (plane.scale.y * 0.15)
+    const textHeight0 = getFontSize(this.font) * 1.2 + 20;
+    const maxTextureWidth =
+      (this.plane.scale.x * textHeight0) / (this.plane.scale.y * 0.15) * 0.85;
+    const { texture, width, height } = createTextTexture(
+      this.gl,
+      this.text,
+      this.font,
+      this.textColor,
+      maxTextureWidth
+    );
     const geometry = new Plane(this.gl);
     const program = new Program(this.gl, {
       vertex: `
@@ -222,8 +256,8 @@ class Media {
     this.app = app;
     this.createShader();
     this.createMesh();
-    this.createTitle();
     this.onResize();
+    this.createTitle();
   }
 
   createShader() {
@@ -336,8 +370,22 @@ class Media {
       renderer: this.renderer,
       text: this.text,
       textColor: this.textColor,
-      font: this.font
+      font: this.font,
+      // Cap the label so it can never overflow the photo plane, even
+      // when the caption is a long filename. The text is drawn at 15%
+      // of the plane height, so the texture must satisfy:
+      //   plane.scale.y * 0.15 * (width/height) <= plane.scale.x
+      maxTextureWidth: this.labelCap()
     });
+  }
+
+  /** Max texture width that keeps the label inside the photo plane. */
+  labelCap(): number {
+    const planeWidth = this.plane?.scale?.x ?? 1;
+    const planeHeight = this.plane?.scale?.y ?? 1;
+    const textHeight0 = getFontSize(this.font ?? '30px sans-serif') * 1.2 + 20;
+    if (planeHeight <= 0) return Infinity;
+    return (planeWidth * textHeight0) / (planeHeight * 0.15) * 0.85;
   }
 
   update(scroll: { current: number; last: number }, direction: 'right' | 'left') {
@@ -414,7 +462,7 @@ class Media {
         this.plane.program.uniforms.uViewportSizes.value = [this.viewport.width, this.viewport.height];
       }
     }
-    this.scale = this.screen.height / 1500;
+    this.scale = this.screen.height / 1750;
 
     /* Landscape card stock. The old 700x900 factors produced a 0.78
        portrait slab that left the carousel looking narrow and stranded;

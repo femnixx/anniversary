@@ -103,7 +103,7 @@ function Compliments() {
                 className="font-romantic type-title ink-mark inline-block"
                 delay={0.2}
               />
-              <p className="text-rose-600 type-lead mt-3">
+              <p className="text-rose-600 type-lead mt-4 sm:mt-5">
                 one at a time, no repeats until they're used up
               </p>
             </div>
@@ -119,21 +119,21 @@ function Compliments() {
               >
                 <p className="press-label mb-2">no.001</p>
 
-                <div className="text-center">
+                <div className="text-center flex flex-col items-center">
                   <RevealText
                     text="to my favorite person"
-                    className="font-romantic type-subtitle text-rose-700 mb-1"
+                    className="font-romantic type-subtitle text-rose-700"
                     delay={0.4}
                   />
                   <RevealText
                     text="handmade love notes, your eyes only"
-                    className="text-rose-600 type-body mb-8"
+                    className="text-rose-600 type-body mt-3 sm:mt-4"
                     delay={0.5}
                   />
 
-                  <div className="relative min-h-[clamp(6rem,12vw,9rem)] flex items-center justify-center mb-8">
+                  <div className="relative w-full flex flex-col items-center gap-5 mt-8 sm:mt-10 lg:mt-12">
                     <motion.div
-                      className="w-24 h-24 rounded-xl bg-cream-100 border-2 border-rose-700 flex items-center justify-center text-4xl"
+                      className="w-24 h-24 rounded-xl bg-cream-100 border-2 border-rose-700 flex items-center justify-center text-4xl shrink-0"
                       animate={{ rotate: [0, 4, -4, 0] }}
                       transition={{ duration: 3, repeat: Infinity }}
                     >
@@ -148,7 +148,7 @@ function Compliments() {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -20 }}
                           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                          className="absolute text-rose-700 type-subtitle px-4"
+                          className="text-rose-700 type-subtitle px-4 text-center max-w-[clamp(16rem,70vw,32rem)]"
                         >
                           "{randomCompliment}"
                         </motion.p>
@@ -157,7 +157,7 @@ function Compliments() {
                   </div>
 
                   <motion.button
-                    className="romantic-button romantic-button-primary"
+                    className="romantic-button romantic-button-primary mt-8 sm:mt-10 lg:mt-12"
                     onClick={generateCompliment}
                     whileTap={{ scale: 0.97 }}
                   >
@@ -190,12 +190,12 @@ function Compliments() {
                   {/* streak target reaction */}
                   {hitTarget && (
                     <motion.div
-                      className="relative mt-8"
+                      className="relative mt-8 lg:mt-12"
                       initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
                     >
                       <Confetti />
-                      <div className="relative flex flex-col items-center gap-3">
+                      <div className="relative flex flex-col items-center gap-5">
                         <img
                           src={cinnamoroll}
                           alt="cinnamoroll celebrating with you"
@@ -234,7 +234,7 @@ function Compliments() {
             </ScrollReveal>
           </div>
 
-          <ScrollReveal direction="up" delay={0.8} className="mb-8 mt-10">
+          <ScrollReveal direction="up" delay={0.8} className="mb-8 mt-12 lg:mt-16">
             <div className="max-w-3xl mx-auto">
               <p className="press-label mb-4 text-center">whispers</p>
               <div className="space-y-3">
@@ -287,7 +287,7 @@ function Compliments() {
             >
               {hitTarget && <Confetti />}
 
-              <div className="relative">
+              <div className="relative flex flex-col items-center">
                 <div className="w-20 h-20 mx-auto mb-6 rounded-xl bg-cream-100 border-2 border-rose-700 flex items-center justify-center text-4xl animate-heartbeat">
                   💌
                 </div>
@@ -310,7 +310,7 @@ function Compliments() {
                 </div>
 
                 <motion.button
-                  className="romantic-button romantic-button-primary w-full"
+                  className="romantic-button romantic-button-primary w-full max-w-xs"
                   onClick={() => setShowDialog(false)}
                   whileTap={{ scale: 0.97 }}
                 >

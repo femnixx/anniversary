@@ -251,7 +251,7 @@ function Plan() {
           </div>
         </ScrollReveal>
 
-        <div className="relative z-10 px-4 pb-2 flex flex-col items-center gap-3">
+        <div className="relative z-10 px-4 pt-4 sm:pt-6 pb-12 sm:pb-16 lg:pb-20 flex flex-col items-center gap-3">
           <ScrollReveal direction="up" delay={0.8}>
             <p className="text-rose-600 type-body text-center max-w-md">
               swipe through our journey together — tap a photo to open it
@@ -259,7 +259,7 @@ function Plan() {
           </ScrollReveal>
         </div>
 
-        <footer className="relative z-10 py-6 px-4">
+        <footer className="relative z-10 py-8 px-4 sm:py-10 lg:py-12">
           <ScrollReveal direction="up" delay={1}>
             <p className="font-romantic-alt text-rose-600 type-lead text-center">
               every moment a treasure 💕

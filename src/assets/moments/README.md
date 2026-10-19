@@ -4,9 +4,28 @@
 up automatically and shown on the site. Nothing needs to be imported by
 hand, and the filenames don't need to mean anything.
 
+## Where the photos actually live
+
+The photos are **not** served from this folder at runtime. This folder is
+only the upload source:
+
+```
+node scripts/upload-moments.mjs
+```
+
+That script compresses each photo with `sharp` (max 1600px edge, WebP
+quality 80) and uploads the compressed WebP to the Neon Object Storage
+bucket `media` (public_read). It writes `manifest.json`, which maps every
+original filename to its storage key — the app reads that manifest and
+builds image URLs from the storage endpoint, so the browser never
+touches the project folder.
+
+Drop new photos here and re-run the upload script. Delete old ones and
+re-run it again; the manifest is regenerated from scratch each time.
+
 ## What happens to each photo
 
-- It joins the **memories gallery** on the `/memories` page.
+- It joins the **memories gallery** on the `/plan` page.
 - It can also fill the **focused card view** on `/journey`, for any
   milestone that doesn't have a photo of its own.
 
@@ -34,4 +53,5 @@ filename. Everything else just uses its filename.
 
 The gallery falls back to a small set of sample images, and the focused
 cards show a printed "photo pending" plate. That is expected — the
-moment real files land here, they take over on their own.
+moment real files land here and are uploaded, they take over on their
+own.

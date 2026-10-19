@@ -58,16 +58,18 @@ export default function QuoteStrip() {
       <button
         type="button"
         onClick={next}
-        className="relative w-full rounded-2xl border-2 border-rose-700 bg-cream-50 px-6 py-7 text-center"
+        className="relative w-full rounded-2xl border-2 border-rose-700 bg-cream-50 px-6 py-7 text-center flex flex-col items-center"
         aria-label="Show another quote"
       >
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 ink-chip">a note for you</span>
+        {/* Badge integrated into the flow as a header, so it can never
+            clip the card border or collide with elements above it. */}
+        <span className="ink-chip mb-4">a note for you</span>
 
-        <div className="relative h-[3.75rem] flex items-center justify-center">
+        <div className="relative w-full min-h-[3.75rem] flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.p
               key={i}
-              className="font-romantic-alt type-subtitle text-rose-700 italic absolute"
+              className="font-romantic-alt type-subtitle text-rose-700 italic"
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -14 }}
@@ -78,7 +80,7 @@ export default function QuoteStrip() {
           </AnimatePresence>
         </div>
 
-        <span className="press-label opacity-60 mt-1 block">
+        <span className="press-label opacity-60 mt-4 block">
           {i + 1} / {QUOTES.length} · tap for another
         </span>
       </button>
