@@ -211,29 +211,23 @@ export const PHOTOS: Photo[] = Object.entries(manifest).map(([file, m]) => ({
   file,
 }));
 
-/* stable small hash, so a pool pick never shuffles between renders */
-function hash(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
-/** the milestone's own photo, if one matched by slug */
-export function photoFor(slug: string): Photo | null {
-  return PHOTOS.find(p => p.slug && slug.includes(p.slug)) ?? null;
+/**
+ * Photo for a milestone — placeholder only.
+ *
+ * The timeline cards and focused views intentionally show a printed
+ * "photo pending" plate instead of fetching from Neon storage. The
+ * photos live in storage for the /plan gallery, but /journey keeps a
+ * clean, static timeline with no network dependency.
+ */
+export function photoFor(_slug: string): Photo | null {
+  return null;
 }
 
 /**
- * A photo for a milestone: its own match if one exists, otherwise a
- * deterministic pick from everything available. Keeps every card
- * showing a real photo once any exist, without needing filenames to
- * mean anything.
+ * A photo for a milestone — placeholder only. See photoFor.
  */
-export function photoForAny(slug: string): Photo | null {
-  const own = photoFor(slug);
-  if (own) return own;
-  if (PHOTOS.length === 0) return null;
-  return PHOTOS[hash(slug) % PHOTOS.length];
+export function photoForAny(_slug: string): Photo | null {
+  return null;
 }
 
 /* ── Motion presets, shared by the open/close transition ──────── */

@@ -8,12 +8,12 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@mui/lab";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import bluerealbackground3 from "../assets/bluerealbackground3.jpg";
 import MilestoneFocus from "@/components/MilestoneFocus";
 import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
-import { MILESTONES, PHOTOS, type Milestone } from "@/journeyData";
+import { MILESTONES, type Milestone } from "@/journeyData";
 
 function JourneyMilestone({
   item,
@@ -106,7 +106,6 @@ function JourneyMilestone({
 function Journey() {
   const [isMobile, setIsMobile] = useState(false);
   const [focused, setFocused] = useState<Milestone | null>(null);
-  const matched = useMemo(() => PHOTOS.filter(p => p.slug).length, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -134,9 +133,7 @@ function Journey() {
                 delay={0.2}
               />
               <p className="text-rose-600 type-lead mt-3">
-                {PHOTOS.length === 0
-                  ? "sub-journeys marked — photos land soon"
-                  : `${matched} photo${matched === 1 ? "" : "s"} wired into the timeline`}
+                sub-journeys marked — photos land soon
               </p>
               <p className="press-label mt-4 opacity-70">tap any card to open it</p>
             </div>
