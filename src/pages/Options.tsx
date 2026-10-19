@@ -17,10 +17,9 @@ interface CardProps {
   to: string;
   icon: string;
   delay: number;
-  halo: string | null;
 }
 
-const Card = ({ imgSrc, label, alt, to, icon, delay, halo }: CardProps) => {
+const Card = ({ imgSrc, label, alt, to, icon, delay }: CardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -35,25 +34,13 @@ const Card = ({ imgSrc, label, alt, to, icon, delay, halo }: CardProps) => {
         <button
           role="button"
           tabIndex={0}
-          className="romantic-card reg-tick relative h-full w-full flex flex-col items-center justify-center p-6 sm:p-8 text-center"
+          className="romantic-card reg-tick relative h-full w-full flex flex-col items-center justify-center p-6 sm:p-8 text-center bg-white"
           onClick={() => navigate(to)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(to); }
           }}
           aria-label={label}
         >
-          {/* Dynamic halo: the dominant colour of the last photo viewed */}
-          {halo && (
-            <motion.div
-              className="absolute inset-0 rounded-[10px] pointer-events-none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.35, 0.7, 0.35] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              style={{ background: halo }}
-              aria-hidden="true"
-            />
-          )}
-
           <div className="relative z-10 flex flex-col items-center gap-4">
             <div className="relative">
               {/* offset ink plate behind the artwork */}
@@ -65,7 +52,7 @@ const Card = ({ imgSrc, label, alt, to, icon, delay, halo }: CardProps) => {
               <img
                 src={imgSrc}
                 alt={alt}
-                className="relative h-[clamp(6.5rem,13vw,14rem)] object-contain transition-transform duration-500 group-hover:scale-110 group-hover:rotate-2"
+                className="relative h-[clamp(6.5rem,13vw,14rem)] object-contain"
               />
             </div>
 
@@ -97,7 +84,9 @@ function Options() {
   const navigate = useNavigate();
 
   /* Dominant colour of the last photo viewed on /plan, cached in
-     sessionStorage by that page. Falls back to null. */
+     sessionStorage by that page. Read once on mount and again when the
+     tab regains focus — no polling loop, so the choice cards never
+     re-render on a timer. */
   const readHalo = () => {
     try {
       return sessionStorage.getItem("last-photo-color");
@@ -111,11 +100,7 @@ function Options() {
   useEffect(() => {
     const onShow = () => setHalo(readHalo());
     window.addEventListener("focus", onShow);
-    const id = window.setInterval(onShow, 1200);
-    return () => {
-      window.removeEventListener("focus", onShow);
-      window.clearInterval(id);
-    };
+    return () => window.removeEventListener("focus", onShow);
   }, []);
 
   return (
@@ -138,20 +123,20 @@ function Options() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 auto-rows-fr w-full max-w-6xl mx-auto">
             {cardData.map((d, i) => (
-              <Card key={d.to} {...d} delay={i * 0.08} halo={halo} />
+              <Card key={d.to} {...d} delay={i * 0.08} />
             ))}
           </div>
 
-          <div className="flex flex-col items-center gap-4 mt-8 lg:gap-6 lg:mt-12">
-            {halo && (
+          {halo && (
+            <div className="flex flex-col items-center gap-4 mt-8 lg:gap-6 lg:mt-12">
               <p className="text-center">
                 <span className="ink-chip">
                   <span className="ink-dot" style={{ background: halo }} />
                   halo from your last photo
                 </span>
               </p>
-            )}
-          </div>
+            </div>
+          )}
         </ScrollReveal>
 
         {/* empty band, now populated: a quote strip + a little spin game */}
