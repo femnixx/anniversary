@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
    ══════════════════════════════════════════════════════════════ */
 
 const IDEAS = [
+  "stay in and\ndo absolutely nothing",
   "sunrise drive\nwith no map",
   "that café\nwe keep mentioning",
   "movie night,\nyour pick",
@@ -24,31 +25,40 @@ const IDEAS = [
   "cook something\nwe've never tried",
   "karaoke,\nbadly",
   "market run\n+ street food",
-  "stay in and\ndo absolutely nothing",
 ];
 
 const N = 8;
 const STEP = 360 / N;
 const SPIN_MS = 4000;
+const CENTER = 200;
+const R_OUT = 180;
+const R_IN = 45;
+const R_TEXT = 125;
 
-function polar(deg: number, r: number, center: number = 160) {
+function polar(deg: number, r: number, center: number = CENTER) {
   const a = ((deg - 90) * Math.PI) / 180;
   return [center + r * Math.cos(a), center + r * Math.sin(a)];
 }
 
-function wedge(i: number, center: number, rOut: number, rIn: number) {
+function arcPath(i: number) {
+  const cx = CENTER;
+  const cy = CENTER;
+  const rOut = R_OUT;
+  const rIn = R_IN;
   const a0 = i * STEP;
   const a1 = (i + 1) * STEP;
-  const [x0, y0] = polar(a0, rOut, center);
-  const [x1, y1] = polar(a1, rOut, center);
-  const [x2, y2] = polar(a1, rIn, center);
-  const [x3, y3] = polar(a0, rIn, center);
+
+  const [p0x, p0y] = polar(a0, rOut);
+  const [p1x, p1y] = polar(a1, rOut);
+  const [p2x, p2y] = polar(a1, rIn);
+  const [p3x, p3y] = polar(a0, rIn);
   const large = STEP > 180 ? 1 : 0;
+
   return (
-    `M${x0.toFixed(1)},${y0.toFixed(1)}` +
-    `A${rOut},${rOut} 0 ${large} 1 ${x1.toFixed(1)},${y1.toFixed(1)}` +
-    `L${x2.toFixed(1)},${y2.toFixed(1)}` +
-    `A${rIn},${rIn} 0 ${large} 0 ${x3.toFixed(1)},${y3.toFixed(1)}` +
+    `M${cx},${cy} L${p0x.toFixed(1)},${p0y.toFixed(1)}` +
+    `A${rOut},${rOut} 0 ${large} 1 ${p1x.toFixed(1)},${p1y.toFixed(1)}` +
+    `L${p2x.toFixed(1)},${p2y.toFixed(1)}` +
+    `A${rIn},${rIn} 0 ${large} 0 ${p3x.toFixed(1)},${p3y.toFixed(1)}` +
     "Z"
   );
 }
@@ -93,13 +103,68 @@ export default function DateWheel() {
 
   const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
+  const renderWheel = () => (
+    <svg
+      viewBox="0 0 400 400"
+      role="img"
+      aria-label="Wheel of date ideas"
+      className={`block w-full h-full ${reduced ? "" : "transition-all"}`}
+    >
+      {IDEAS.map((idea, i) => {
+        const sliceAngle = i * STEP + STEP / 2;
+        const [tx, ty] = polar(sliceAngle, R_TEXT);
+        const lit = picked === i;
+        return (
+          <g key={idea}>
+            <path
+              d={arcPath(i)}
+              fill={lit ? "#2563eb" : i % 2 ? "#eff6ff" : "#f0fdf4"}
+              stroke="#1e3a8a"
+              strokeWidth="1.5"
+            />
+            <line
+              x1={CENTER} y1={CENTER}
+              x2={polar(i * STEP, R_OUT)[0]}
+              y2={polar(i * STEP, R_OUT)[1]}
+              stroke="#1e3a8a"
+              strokeWidth="1.2"
+            />
+            <text
+              x={tx}
+              y={ty}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill={lit ? "#ffffff" : "#0f172a"}
+              style={{
+                font: `700 ${expanded ? 16 : 11}px 'Plus Jakarta Sans', system-ui, sans-serif`,
+                letterSpacing: "0.3px",
+                userSelect: "none",
+                transform: `rotate(${sliceAngle} ${tx} ${ty})`,
+                transformBox: "fill-box"
+              }}
+            >
+              {idea.split("\n").map((ln, k) => (
+                <tspan key={k} x={tx} dy={k === 0 ? -8 : 16}>{ln}</tspan>
+              ))}
+            </text>
+          </g>
+        );
+      })}
+
+      <circle cx={CENTER.toString()} cy={CENTER.toString()} r={R_IN} fill="#ffffff" stroke="#1e3a8a" strokeWidth="2.5" />
+      <text x={CENTER.toString()} y={CENTER + 8} textAnchor="middle" fill="#3b82f6" style={{ font: `400 ${expanded ? 48 : 28}px 'Georgia', serif; font-style: italic` }}>
+        us
+      </text>
+    </svg>
+  );
+
   return (
     <>
       <AnimatePresence>
         {expanded && (
           <motion.div
             key="overlay"
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-rose-900/95 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0c1e3a]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -116,13 +181,13 @@ export default function DateWheel() {
             >
               {!spinning && (
                 <motion.button
-                  className="absolute top-6 right-6 z-20 p-2 rounded-full bg-cream-50 border-2 border-rose-700 hover:bg-rose-100 transition-colors"
+                  className="absolute top-6 right-6 z-20 p-2 rounded-full bg-white border-2 border-blue-700 hover:bg-blue-100 transition-colors"
                   onClick={() => setExpanded(false)}
                   disabled={spinning}
                   aria-label="Close wheel"
                   whileTap={{ scale: 0.9 }}
                 >
-                  <svg className="w-6 h-6 text-rose-700" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 6 6 18M6 6l12 12" />
                   </svg>
                 </motion.button>
@@ -130,7 +195,7 @@ export default function DateWheel() {
               
               <motion.div
                 ref={wheelRef}
-                className="relative rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg [will-change:transform]"
+                className="relative aspect-square w-[85vmin] max-w-[500px] [will-change:transform]"
                 animate={{ rotate: rotation, scale: spinning ? 1 : (hovering ? 1.05 : 1) }}
                 transition={{
                   rotate: reduced ? { duration: 0.9, ease: "easeOut" } : { duration: SPIN_MS / 1000, ease: [0.12, 0.72, 0.06, 1] },
@@ -140,59 +205,7 @@ export default function DateWheel() {
                 onMouseLeave={() => setHovering(false)}
                 onClick={spinning ? undefined : handleClose}
               >
-                <svg
-                  viewBox="0 0 320 320"
-                  className="block h-[clamp(20rem,40vw,24rem)] w-[clamp(20rem,40vw,24rem)]"
-                  role="img"
-                  aria-label="Wheel of date ideas"
-                >
-                  {IDEAS.map((idea, i) => {
-                    const angle = i * 45;
-                    const textAngle = i * 45 + 22.5;
-                    const textRadius = 120;
-                    const textX = 160 + 120 * Math.cos(((i * 45 + 22.5 - 90) * Math.PI) / 180);
-                    const textY = 160 + 120 * Math.sin((i * 45 + 22.5 - 90) * Math.PI / 180);
-                    
-                    const lit = picked === i;
-                    return (
-                      <g key={i}>
-                        <path
-                          d={wedge(i, 160, 180, 50)}
-                          fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
-                          stroke="#123a6b"
-                          strokeWidth="2.0"
-                        />
-                        <line
-                          x1={160} y1={160}
-                          x2={160 + 120 * Math.cos(i * 45 * Math.PI / 180)}
-                          y2={160 + 180 * Math.sin(i * 45 * Math.PI / 180)}
-                          stroke="#123a6b" strokeWidth="1.6"
-                        />
-                        <text
-                          x={textX}
-                          y={textY}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          fill={lit ? "#f4f8fd" : "#123a6b"}
-                          style={{
-                            font: "700 20px 'Plus Jakarta Sans', system-ui, sans-serif",
-                            letterSpacing: "0.5px",
-                            userSelect: "none"
-                          }}
-                        >
-                          {idea.split("\n").map((ln, k) => (
-                            <tspan key={k} x={textX} dy={k === 0 ? -12 : 24}>{ln}</tspan>
-                          ))}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  <circle cx="160" cy="160" r={50} fill="#f4f8fd" stroke="#123a6b" strokeWidth="3.0" />
-                  <text x="160" y="166" textAnchor="middle" fill="#2f80d8" style={{ font: "400 36px 'Great Vibes', cursive" }}>
-                    us
-                  </text>
-                </svg>
+                {renderWheel()}
               </motion.div>
             </motion.div>
           </motion.div>
@@ -201,14 +214,10 @@ export default function DateWheel() {
 
       <div className="flex flex-col items-center gap-5">
         <div className="relative">
-          <div className="absolute left-1/2 -top-1 z-20 -translate-x-1/2" aria-hidden="true">
-            <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
-          </div>
-
           <motion.div
             ref={wheelRef}
-            className="relative rounded-full bg-cream-50 border-[3px] border-rose-700 plate-lg [will-change:transform] cursor-pointer"
-            animate={{ rotate: rotation, scale: spinning ? 1 : (expanded ? 2.0 : (hovering ? 1.05 : 1)) }}
+            className="relative aspect-square w-[280px] max-w-[80vw] cursor-pointer [will-change:transform]"
+            animate={{ rotate: rotation, scale: spinning ? 1 : (hovering ? 1.05 : 1) }}
             transition={{
               rotate: reduced ? { duration: 0.9, ease: "easeOut" } : { duration: SPIN_MS / 1000, ease: [0.12, 0.72, 0.06, 1] },
               scale: { duration: 0.3, ease: "easeOut" }
@@ -217,59 +226,7 @@ export default function DateWheel() {
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
           >
-            <svg
-              viewBox="0 0 320 320"
-              className="block h-[clamp(20rem,40vw,24rem)] w-[clamp(20rem,40vw,24rem)]"
-              role="img"
-              aria-label="Wheel of date ideas"
-            >
-              {IDEAS.map((idea, i) => {
-                const angle = i * 45;
-                const textAngle = i * 45 + 22.5;
-                const textRadius = 120;
-                const textX = 160 + 120 * Math.cos(((i * 45 + 22.5 - 90) * Math.PI) / 180);
-                const textY = 160 + 120 * Math.sin((i * 45 + 22.5 - 90) * Math.PI / 180);
-                
-                const lit = picked === i;
-                return (
-                  <g key={i}>
-                    <path
-                      d={wedge(i, 160, 180, 50)}
-                      fill={lit ? "#2f80d8" : i % 2 ? "#eaf3fc" : "#dce9f7"}
-                      stroke="#123a6b"
-                      strokeWidth="2.0"
-                    />
-                    <line
-                      x1={160} y1={160}
-                      x2={160 + 120 * Math.cos(i * 45 * Math.PI / 180)}
-                      y2={160 + 180 * Math.sin(i * 45 * Math.PI / 180)}
-                      stroke="#123a6b" strokeWidth="1.6"
-                    />
-                    <text
-                      x={textX}
-                      y={textY}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fill={lit ? "#f4f8fd" : "#123a6b"}
-                      style={{
-                        font: "700 20px 'Plus Jakarta Sans', system-ui, sans-serif",
-                        letterSpacing: "0.5px",
-                        userSelect: "none"
-                      }}
-                    >
-                      {idea.split("\n").map((ln, k) => (
-                        <tspan key={k} x={textX} dy={k === 0 ? -12 : 24}>{ln}</tspan>
-                      ))}
-                    </text>
-                  </g>
-                );
-              })}
-
-              <circle cx="160" cy="160" r={50} fill="#f4f8fd" stroke="#123a6b" strokeWidth="3.0" />
-              <text x="160" y="166" textAnchor="middle" fill="#2f80d8" style={{ font: "400 36px 'Great Vibes', cursive" }}>
-                us
-              </text>
-            </svg>
+            {renderWheel()}
           </motion.div>
         </div>
 
