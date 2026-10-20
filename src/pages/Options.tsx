@@ -106,20 +106,20 @@ function Options() {
   return (
     <div className="page-container min-h-screen relative">
       <main className="relative z-10 flex flex-col min-h-screen">
-        <ScrollReveal direction="down" delay={0.1} className="pt-8 px-4 flex-1">
-          <div className="text-center mb-10">
-            <div className="inline-flex flex-col items-center">
-              <p className="press-label mb-2">pick a page</p>
-              <RevealText
-                text="choose your adventure"
-                className="font-romantic type-title ink-mark inline-block"
-                delay={0.2}
-              />
-              <p className="text-rose-600 type-lead mt-3">
-                every path leads to more of us
-              </p>
-            </div>
+      <ScrollReveal direction="down" delay={0.1} className="pt-8 px-3 sm:px-4 flex-1">
+        <div className="text-center mb-10">
+          <div className="inline-flex flex-col items-center">
+            <p className="press-label mb-2">pick a page</p>
+            <RevealText
+              text="choose your adventure"
+              className="font-romantic type-title ink-mark inline-block text-[1.5rem] sm:text-[1.75rem]"
+              delay={0.2}
+            />
+            <p className="text-rose-600 type-lead mt-3">
+              every path leads to more of us
+            </p>
           </div>
+        </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 auto-rows-fr w-full max-w-6xl mx-auto">
             {cardData.map((d, i) => (
@@ -141,10 +141,10 @@ function Options() {
 
         {/* empty band, now populated: a quote strip + a little spin game */}
         <section
-          className="relative z-10 px-4 pt-6 sm:pt-8 pb-4"
+          className="relative z-10 px-3 sm:px-4 pb-4"
           aria-label="A quote and a little game"
         >
-          <div className="max-w-5xl mx-auto flex flex-col items-center gap-10 sm:gap-12 lg:gap-14">
+          <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-24">
             <ScrollReveal direction="up" delay={0.1} className="w-full flex flex-col items-center gap-6">
               <button
                 className="romantic-button romantic-button-ghost"
@@ -156,26 +156,28 @@ function Options() {
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.2} className="w-full">
-              <div className="flex flex-col items-center gap-8">
+              <div className="flex flex-col items-center gap-8 mt-14 md:mt-18 w-full">
                 <div className="text-center">
-                  <p className="press-label mb-2">can't decide?</p>
-                  <h2 className="font-romantic type-title text-rose-700">
+                  <p className="press-label mb-2 text-sm sm:text-base">can't decide?</p>
+                  <h2 className="font-romantic type-title text-rose-700 text-[1.5rem] sm:text-[1.75rem]">
                     let the wheel choose
                   </h2>
                 </div>
-                <DateWheel />
+                <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] flex justify-center">
+                  <DateWheel />
+                </div>
               </div>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={1}>
+              <footer className="flex justify-center">
+                <p className="font-romantic-alt text-rose-600 type-lead text-center bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2 max-w-[calc(100%-2rem)]">
+                  each path leads to more love
+                </p>
+              </footer>
             </ScrollReveal>
           </div>
         </section>
-
-        <footer className="relative z-10 py-8 px-4 flex justify-center">
-          <ScrollReveal direction="up" delay={1}>
-            <p className="font-romantic-alt text-rose-600 type-lead text-center bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2 max-w-[calc(100%-2rem)]">
-              each path leads to more love
-            </p>
-          </ScrollReveal>
-        </footer>
       </main>
     </div>
   );

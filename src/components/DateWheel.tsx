@@ -116,12 +116,12 @@ const WheelSvg = ({
         <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
       </div>
 
-      <svg
-        viewBox="0 0 220 220"
-        className="block h-[clamp(14rem,36vw,18rem)] w-[clamp(14rem,36vw,18rem)]"
-        role="img"
-        aria-label="Wheel of date ideas"
-      >
+        <svg
+          viewBox="0 0 220 220"
+          className="block h-auto w-full max-w-full"
+          role="img"
+          aria-label="Wheel of date ideas"
+        >
         {IDEAS.map((idea, i) => {
           const lit = picked === i;
           const midAngle = i * STEP + STEP / 2;
