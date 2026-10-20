@@ -1,11 +1,23 @@
 "use client";
 
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import DateWheel from "@/components/DateWheel";
 import ReasonTerminal from "@/components/ReasonTerminal";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 function Reasons() {
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  useEffect(() => {
+    document.body.style.overflow = "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [currentPath]);
+
   return (
     <div className="page-container min-h-screen relative max-w-[1800px] mx-auto">
       <main className="relative z-10 flex flex-col min-h-screen">

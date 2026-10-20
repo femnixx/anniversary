@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import compliments from "../assets/compliments.png";
 import date from "../assets/date.png";
@@ -83,6 +83,15 @@ const cardData = [
 
 function Options() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  useEffect(() => {
+    document.body.style.overflow = "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [currentPath]);
 
   /* Dominant colour of the last photo viewed on /plan, cached in
      sessionStorage by that page. Read once on mount and again when the
