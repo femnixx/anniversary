@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>100 Reasons I Love You - love.exe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* ================================================================
+       CONFIG — change these variables to personalize
+       ================================================================ */
+    :root {
+      --her-name: "Amore";
+      --anniversary-date: "October 21";
+      --met-month: "August";
+
+      /* Theme colors (cyclic) */
+      --theme-pink: hsl(330, 100%, 65%);
+      --theme-cyan: hsl(195, 100%, 60%);
+      --theme-amber: hsl(45, 100%, 60%);
+      --theme-green: hsl(140, 70%, 55%);
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Fira Code", "JetBrains Mono", monospace;
+      background: #05050d;
+      color: #e0e0ff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(circle at 20% 30%, rgba(100, 200, 255, 0.04) 1px, transparent 1px),
+          radial-gradient(circle at 80% 70%, rgba(255, 100, 180, 0.03) 1px, transparent 1px),
+          radial-gradient(circle at 50% 50%, rgba(150, 100, 255, 0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
+    }
+
+    /* CRT scanlines overlay */
+    .crt-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.12) 0px,
+        rgba(0, 0, 0, 0.12) 1px,
+        transparent 2px,
+        transparent 4px
+      );
+    }
+
+    /* Vignette */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background: radial-gradient(
+        ellipse at center,
+        transparent 40%,
+        rgba(0, 0, 0, 0.4) 100%
+      );
+    }
+
+    /* Matrix rain layer */
+    #matrix-rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+      opacity: 0.12;
+    }
+
+    .matrix-column {
+      position: absolute;
+      top: -100px;
+      white-space: nowrap;
+      font-size: calc(0.7rem + 0.2vw);
+      line-height: 1.3;
+      will-change: transform;
+    }
+
+    /* Terminal container */
+    .terminal {
+      position: relative;
+      z-index: 2;
+      width: min(95vw, 56rem);
+      max-width: 100%;
+      margin: 2vh auto;
+      background: #0a0a1a;
+      border: 3px solid #1d3557;
+      border-radius: 14px;
+      box-shadow:
+        0 0 0 4px #1d3557 inset,
+        0 0 40px 8px rgba(47, 128, 216, 0.35),
+        0 0 100px 20px rgba(255, 95, 143, 0.25);
+      backdrop-filter: blur(2px);
+      display: flex;
+      flex-direction: column;
+      height: min(90vh, 800px);
+      max-height: 90vh;
+      overflow: hidden;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .terminal {
+        box-shadow: 0 0 0 4px #1d3557 inset;
+      }
+    }
+
+    /* Window title bar */
+    .terminal-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: #123a6b;
+      border-bottom: 2px solid #2f80d8;
+      font-family: "Fira Code", monospace;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .window-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .window-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .window-btn.r { background: #ff5f57; }
+    .window-btn.y { background: #ffb400; }
+    .window-btn.g { background: #00d26a; }
+
+    .window-title-text {
+      color: #f4f8fd;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    /* Output area */
+    .terminal-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 0.75rem;
+      font-family: "Fira Code", "JetBrains Mono", monospace;
+      font-size: calc(0.7rem + 0.2vw);
+      line-height: 1.4;
+      color: #e0e0ff;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 1px;
+    }
+
+    .terminal-output::-webkit-scrollbar {
+      width: 6px;
+    }
+    .terminal-output::-webkit-scrollbar-track {
+      background: #0a0a1a;
+    }
+    .terminal-output::-webkit-scrollbar-thumb {
+      background: #2f80d8;
+      border-radius: 3px;
+    }
+
+    /* Prompt and input */
+    .terminal-input {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      border-top: 1px solid #1d3557;
+      background: rgba(10, 10, 26, 0.6);
+      flex-shrink: 0;
+    }
+
+    .prompt {
+      color: var(--theme-pink);
+      font-weight: 500;
+      white-space: nowrap;
+      padding-right: 0.5rem;
+    }
+
+    .terminal-input input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #a8d4ff;
+      font-family: inherit;
+      font-size: inherit;
+      outline: none;
+      width: 1px;
+      min-width: 120px;
+    }
+
+    /* Text colors */
+    .text-success { color: #00d26a; }
+    .text-error { color: #ff5f57; }
+    .text-hint { color: #94a3b8; }
+    .text-accent { color: var(--theme-cyan); }
+    .text-pink { color: var(--theme-pink); }
+    .text-amber { color: var(--theme-amber); }
+    .text-green { color: var(--theme-green); }
+
+    /* Hint line */
+    .hint-line {
+      color: var(--theme-pink);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    /* Cursor blink */
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      background: var(--theme-cyan);
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 50%, 100% { background: var(--theme-cyan); }
+      25%, 75% { background: transparent; }
+    }
+
+    /* Close button */
+    .close-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(18, 58, 107, 0.7);
+      color: #f4f8fd;
+      border: 1px solid #2f80d8;
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+      transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 95, 87, 0.8);
+      color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .terminal {
+        margin: 0;
+        width: 100vw;
+        max-width: 100vw;
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      .terminal-input {
+        padding: 0.75rem;
+      }
+
+      .terminal-output {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="matrix-rain"></div>
+  <div class="crt-overlay"></div>
+  <div class="vignette"></div>
+
+  <div id="terminal" class="terminal" style="display: none;">
+    <div class="close-btn" id="close-btn">✕ exit</div>
+
+    <div class="terminal-title">
+      <div class="window-buttons">
+        <span class="window-btn r"></span>
+        <span class="window-btn y"></span>
+        <span class="window-btn g"></span>
+      </div>
+      <span class="window-title-text">love.exe — 100 reasons i love you</span>
+    </div>
+
+    <div class="terminal-output" id="terminal-output"></div>
+
+    <div class="terminal-input">
+      <span class="prompt" id="prompt">love@heart:~$</span>
+      <input
+        type="text"
+        id="terminal-input"
+        autocomplete="off"
+        autocapitalize="none"
+        spellcheck="false"
+      />
+    </div>
+  </div>
+
+  <script>
+    /* ================================================================
+       CONFIGURATION — Edit these values to personalize
+       ================================================================ */
+    const HER_NAME = "Amore";
+    const ANIVERASARY_DATE_TEXT = "October 21";
+    const MET_MONTH = "August";
+
+    // --- DATA ---
+    // All reasons are embedded here. To update, edit this array.
+    // Categories are derived from the section groupings in the source markdown.
+
+    const REASONS_DATA = {
+      mind: {
+        title: "Your Mind",
+        color: "text-cyan",
+        reasons: [
+          "You are endlessly curious about everything around us",
+          "Your questions always dig deeper than the surface",
+          "You have the most beautiful way of explaining complex ideas",
+          "Your curiosity about everything is so endearing",
+          "You ask the best questions about everything",
+          "You always want to learn more, even when it's uncomfortable",
+          "Your perspective on life makes me a better person",
+          "You see patterns in chaos that no one else notices",
+          "Your intuition about people is almost supernatural",
+          "You understand things instantly that take me forever",
+          "You dissect problems with such calm precision",
+          "Your mind is the most attractive thing about you",
+        ],
+      },
+      heart: {
+        title: "Your Heart",
+        color: "text-pink",
+        reasons: [
+          "You make ordinary days feel like adventures",
+          "Your laugh is my favorite sound in the world",
+          "You love me exactly as I am",
+          "Every moment with you is a gift I never want to unwrap",
+          "Your hugs fix anything that's broken in my day",
+          "You never make me feel alone, even in a crowd",
+          "You are brave in ways I aspire to match",
+          "Your patience with me is endless",
+          "You are naturally maternal and nurturing",
+          "You are endlessly forgiving of my mistakes",
+          "Your patience with strangers is incredible",
+          "You are the reason I believe in love",
+        ],
+      },
+      principles: {
+        title: "Your Principles",
+        color: "text-amber",
+        reasons: [
+          "You hold the door for strangers without fail",
+          "You care about people I will never meet",
+          "You stand up for what's right even when it's hard",
+          "You give without expecting anything back",
+          "You treat everyone with the same kindness",
+          "You fight for the voiceless in quiet ways",
+          "You choose empathy over convenience",
+          "You are consistent in your values",
+          "You speak up when others stay silent",
+          "You lead with integrity, not ego",
+          "You believe in justice with your whole being",
+          "Your moral compass never wavers",
+        ],
+      },
+      love: {
+        title: "How You Love",
+        color: "text-green",
+        reasons: [
+          "You say I love you like it's the most natural thing in the world",
+          "You remember the little things I mention in passing",
+          "You support every crazy idea I have",
+          "You make even boring evenings magical",
+          "You are the reason my heart feels full",
+          "Your love is my anchor in every storm",
+          "Your love is my home",
+          "Your love lights up my darkest days",
+          "Your love is my favorite story",
+          "Your love is my greatest treasure",
+          "Your love makes everything better",
+          "Your love is my eternal sunshine",
+        ],
+      },
+      playful: {
+        title: "Your Playful Side",
+        color: "text-pink",
+        reasons: [
+          "You dance like nobody's watching even when they are",
+          "You say good morning like it's a gift",
+          "You ask me to dance in the kitchen",
+          "You laugh at my jokes even the bad ones",
+          "You steal the blanket and pretend innocence",
+          "You make silly faces when you think no one sees",
+          "You sing in the shower off-key and proud",
+          "You play games with our pets like you're one of them",
+          "You tease me in the sweetest way",
+          "You make up silly nicknames for everything",
+          "You do voices when telling stories",
+          "You race me to the car for fun",
+        ],
+      },
+      habits: {
+        title: "Your Habits",
+        color: "text-cyan",
+        reasons: [
+          "You hum when you're thinking",
+          "You wear that one sweater that's too big and it's adorable",
+          "You make breakfast in bed without being asked",
+          "You check the weather obsessively",
+          "You always organize things by color",
+          "You talk to our pets like they're human",
+          "You save receipts for no reason",
+          "You bite your lip when concentrating",
+          "You text me good luck before big meetings",
+          "You always know exactly what I need",
+          "You fold laundry while singing",
+          "You make the best cup of tea when I'm sad",
+        ],
+      },
+      growth: {
+        title: "Your Growth",
+        color: "text-amber",
+        reasons: [
+          "You make me want to be the best version of myself",
+          "You inspire me to grow without ever pushing",
+          "You have become someone even more beautiful inside",
+          "You turn my chaos into calm",
+          "You make me want to cook more",
+          "You make me want to learn new things for you",
+          "You make me want to plant a garden together",
+          "You make me want to build blanket forts",
+          "You make me want to collect memories with you",
+          "You make me want to write a book about us",
+          "You make me want to take more photos of our life",
+          "You make me want to be less cynical",
+        ],
+      },
+      us: {
+        title: "Us",
+        color: "text-pink",
+        reasons: [
+          "You are the reason I believe in happy endings",
+          "You are the reason I look forward to tomorrow",
+          "You are the reason I wake up smiling",
+          "You are the reason I'm never alone even when I'm by myself",
+          "You are the reason I have the best life possible",
+          "You are the reason I have everything I need",
+          "You are the reason I want to grow old with someone",
+          "You are the reason I want to hold hands forever",
+          "You are the reason I have the best partner in crime",
+          "You are the reason I believe in magic",
+          "You are the reason I have a home to come back to",
+          "You are endlessly the reason my heart beats faster",
+          "Your love is my everything, always has been, always will be",
+          "You make me want to love you for a thousand lifetimes",
+        ],
+      },
+      activist: {
+        title: "Your Activism",
+        color: "text-green",
+        reasons: [
+          "You care deeply about social issues that affect real people",
+          "You never look away from injustice, even when it's uncomfortable",
+          "You educate yourself on systemic problems without being asked",
+          "You volunteer your time for causes that matter to you",
+          "You listen to marginalized voices and amplify them",
+          "You challenge me to think about privilege and power",
+          "You care about social cases and the people behind the headlines",
+          "You love social studies and find meaning in every case",
+          "You love explaining social issues to me, and I'm mesmerized every time",
+          "You vote with intention and encourage others to do the same",
+        ],
+        bonus:
+          "You've taught me that activism isn't just about protest signs and marches. It's about the daily choices: how you speak to a cashier who seems tired, how you notice when someone is left out of a conversation, how you pause your story to let someone else finish theirs. You study communication not just to understand people, but to love them better. And watching you, I want to be someone who deserves the world you're fighting for.",
+      },
+    };
+
+    // Flatten all reasons into a numbered list for direct lookup
+    let ALL_REASONS = [];
+    let REASON_NUM_MAP = {};
+    let num = 1;
+    for (const key of Object.keys(REASONS_DATA)) {
+      const cat = REASONS_DATA[key];
+      cat.reasons.forEach((r) => {
+        ALL_REASONS.push({ text: r, category: key });
+        REASON_NUM_MAP[num] = { text: r, category: key, catTitle: cat.title };
+        num++;
+      });
+    }
+
+    // Key phrases for keyword lookup
+    const KEYWORD_MAP = {
+      smile: ALL_REASONS.find((r) => r.text.toLowerCase().includes("smile"))?.text || ALL_REASONS[0].text,
+      laugh: ALL_REASONS.find((r) => r.text.toLowerCase().includes("laugh"))?.text || ALL_REASONS[1].text,
+      always: ALL_REASONS.find((r) => r.text.toLowerCase().includes("always"))?.text || ALL_REASONS[2].text,
+    };
+
+    // Compliments pool
+    const COMPLIMENTS = [
+      "Your presence is my favorite place to be.",
+      "You make love look effortless.",
+      "Every day with you is my new favorite memory.",
+      "You are the poetry my heart writes in silence.",
+      "You have the kindest eyes and the warmest soul.",
+      "You make ordinary moments feel extraordinary.",
+      "I am so grateful that you exist.",
+      "You light up my world in ways words cannot say.",
+    ];
+
+    // ASCII art
+    const ASCII_CAT = [
+      "   /\\_/\\",
+      "  ( o.o )",
+      "   > ^ <",
+    ];
+
+    const ASCII_BUNNY = [
+      " (\"\\,\"\\,\" )",
+      " (=^Y^=)",
+      " (\")=(\")",
+    ];
+
+    // Easter eggs
+    const EASTER_EGGS = {
+      hug: "virtual hug sent your way — {╱•ᴗ•╱} — because you deserve all the hugs",
+      "sudo hug": "sudo: granting unlimited hugs indefinitely... access granted. You are hugged endlessly.",
+      42: "42 — the answer to life, the universe, and why I love you. The question was never the point.",
+    };
+
+    // Story
+    const STORY = [
+      "in {MET_MONTH}, we met through a group question at university",
+      "you were answering with that quiet confidence that immediately caught my attention",
+      "we bonded over a shared love of deep conversations and terrible puns",
+      "every conversation felt like coming home",
+      "now it is {ANNIVERSARY_DATE} and I still feel the same way",
+      "I am so glad {HER_NAME} exists.",
+    ];
+
+    // Music player lines
+    const MUSIC_LINES = [
+      "♫ love.exe — now playing: midnight drive through neon rain",
+      "♫ track: 'us against the world' — night ride vibes, no brakes",
+      "♫ volume: max | playlist: {HER_NAME}'s laughter on loop",
+      "♫ status: playing in my heart, always on repeat",
+    ];
+
+    // --- Terminal state ---
+    const state = {
+      output: [],
+      history: [],
+      historyIndex: -1,
+      shownRandom: [],
+      themeIndex: 0,
+      matrixEnabled: true,
+      bootComplete: false,
+      pagination: { items: [], index: 0, pageSize: 8 },
+    };
+
+    const THEME_COLORS = ["--theme-pink", "--theme-cyan", "--theme-amber", "--theme-green"];
+    const THEME_NAMES = ["pink", "cyan", "amber", "green"];
+
+    // --- DOM references ---
+    const $ = {
+      terminal: null,
+      output: null,
+      input: null,
+      prompt: null,
+      matrix: null,
+      close: null,
+    };
+
+    // --- Utility: colorize ---
+    function colorize(text, cls) {
+      return `<span class="${cls}">${escapeHtml(text)}</span>`;
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\[/g, "&#91;")
+        .replace(/\]/g, "&#93;");
+    }
+
+    // --- Output functions ---
+    function appendOutput(html, speed = 0) {
+      if (speed > 0) {
+        typeWriter(html, speed);
+      } else {
+        $.output.insertAdjacentHTML("beforeend", html + "\n");
+        scrollToBottom();
+      }
+    }
+
+    function typeWriter(html, speed) {
+      const container = document.createElement("div");
+      container.innerHTML = "";
+      $.output.appendChild(container);
+
+      let currentHTML = "";
+      let tagBuffer = "";
+      let inTag = false;
+      let i = 0;
+
+      const fullText = html + "\n";
+
+      function processNext() {
+        if (i >= fullText.length) {
+          scrollToBottom();
+          return;
+        }
+
+        const char = fullText[i];
+
+        if (char === "<" && !inTag) {
+          inTag = true;
+          tagBuffer = char;
+        } else if (inTag) {
+          tagBuffer += char;
+          if (char === ">") {
+            currentHTML += tagBuffer;
+            tagBuffer = "";
+            inTag = false;
+            container.innerHTML = currentHTML;
+            scrollToBottom();
+          }
+        } else {
+          currentHTML += char;
+          container.innerHTML = currentHTML;
+          scrollToBottom();
+        }
+
+        i++;
+        const adjustedSpeed = inTag ? 0 : speed;
+        setTimeout(processNext, adjustedSpeed);
+      }
+
+      processNext();
+    }
+
+    function scrollToBottom() {
+      $.output.scrollTop = $.output.scrollHeight;
+    }
+
+    function appendCommand(cmd) {
+      state.history.push(cmd);
+      state.historyIndex = -1;
+      appendOutput(
+        colorize("$", "text-success") + " " + escapeHtml(cmd),
+        0
+      );
+    }
+
+    function appendSystem(msg, cls = "text-hint") {
+      appendOutput(colorize("> " + msg, cls), 0);
+    }
+
+    function appendResult(msg, cls = "text-accent") {
+      appendOutput(colorize(msg, cls), 15);
+    }
+
+    // --- Pagination ---
+    function startPagination(items, pageSize = 8) {
+      state.pagination = { items, index: 0, pageSize };
+      renderPage();
+    }
+
+    function renderPage() {
+      const { items, index, pageSize } = state.pagination;
+      const page = items.slice(index, index + pageSize);
+
+      page.forEach((item, i) => {
+        appendOutput(
+          colorize((index + i + 1).toString().padStart(2, "0") + ". ", "text-success") +
+          escapeHtml(item),
+          10
+        );
+      });
+
+      if (index + pageSize < items.length) {
+        appendSystem('type "next" to see more...');
+      } else {
+        appendSystem('end of list — type "prev" for previous page');
+      }
+    }
+
+    function showNext() {
+      const p = state.pagination;
+      if (!p.items || p.items.length === 0) {
+        appendSystem("no active list to paginate. try a command first.");
+        return;
+      }
+      const nextIndex = p.index + p.pageSize;
+      if (nextIndex < p.items.length) {
+        p.index = nextIndex;
+        renderPage();
+      } else {
+        appendSystem("you are at the end of the list");
+      }
+    }
+
+    function showPrev() {
+      const p = state.pagination;
+      if (!p.items || p.items.length === 0) {
+        appendSystem("no active list to paginate. try a command first.");
+        return;
+      }
+      const prevIndex = p.index - p.pageSize;
+      if (prevIndex >= 0) {
+        p.index = prevIndex;
+        renderPage();
+      } else {
+        p.index = 0;
+        appendSystem("you are at the beginning of the list");
+      }
+    }
+
+    // --- Commands ---
+    function runCommand(cmd) {
+      const trimmed = cmd.trim();
+      if (!trimmed) return;
+
+      appendCommand(trimmed);
+
+      const [command, ...args] = trimmed.toLowerCase().split(/\s+/);
+
+      if (["help", "?"].includes(command)) {
+        showHelp();
+        return;
+      }
+
+      if (["reasons", "list"].includes(command)) {
+        if (args.length > 0) {
+          listByCategory(args[0]);
+          return;
+        }
+        showReasons();
+        return;
+      }
+
+      if (command === "reason" && args.length > 0) {
+        showReason(args[0]);
+        return;
+      }
+
+      if (["random", "compliment"].includes(command)) {
+        showRandom();
+        return;
+      }
+
+      if (command === "search" && args.length > 0) {
+        searchReasons(args.join(" "));
+        return;
+      }
+
+      if (command === "about") {
+        showAbout();
+        return;
+      }
+
+      if (command === "story") {
+        showStory();
+        return;
+      }
+
+      if (command === "date" || command === "anniversary") {
+        showDate();
+        return;
+      }
+
+      if (command === "theme") {
+        cycleTheme();
+        return;
+      }
+
+      if (command === "matrix") {
+        toggleMatrix();
+        return;
+      }
+
+      if (command === "clear") {
+        clearScreen();
+        return;
+      }
+
+      if (command === "exit") {
+        hideTerminal();
+        return;
+      }
+
+      if (command === "next") {
+        showNext();
+        return;
+      }
+
+      if (command === "prev") {
+        showPrev();
+        return;
+      }
+
+      if ((command === "sudo" && args[0] === "love") || command === "sudo love") {
+        sudoLove();
+        return;
+      }
+
+      // Category shortcuts
+      for (const key of Object.keys(REASONS_DATA)) {
+        if (command === key) {
+          listByCategory(key);
+          return;
+        }
+      }
+
+      // Easter eggs
+      const matchedEgg = Object.keys(EASTER_EGGS).find((k) => command === k);
+      if (matchedEgg) {
+        appendResult(EASTER_EGGS[matchedEgg]);
+        return;
+      }
+
+      // Unknown command
+      appendSystem('command not found... did you mean "help"?');
+    }
+
+    function showHelp() {
+      const commands = [
+        ["help", "show this help message"],
+        ["reasons", "list all categories with counts"],
+        ["list <cat>", "list reasons in a category"],
+        ["reason <n>", "show reason number n"],
+        ["random", "print a random reason"],
+        ["compliment", "print a random compliment"],
+        ["search <word>", "find reasons containing a word"],
+        ["story", "see how we met"],
+        ["date", "see days together counter"],
+        ["theme", "cycle color themes"],
+        ["matrix", "toggle falling characters"],
+        ["clear", "clear the terminal screen"],
+        ["next", "see next page of current list"],
+        ["prev", "see previous page"],
+        ["exit", "close the terminal"],
+        ["sudo love", "trigger a special animation"],
+        ["cat", "see a cute ascii cat"],
+        ["hug", "get a virtual hug"],
+      ];
+
+      appendSystem("available commands:");
+      commands.forEach(([cmd, desc]) => {
+        appendOutput(
+          "  " + colorize(cmd.padEnd(14), "text-pink") +
+          colorize(desc, "text-hint"),
+          5
+        );
+      });
+    }
+
+    function showReasons() {
+      appendSystem("reason categories:");
+      let i = 1;
+      for (const key of Object.keys(REASONS_DATA)) {
+        const cat = REASONS_DATA[key];
+        appendOutput(
+          "  " + colorize(key.padEnd(14), "text-pink") +
+          colorize(`${cat.reasons.length} reasons`, "text-hint"),
+          5
+        );
+        i++;
+      }
+    }
+
+    function listByCategory(cat) {
+      const catData = REASONS_DATA[cat];
+      if (!catData) {
+        appendSystem(`category "${cat}" not found. type "reasons" for available categories.`);
+        return;
+      }
+      appendSystem("listing: " + catData.title);
+      startPagination([...catData.reasons]);
+    }
+
+    function showReason(numStr) {
+      const num = parseInt(numStr, 10);
+      if (isNaN(num) || num < 1 || num > ALL_REASONS.length) {
+        appendSystem(`reason #${numStr} not found. try a number between 1 and ${ALL_REASONS.length}.`);
+        return;
+      }
+      const entry = REASON_NUM_MAP[num];
+      if (entry) {
+        appendSystem(
+          "category: " + colorize(REASONS_DATA[entry.category].title, REASONS_DATA[entry.category].color)
+        );
+        appendResult(entry.text);
+      }
+    }
+
+    function showRandom() {
+      const available = ALL_REASONS.filter((r) => !state.shownRandom.includes(r.text));
+      if (available.length === 0) {
+        state.shownRandom = [];
+      }
+      const pool = available.length > 0 ? available : ALL_REASONS;
+      const randomEntry = pool[Math.floor(Math.random() * pool.length)];
+      state.shownRandom.push(randomEntry.text);
+
+      const colors = ["text-pink", "text-cyan", "text-amber", "text-green"];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+      appendSystem("here is a random reason:");
+      appendOutput(
+        colorize("🌸 ", randomColor) + escapeHtml(randomEntry.text),
+        20
+      );
+    }
+
+    function searchReasons(query) {
+      const results = ALL_REASONS.filter((r) =>
+        r.text.toLowerCase().includes(query.toLowerCase())
+      );
+      if (results.length === 0) {
+        appendSystem(`no reasons found matching "${query}"... try another word?`);
+        return;
+      }
+      appendSystem(`found ${results.length} match(es) for "${query}":`);
+      startPagination(results.map((r) => r.text));
+    }
+
+    function showAbout() {
+      appendSystem("about this gift:");
+      appendOutput(
+        colorize("this terminal was crafted with love as an anniversary gift. ", "text-hint") +
+        colorize(`every reason here is true — you make every day brighter. `, "text-pink") +
+        colorize("made with care, just for you.", "text-cyan"),
+        15
+      );
+    }
+
+    function showStory() {
+      appendSystem("how we met:");
+      const storyLines = STORY.map((s) =>
+        s.replace("{HER_NAME}", HER_NAME)
+         .replace("{ANNIVERSARY_DATE}", ANIVERASARY_DATE_TEXT)
+         .replace("{MET_MONTH}", MET_MONTH)
+      );
+      storyLines.forEach((line) => {
+        appendOutput(colorize(line, "text-amber"), 30);
+      });
+    }
+
+    function showDate() {
+      const met = new Date("2024-08-01");
+      const anniversary = new Date();
+      const month = anniversary.getMonth() + 1;
+      const day = anniversary.getDate();
+      const year = anniversary.getFullYear();
+      const nextOct21 = new Date(year, 9, 21);
+      if (month > 9 || (month === 9 && day > 21)) {
+        nextOct21.setFullYear(year + 1);
+      }
+      const diffTime = nextOct21 - anniversary;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const totalDays = Math.ceil((anniversary - met) / (1000 * 60 * 60 * 24));
+
+      appendOutput(
+        colorize("📅 ", "text-cyan") + "days together: " +
+        colorize(totalDays.toString(), "text-pink"),
+        10
+      );
+      appendOutput(
+        colorize("📅 ", "text-cyan") + "days until next anniversary: " +
+        colorize(diffDays.toString(), "text-pink") + "\n",
+        10
+      );
+      appendOutput(colorize("I never want to stop counting days with you.", "text-hint"), 10);
+    }
+
+    function cycleTheme() {
+      state.themeIndex = (state.themeIndex + 1) % THEME_COLORS.length;
+      const themeName = THEME_NAMES[state.themeIndex];
+      appendSystem(`theme switched to: ${themeName}`);
+
+      document.documentElement.style.setProperty(
+        "--theme-cyan",
+        `hsl(${[195, 330, 45, 140][state.themeIndex]}, 100%, 60%)`
+      );
+      document.documentElement.style.setProperty(
+        "--theme-pink",
+        `hsl(${[330, 195, 45, 140][state.themeIndex]}, 100%, 65%)`
+      );
+      document.documentElement.style.setProperty(
+        "--theme-amber",
+        `hsl(${[45, 45, 195, 140][state.themeIndex]}, 100%, 60%)`
+      );
+      document.documentElement.style.setProperty(
+        "--theme-green",
+        `hsl(${[140, 140, 45, 195][state.themeIndex]}, 70%, 55%)`
+      );
+    }
+
+    function toggleMatrix() {
+      state.matrixEnabled = !state.matrixEnabled;
+      $.matrix.style.display = state.matrixEnabled ? "block" : "none";
+      appendSystem(
+        `matrix rain: ${state.matrixEnabled ? "enabled" : "disabled"}`
+      );
+    }
+
+    function clearScreen() {
+      $.output.innerHTML = "";
+      state.history = [];
+      state.pagination = { items: [], index: 0, pageSize: 8 };
+      appendSystem("terminal cleared.");
+    }
+
+    function hideTerminal() {
+      $.terminal.style.display = "none";
+      document.body.style.overflow = "";
+      appendSystem("terminal closed. goodbye for now.");
+    }
+
+    function sudoLove() {
+      appendSystem("sudo: executing love protocol...");
+      appendOutput(
+        colorize("[sudo] ", "text-error") +
+        colorize("permission", "text-pink") +
+        colorize(" granted ", "text-cyan") +
+        colorize("✓", "text-green"),
+        30
+      );
+
+      const heartChars = ["💖", "💗", "💓", "💝", "❤️", "💕"];
+      let count = 0;
+      const confetti = setInterval(() => {
+        const pos = Math.random() * 100;
+        const char = heartChars[Math.floor(Math.random() * heartChars.length)];
+        appendOutput(
+          `<span style="position:absolute; left:${pos}vw; opacity:0.8; font-size:calc(0.8rem + 0.2vw);">${char}</span>`
+        );
+        count++;
+        if (count > 20) {
+          clearInterval(confetti);
+          appendResult("all systems: in love mode. you are cherished.");
+        }
+      }, 100);
+    }
+
+    function showCat() {
+      const animal = Math.random() > 0.85 ? ASCII_BUNNY : ASCII_CAT;
+      const message =
+        animal === ASCII_CAT
+          ? "she loves cats almost as much as I love her."
+          : "a bunny hopped in — she would name it immediately.";
+
+      appendOutput("", 0);
+      animal.forEach((line) => {
+        appendOutput(colorize(line, "text-amber"), 30);
+      });
+      appendOutput(colorize(message, "text-hint"), 15);
+    }
+
+    function showMusic() {
+      appendSystem("now playing:");
+      MUSIC_LINES.forEach((line) => {
+        appendOutput(
+          colorize(line.replace("{HER_NAME}", HER_NAME), "text-green"),
+          30
+        );
+      });
+    }
+
+    // --- Matrix rain ---
+    function initMatrix() {
+      const chars =
+        "アァカサタナハマヤラワガザダバパイィキシチニヒミリヰリギディビピウゥクスツヌフムユルュグズヅブプウエェケセテネヘメレヶセヱレヶロォコソトロヲァオカマガサザダタチツデバパマヤラワヰガザバパジャ";
+      const extra = "♥🐱🎵💖💗💓💝";
+      const charset = chars + extra;
+      const cols = Math.floor(window.innerWidth / 35);
+
+      for (let i = 0; i < cols; i++) {
+        const el = document.createElement("div");
+        el.className = "matrix-column";
+        el.style.left = (i * 35 + 5) + "px";
+        el.style.top = "-50px";
+
+        let text = "";
+        const numLines = Math.floor(Math.random() * 8) + 3;
+        for (let j = 0; j < numLines; j++) {
+          text += charset[Math.floor(Math.random() * charset.length)] + "\n";
+        }
+        el.textContent = text.trim();
+        el.style.color = Math.random() > 0.9
+          ? "#ff5f57"
+          : Math.random() > 0.8
+          ? "#ff5f57"
+          : "#64d4a0";
+
+        $.matrix.appendChild(el);
+        animateColumn(el);
+      }
+    }
+
+    function animateColumn(el) {
+      let pos = parseFloat(el.style.top) || -50;
+      let speed = 0.3 + Math.random() * 0.7;
+      const charHeight = 18;
+
+      function step() {
+        if (!state.matrixEnabled) {
+          requestAnimationFrame(step);
+          return;
+        }
+        pos += speed;
+        el.style.transform = `translateY(${pos}px)`;
+
+        if (pos > window.innerHeight + 200) {
+          pos = -50;
+          el.style.left = (Math.random() * window.innerWidth) + "px";
+        }
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // --- Boot sequence ---
+    function startBootSequence() {
+      const bootLines = [
+        { text: "initializing love.exe v2.1.0", cls: "text-hint", speed: 20 },
+        { text: "", cls: "", speed: 200 },
+        { text: "loading memories...", cls: "text-cyan", speed: 30 },
+        { text: "  checking cuddle levels... [OK]", cls: "text-success", speed: 20 },
+        { text: "  verifying heart rate sync... [OK]", cls: "text-success", speed: 20 },
+        { text: "  scanning for smiles... [DETECTED]", cls: "text-success", speed: 20 },
+        { text: "loading complete.", cls: "text-success", speed: 20 },
+        { text: "", cls: "", speed: 200 },
+        { text: "access granted.", cls: "text-pink", speed: 30 },
+        { text: "", cls: "", speed: 200 },
+        {
+          text: `welcome back, ${HER_NAME}.`,
+          cls: "text-amber",
+          speed: 50,
+          isGreeting: true,
+        },
+      ];
+
+      let idx = 0;
+      const skippable = (e) => {
+        if (idx > 3) {
+          document.removeEventListener("keydown", skippable);
+          finishBoot();
+        }
+      };
+
+      document.addEventListener("keydown", skippable);
+
+      function nextLine() {
+        if (idx >= bootLines.length) {
+          finishBoot();
+          return;
+        }
+
+        const line = bootLines[idx];
+        if (line.text) {
+          appendOutput(
+            colorize(line.text, line.cls || "text-hint"),
+            line.isGreeting ? 80 : line.speed
+          );
+        } else {
+          appendOutput("", 0);
+        }
+        idx++;
+        setTimeout(nextLine, line.isGreeting ? 1000 : line.speed + 10);
+      }
+
+      function finishBoot() {
+        document.removeEventListener("keydown", skippable);
+        state.bootComplete = true;
+        appendSystem("type \"help\" and press Enter to see commands", "hint-line");
+        setTimeout(() => {
+          if (!state.bootComplete) return;
+          const hint = $.output.querySelector(".hint-line");
+          if (hint) {
+            hint.style.animation = "pulse 1.5s ease-in-out infinite";
+          }
+        }, 100);
+
+        setTimeout(() => {
+          if (state.bootComplete) {
+            maybePulseHint();
+          }
+        }, 15000);
+
+        $.input.focus();
+      }
+
+      nextLine();
+    }
+
+    function maybePulseHint() {
+      const hints = $.output.querySelectorAll(".hint-line");
+      if (hints.length > 0) {
+        hints.forEach((h) => {
+          h.style.animation = "none";
+          setTimeout(() => {
+            h.style.animation = "pulse 1.5s ease-in-out infinite";
+          }, 10);
+        });
+      }
+      setTimeout(maybePulseHint, 15000);
+    }
+
+    // --- Event listeners ---
+    function setupInput() {
+      $.input.addEventListener("keydown", (e) => {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          handleTabComplete();
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          navigateHistory(-1);
+          return;
+        }
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          navigateHistory(1);
+          return;
+        }
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const cmd = $.input.value.trim();
+          if (cmd) {
+            $.input.value = "";
+            runCommand(cmd);
+          }
+          return;
+        }
+      });
+
+      // Clicking anywhere focuses the input
+      document.addEventListener("click", (e) => {
+        if (e.target !== $.input) {
+          $.input.focus();
+        }
+      });
+    }
+
+    function handleTabComplete() {
+      const val = $.input.value.trim().toLowerCase();
+      if (!val) return;
+
+      const allCommands = [
+        "help", "reasons", "reason", "random", "compliment", "search",
+        "about", "story", "date", "theme", "matrix", "clear", "exit",
+        "next", "prev", "sudo", "cat",
+      ];
+      const catKeys = Object.keys(REASONS_DATA);
+
+      const allOptions = [...allCommands, ...catKeys];
+      const matches = allOptions.filter((opt) => opt.startsWith(val));
+
+      if (matches.length === 1) {
+        $.input.value = matches[0];
+      } else if (matches.length > 1) {
+        appendSystem("possible completions: " + matches.join(", "));
+      }
+    }
+
+    function navigateHistory(dir) {
+      if (state.history.length === 0) return;
+      state.historyIndex += dir;
+      if (state.historyIndex < -1) state.historyIndex = -1;
+      if (state.historyIndex > state.history.length) state.historyIndex = state.history.length;
+
+      if (state.historyIndex === -1) {
+        $.input.value = "";
+      } else {
+        $.input.value = state.history[state.history.length - 1 - state.historyIndex];
+      }
+      $.input.focus();
+    }
+
+    // --- Init ---
+    function init() {
+      $.terminal = document.getElementById("terminal");
+      $.output = document.getElementById("terminal-output");
+      $.input = document.getElementById("terminal-input") as HTMLInputElement;
+      $.prompt = document.getElementById("prompt");
+      $.matrix = document.getElementById("matrix-rain");
+      $.close = document.getElementById("close-btn");
+
+      $.terminal.style.display = "block";
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        $.matrix.style.display = "none";
+        state.matrixEnabled = false;
+      }
+
+      initMatrix();
+      setupInput();
+
+      $.close.addEventListener("click", () => {
+        hideTerminal();
+      });
+
+      startBootSequence();
+    }
+
+    // Start when page loads
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
