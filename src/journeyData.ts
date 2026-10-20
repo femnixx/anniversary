@@ -5,6 +5,8 @@ export interface SubJourney {
   desc: string;
   /** longer telling of the same moment, shown in the focused view */
   story: string;
+  /** venue/location where the memory happened */
+  location?: string;
 }
 
 export interface Milestone {
@@ -22,6 +24,8 @@ export interface Milestone {
   label?: string;
   /** longer description variant */
   description?: string;
+  /** venue/location where the memory happened */
+  location?: string;
   /** image URLs for the carousel */
   images?: string[];
   stamp?: boolean;
@@ -59,6 +63,7 @@ export const MILESTONES: Milestone[] = [
     story:
       "It started when I first saw you. A greeting, a question, if we were in the same cluster. An unexpected question that came out of our mouths without realizing it was the start to it all.\n\nWithout even knowing that in a few months we were driving up through toll roads, spending our nights together, and loving each other.",
     icon: "✨",
+    location: "📍 Same cluster",
   },
   {
     slug: "first-date",
@@ -68,6 +73,7 @@ export const MILESTONES: Milestone[] = [
     story:
       "We picked the one place that nearly took us both out. You laughed until you cried, I panicked quietly, and somehow that became the story we tell people when they ask how we knew.\n\nEvery date after that had something to live up to. Most of them managed it.",
     icon: "🍰",
+    location: "📍 That one restaurant",
   },
   {
     slug: "our-adventures",
@@ -77,6 +83,7 @@ export const MILESTONES: Milestone[] = [
     story:
       "Before the big trips there were the small ones — the ones nobody else would think to put on a map. Our time well spent together.\n\nLooking back, those are the ones that quietly taught us we travel well as a pair.",
     icon: "✈️",
+    location: "📍 Around the city",
   },
   {
     slug: "surabaya-birthday",
@@ -86,6 +93,7 @@ export const MILESTONES: Milestone[] = [
     story:
       "We left in the dark. The toll lights went past one after another and you were right there beside me the whole way.\n\nWe rolled into Surabaya past midnight and you were still laughing, still not ready to go home. Cake, chaos, and you.\n\nI remember thinking: I want a thousand more of these.",
     icon: "🌃",
+    location: "📍 Surabaya",
     children: [
       {
         slug: "pakuwon-mall",
@@ -94,6 +102,7 @@ export const MILESTONES: Milestone[] = [
         desc: "First stop. Wandering the mall with nowhere to be.",
         story:
           "First stop, and we had nowhere to be. We walked the mall like people who had all night — because we did.",
+        location: "📍 Pakuwon City Mall",
       },
       {
         slug: "her-friend-ikea",
@@ -102,6 +111,7 @@ export const MILESTONES: Milestone[] = [
         desc: "Met up with her friend, drifted around IKEA, had far too much fun.",
         story:
           "We met up with her friend and somehow ended up in IKEA, arguing about furniture for a life we're already building. Far too much fun for a Tuesday.",
+        location: "📍 IKEA Surabaya",
       },
       {
         slug: "birthday-midnight",
@@ -110,6 +120,7 @@ export const MILESTONES: Milestone[] = [
         desc: "Past midnight, still in Surabaya, still not ready to leave.",
         story:
           "Past midnight and still in Surabaya. You said \"one more hour\" and we stayed until the sky turned. We always stay.",
+        location: "📍 Surabaya streets",
       },
       {
         slug: "drive-home",
@@ -118,6 +129,7 @@ export const MILESTONES: Milestone[] = [
         desc: "The drive back while the sky turned — half asleep and completely happy.",
         story:
           "The drive home while the sky turned, both of us half asleep and completely happy. Nobody spoke for most of it. Nobody needed to.",
+        location: "📍 On the toll road",
       },
     ],
   },
@@ -132,6 +144,7 @@ export const MILESTONES: Milestone[] = [
     images: ["/images/birthday_cheesecake1.jpg", "/images/birthday_cheesecake2.jpg"],
     story: "Celebrated her birthday with a delicious blueberry cheesecake right inside the car! A sweet memory that tasted like home and happiness.",
     icon: "🎂",
+    location: "📍 In the Car",
   },
   {
     slug: "surabaya-again",
@@ -141,6 +154,7 @@ export const MILESTONES: Milestone[] = [
     story:
       "A few more runs to Surabaya. None of it was fancy. All of it was us.\n\nDates stretched until dawn, then a nap in the parked car before the drive back, and then we did it all again the next week.",
     icon: "🚗",
+    location: "📍 Surabaya, back again",
     children: [
       {
         slug: "car-sunrise",
@@ -149,6 +163,7 @@ export const MILESTONES: Milestone[] = [
         desc: "Dates stretched until dawn, then a nap in the parked car.",
         story:
           "Dates stretched until dawn, and then we'd nap in the parked car like it was the most normal thing in the world. Somehow it was the most comfortable we've ever been anywhere.",
+        location: "📍 Parked car at dawn",
       },
       {
         slug: "variety-dates",
@@ -157,6 +172,7 @@ export const MILESTONES: Milestone[] = [
         desc: "Small ones, long ones, ones that only made sense to us.",
         story:
           "Small ones, long ones, and the ones that only ever made sense to the two of us. We ran through the whole catalogue that summer.",
+        location: "📍 Around the city",
       },
     ],
   },
@@ -168,6 +184,7 @@ export const MILESTONES: Milestone[] = [
     story:
       "Still us. Still together. Still growing — which is the honest version, and the better one.\n\nWe've had a whole timeline of \"remember when\" and we're nowhere near done.",
     icon: "💙",
+    location: "📍 Right here",
   },
   {
     slug: "malaysia",
@@ -178,6 +195,7 @@ export const MILESTONES: Milestone[] = [
       "You went off to Malaysia and you've been having the time of your life. I'm genuinely, ridiculously happy for you.\n\nAnd I'm also counting the days. Different country, same us — still finding each other through a screen, still choosing this.",
     icon: "🇲🇾",
     stamp: true,
+    location: "📍 Malaysia",
   },
   {
     slug: "anniversary",
@@ -187,6 +205,7 @@ export const MILESTONES: Milestone[] = [
     story:
       "Every road on this page led here. The toll lights, the midnight drives, the dates that ran until morning, the calls that crossed a timezone — all of it pointed at this one date.\n\nThis year we get to count it properly, together, with the whole map behind us.",
     icon: "🎂",
+    location: "📍 Home, together",
   },
   {
     slug: "future",
@@ -196,6 +215,7 @@ export const MILESTONES: Milestone[] = [
     story:
       "Our story continues — on every road, in every timezone, at every 12 AM that finds us still awake together.\n\nWhatever comes next, I already know I want it with you.",
     icon: "✨",
+    location: "📍 Everywhere",
   },
 ];
 

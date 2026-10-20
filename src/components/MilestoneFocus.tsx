@@ -37,6 +37,7 @@ export default function MilestoneFocus({ item, onClose }: Props) {
   const active = hasSubs ? subs[subIndex] : null;
   const currentSlug = active ? active.slug : item.slug;
   const images = photosFor(currentSlug);
+  const location = active?.location ?? item.location;
 
   /* reset to first image when the active milestone changes */
   useEffect(() => {
@@ -190,6 +191,16 @@ export default function MilestoneFocus({ item, onClose }: Props) {
               </svg>
             </button>
           </div>
+
+          {/* location sub-header */}
+          {location && (
+            <div
+              className="flex items-center gap-1 px-5 pb-2 text-xs text-gray-500"
+              style={{ marginBottom: "0.5rem" }}
+            >
+              <span aria-hidden="true">{location}</span>
+            </div>
+          )}
 
           {/* body — swipeable when there are sub-journeys */}
           <div
