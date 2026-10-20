@@ -16,6 +16,14 @@ export interface Milestone {
   /** short story, shown in the focused view */
   story: string;
   icon: string;
+  /** alternate emoji marker for the card */
+  emoji?: string;
+  /** short badge label */
+  label?: string;
+  /** longer description variant */
+  description?: string;
+  /** image URLs for the carousel */
+  images?: string[];
   stamp?: boolean;
   children?: SubJourney[];
 }
@@ -112,6 +120,18 @@ export const MILESTONES: Milestone[] = [
           "The drive home while the sky turned, both of us half asleep and completely happy. Nobody spoke for most of it. Nobody needed to.",
       },
     ],
+  },
+  {
+    slug: "birthday-celebration",
+    title: "Birthday Celebration",
+    date: "June 8",
+    desc: "Celebrated her birthday with a delicious blueberry cheesecake right inside the car!",
+    description: "Celebrated her birthday with a delicious blueberry cheesecake right inside the car!",
+    label: "Sweet Memories",
+    emoji: "🎂",
+    images: ["/images/birthday_cheesecake1.jpg", "/images/birthday_cheesecake2.jpg"],
+    story: "Celebrated her birthday with a delicious blueberry cheesecake right inside the car! A sweet memory that tasted like home and happiness.",
+    icon: "🎂",
   },
   {
     slug: "surabaya-again",
@@ -219,6 +239,10 @@ export const PHOTOS: Photo[] = Object.entries(manifest).map(([file, m]) => ({
 const JOURNEY_PHOTOS: Record<string, string[]> = {
   "how-we-met": [
     new URL("./assets/journey/how we met.jpeg", import.meta.url).href,
+  ],
+  "birthday-celebration": [
+    "/images/birthday_cheesecake1.jpg",
+    "/images/birthday_cheesecake2.jpg",
   ],
 };
 
