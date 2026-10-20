@@ -101,27 +101,32 @@ const WheelSvg = ({
 
   return (
     <div
-      className="relative rounded-full bg-cream-50 shadow-xl will-change-transform"
+      className={[
+        "relative rounded-full bg-cream-50 shadow-xl will-change-transform",
+        showSpinButton
+          ? "mx-auto w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] md:w-[400px] md:h-[400px]"
+          : "",
+      ].join(" ")}
       style={{
         transform: `rotate(${rotationDegree}deg)`,
         transition: spinTransition,
       }}
       onClick={showSpinButton ? onSpinClick : undefined}
     >
-      {/* Pointer marker at top — shows which slice is the winner */}
+      {/* Pointer marker at top — no pointer events so clicks reach the wheel */}
       <div
-        className="absolute left-1/2 -top-1.5 z-10 -translate-x-1/2"
+        className="absolute left-1/2 -top-1.5 -translate-x-1/2 pointer-events-none"
         aria-hidden="true"
       >
         <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
       </div>
 
-        <svg
-          viewBox="0 0 220 220"
-          className="block h-auto w-full max-w-full"
-          role="img"
-          aria-label="Wheel of date ideas"
-        >
+      <svg
+        viewBox="0 0 220 220"
+        className={showSpinButton ? "block h-auto w-full max-w-full" : "block h-[clamp(9rem,24vw,11rem)] w-[clamp(9rem,24vw,11rem)]"}
+        role="img"
+        aria-label="Wheel of date ideas"
+      >
         {IDEAS.map((idea, i) => {
           const lit = picked === i;
           const midAngle = i * STEP + STEP / 2;
