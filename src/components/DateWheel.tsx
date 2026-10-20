@@ -53,6 +53,17 @@ function wedge(i: number) {
   );
 }
 
+interface WheelSvgProps {
+  showLabels: boolean;
+  showSpinButton: boolean;
+  rotationDegree: number;
+  isSpinning: boolean;
+  picked: number | null;
+  hoveredIndex: number | null;
+  onSliceHover: (index: number | null) => void;
+  onSpinClick: () => void;
+}
+
 const WheelSvg = ({
   showLabels,
   showSpinButton,
@@ -62,16 +73,7 @@ const WheelSvg = ({
   hoveredIndex,
   onSliceHover,
   onSpinClick,
-}: {
-  showLabels: boolean;
-  showSpinButton: boolean;
-  rotationDegree: number;
-  isSpinning: boolean;
-  picked: number | null;
-  hoveredIndex: number | null;
-  onSliceHover: (index: number | null) => void;
-  onSpinClick: () => void;
-}) => {
+}: WheelSvgProps) => {
   const reduced =
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -83,12 +85,7 @@ const WheelSvg = ({
     : "transform 0.3s ease-out";
 
   return (
-    <div
-      className={showSpinButton
-        ? "relative mx-auto rounded-full bg-cream-50"
-        : "relative mx-auto rounded-full bg-cream-50"
-      }
-    >
+    <div className="relative mx-auto rounded-full bg-cream-50">
       <svg
         viewBox="0 0 500 500"
         width="38vw"
@@ -228,32 +225,21 @@ const WheelSvg = ({
   );
 };
 
-export default function DateWheel() {
-  const [isPreviewMode, setIsPreviewMode] = useState(true);
+interface DateWheelFocusedProps {
+  onClose: () => void;
+  onSpinResult?: (description: string) => void;
+}
+
+function DateWheelFocused({ onClose, onSpinResult }: DateWheelFocusedProps) {
   const [rotationDegree, setRotationDegree] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [picked, setPicked] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
-  const wheelRef = useRef<HTMLDivElement>(null);
   const spinTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => () => window.clearTimeout(spinTimer.current), []);
-
-  const handlePreviewClick = useCallback(() => {
-    setIsPreviewMode(false);
-    wheelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, []);
-
-  const handleClose = useCallback(() => {
-    setRotationDegree(0);
-    setPicked(null);
-    setIsSpinning(false);
-    setHoveredIndex(null);
-    setTooltipPos(null);
-    setIsPreviewMode(true);
-  }, []);
 
   const handleSpinClick = useCallback(() => {
     if (isSpinning) return;
@@ -270,7 +256,11 @@ export default function DateWheel() {
     spinTimer.current = window.setTimeout(() => {
       setIsSpinning(false);
       const landed = Math.round(((360 - (newDegrees % 360)) / STEP) % N);
-      setPicked((landed + N) % N);
+      const newPicked = (landed + N) % N;
+      setPicked(newPicked);
+      if (onSpinResult) {
+        onSpinResult(IDEAS[newPicked].description);
+      }
     }, SPIN_DURATION);
   }, [isSpinning, rotationDegree]);
 
@@ -279,9 +269,9 @@ export default function DateWheel() {
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    if (isSpinning || isPreviewMode) return;
+    if (isSpinning) return;
     setTooltipPos({ x: e.clientX, y: e.clientY });
-  }, [isSpinning, isPreviewMode]);
+  }, [isSpinning]);
 
   const handleMouseLeave = useCallback(() => {
     setHoveredIndex(null);
@@ -290,59 +280,11 @@ export default function DateWheel() {
 
   const label = picked !== null ? IDEAS[picked].description : null;
 
-  if (isPreviewMode) {
-    return (
-      <div
-        className="relative mx-auto flex w-fit flex-col items-center gap-[3.5vh]"
-        ref={wheelRef}
-      >
-        <motion.div
-          className="relative mx-auto flex cursor-pointer items-center justify-center rounded-full bg-cream-50 ring-2 ring-rose-200 hover:ring-rose-400"
-          style={{
-            width: "min(42vmin, 280px)",
-            height: "min(42vmin, 280px)",
-          }}
-          onClick={handlePreviewClick}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              handlePreviewClick();
-            }
-          }}
-          role="button"
-          tabIndex={0}
-          aria-label="Focus the adventure wheel"
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <motion.div
-            className="absolute -inset-1.5 rounded-full border-2 border-dashed border-rose-400 opacity-50"
-            animate={{ opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            aria-hidden="true"
-          />
-          <WheelSvg
-            showLabels={false}
-            showSpinButton={false}
-            rotationDegree={0}
-            isSpinning={false}
-            picked={null}
-            hoveredIndex={null}
-            onSliceHover={() => {}}
-            onSpinClick={() => {}}
-          />
-        </motion.div>
-
-        <p className="press-label opacity-60" style={{ fontSize: "calc(0.7rem + 0.3vw)" }}>tap to spin</p>
-      </div>
-    );
-  }
-
   return (
     <>
       <div
         className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
-        onClick={handleClose}
+        onClick={onClose}
         aria-label="Close"
         role="button"
       />
@@ -353,7 +295,7 @@ export default function DateWheel() {
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="absolute -top-16 right-0 rounded-full bg-cream-50 px-3 py-1 text-rose-700 shadow hover:bg-rose-50 press-label"
             aria-label="Close wheel"
           >
@@ -423,3 +365,73 @@ export default function DateWheel() {
     </>
   );
 }
+
+function DateWheelPreview() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const wheelRef = useRef<HTMLDivElement>(null);
+
+  const handlePreviewClick = useCallback(() => {
+    setIsModalOpen(true);
+    setTimeout(() => {
+      wheelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
+
+  return (
+    <>
+      <div
+        className="relative mx-auto flex w-fit flex-col items-center gap-[3.5vh]"
+        ref={wheelRef}
+      >
+        <motion.div
+          className="relative mx-auto flex cursor-pointer items-center justify-center rounded-full bg-cream-50 ring-2 ring-rose-200 hover:ring-rose-400"
+          style={{
+            width: "min(42vmin, 280px)",
+            height: "min(42vmin, 280px)",
+          }}
+          onClick={handlePreviewClick}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handlePreviewClick();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Focus the adventure wheel"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <motion.div
+            className="absolute -inset-1.5 rounded-full border-2 border-dashed border-rose-400 opacity-50"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden="true"
+          />
+          <WheelSvg
+            showLabels={false}
+            showSpinButton={false}
+            rotationDegree={0}
+            isSpinning={false}
+            picked={null}
+            hoveredIndex={null}
+            onSliceHover={() => {}}
+            onSpinClick={() => {}}
+          />
+        </motion.div>
+
+        <p className="press-label opacity-60" style={{ fontSize: "calc(0.7rem + 0.3vw)" }}>tap to spin</p>
+      </div>
+
+      {isModalOpen && <DateWheelFocused onClose={handleClose} />}
+    </>
+  );
+}
+
+export default DateWheelPreview;
+export { DateWheelFocused as DateWheelModal };
