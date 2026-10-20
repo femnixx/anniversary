@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PassportStamp from "@/components/PassportStamp";
-import { photosFor, focusMotion, type Milestone } from "@/journeyData";
+import { focusMotion, type Milestone } from "@/journeyData";
+import { fetchJourneyImages } from "@/journeyImages";
 import PhotoPlate from "@/components/PhotoPlate";
 
 const SWIPE_THRESHOLD = 60; // px before a drag counts as a page change
@@ -36,8 +37,30 @@ export default function MilestoneFocus({ item, onClose }: Props) {
 
   const active = hasSubs ? subs[subIndex] : null;
   const currentSlug = active ? active.slug : item.slug;
-  const images = photosFor(currentSlug);
   const location = active?.location ?? item.location;
+
+  /* async image set — fetched from Neon DB API with local fallback */
+  const [images, setImages] = useState<string[]>([]);
+  const [imagesLoading, setImagesLoading] = useState(false);
+
+  useEffect(() => {
+    setImages([]);
+    setImagesLoading(true);
+    let cancelled = false;
+
+    fetchJourneyImages(currentSlug)
+      .then((urls) => {
+        if (!cancelled) setImages(urls);
+      })
+      .catch((err) => {
+        console.error("[SITREP] fetchJourneyImages failed:", err);
+      })
+      .finally(() => {
+        if (!cancelled) setImagesLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [currentSlug]);
 
   /* reset to first image when the active milestone changes */
   useEffect(() => {
@@ -235,6 +258,7 @@ export default function MilestoneFocus({ item, onClose }: Props) {
                           className={`absolute inset-0 h-full w-full object-cover rounded-xl border-2 border-rose-700 transition-opacity duration-500 ease-in-out ${
                             idx === currentImageIndex ? "opacity-100" : "opacity-0"
                           }`}
+                          loading="lazy"
                         />
                       ))}
 
@@ -274,6 +298,10 @@ export default function MilestoneFocus({ item, onClose }: Props) {
                           </div>
                         </>
                       )}
+                    </div>
+                  ) : imagesLoading ? (
+                    <div className="relative w-full aspect-[16/9] flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full border-3 border-rose-200 border-t-rose-700 animate-spin" />
                     </div>
                   ) : (
                     <PhotoPlate label={active ? active.title : item.title} />

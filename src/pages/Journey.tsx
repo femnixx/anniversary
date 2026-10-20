@@ -1,45 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import bluerealbackground3 from "../assets/bluerealbackground3.jpg";
 import MilestoneFocus from "@/components/MilestoneFocus";
 import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
 import { MILESTONES, type Milestone } from "@/journeyData";
+import { verifyJourneyImages } from "@/journeyImages";
 
 function JourneyMilestone({
   item,
-  isLast,
+  _isLast,
   onFocus,
 }: {
   item: Milestone;
-  isLast: boolean;
+  _isLast: boolean;
   onFocus: () => void;
 }) {
   const hasKids = Boolean(item.children?.length);
 
   return (
-    <div className="relative flex w-full items-start gap-4">
-      {/* timeline dot + connector */}
-      <div className="relative flex h-full w-6 flex-shrink-0 items-center justify-center">
-        <div
-          className="h-6 w-6 rounded-full bg-[#2f80d8] border-2.5 border-[#123a6b] z-10"
-          aria-hidden="true"
-        />
-        {!isLast && (
-          <div
-            className="absolute top-6 bottom-[-24px] w-0.5 bg-[#123a6b]"
-            aria-hidden="true"
-          />
-        )}
+    <div className="relative flex w-full items-start">
+      {/*
+        Mobile: vertical timeline axis pin anchored on the left line.
+        Desktop (md+): hidden, reverts to horizontal card layout.
+      */}
+      <div
+        className="absolute left-6 top-6 z-20 -translate-x-1/2 md:hidden"
+        aria-hidden="true"
+      >
+        <div className="h-4 w-4 rounded-full bg-[#2f80d8] border-2 border-[#123a6b]" />
       </div>
 
-      <div className="flex-1 min-w-0">
+      {/* card — indented on mobile for the timeline, half-width on desktop */}
+      <div className="ml-12 w-full md:ml-0 md:w-1/2">
         <ScrollReveal direction="up" delay={0.1}>
           <motion.div
             role="button"
             tabIndex={0}
-            className="romantic-card reg-tick w-full text-left cursor-pointer break-words whitespace-normal"
+            className="romantic-card reg-tick w-full break-words whitespace-normal"
+            style={{ boxSizing: "border-box" }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 22 }}
@@ -50,16 +50,20 @@ function JourneyMilestone({
             }}
             aria-label={`Open ${item.title} in focused view`}
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+            <div className="flex flex-col gap-3">
+              {/* icon */}
               <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-lg bg-cream-100 border-2 border-rose-700 text-2xl">
-                {item.icon}
+                {item.emoji ?? item.icon}
               </div>
 
+              {/* text stack — date, location, title, description */}
               <div className="flex-1 min-w-0">
-                <p className="press-label mb-1">{item.date}</p>
+                <p className="press-label mb-1 break-words whitespace-normal">
+                  {item.date}
+                </p>
 
                 {item.location && (
-                  <p className="press-label mb-1 text-gray-500">
+                  <p className="press-label mb-1 text-xs text-gray-500 break-words whitespace-normal">
                     {item.location}
                   </p>
                 )}
@@ -75,7 +79,7 @@ function JourneyMilestone({
                 </p>
 
                 {hasKids && (
-                  <p className="press-label mt-3 opacity-70">
+                  <p className="press-label mt-3 opacity-70 break-words whitespace-normal">
                     {item.children!.length} sub-journey{item.children!.length === 1 ? "" : "ies"}
                   </p>
                 )}
@@ -83,7 +87,7 @@ function JourneyMilestone({
 
               {/* expand affordance */}
               <span
-                className="flex-shrink-0 mt-1 w-11 h-11 rounded-full grid place-items-center border-2 border-rose-700 bg-cream-50 text-rose-700 transition-all duration-300"
+                className="flex-shrink-0 self-start w-11 h-11 rounded-full grid place-items-center border-2 border-rose-700 bg-cream-50 text-rose-700 transition-all duration-300"
                 aria-hidden="true"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" viewBox="0 0 24 24">
@@ -100,6 +104,18 @@ function JourneyMilestone({
 
 function Journey() {
   const [focused, setFocused] = useState<Milestone | null>(null);
+
+  /* SITREP: verify journey images against Neon DB on mount */
+  useEffect(() => {
+    verifyJourneyImages().then((ok) => {
+      if (!ok) {
+        console.warn(
+          "[SITREP]: Journey images asset mismatch. " +
+            "Cross-reference audit failed between static local memories and queried rows inside Neon Postgres DB.",
+        );
+      }
+    });
+  }, []);
 
   return (
     <div
@@ -130,14 +146,24 @@ function Journey() {
           </div>
 
           <div className="w-full max-w-4xl mx-auto">
-            <div className="flex flex-col w-full gap-6">
+            {/*
+              Mobile: vertical connected timeline with left axis line + pins.
+              Desktop (md+): horizontal multi-column, timeline hidden.
+            */}
+            <div className="relative flex w-full flex-col gap-6 md:flex-row md:flex-wrap md:gap-8">
+              {/* vertical timeline axis — mobile only */}
+              <div
+                className="absolute left-6 top-0 bottom-[-2rem] w-px bg-[#94a3bc] md:hidden"
+                aria-hidden="true"
+              />
+
               {MILESTONES.map((m, i) => (
-                <JourneyMilestone
-                  key={m.slug}
-                  item={m}
-                  isLast={i === MILESTONES.length - 1}
-                  onFocus={() => setFocused(m)}
-                />
+          <JourneyMilestone
+            key={m.slug}
+            item={m}
+            _isLast={i === MILESTONES.length - 1}
+            onFocus={() => setFocused(m)}
+          />
               ))}
             </div>
           </div>
