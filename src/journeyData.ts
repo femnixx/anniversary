@@ -215,19 +215,28 @@ export const PHOTOS: Photo[] = Object.entries(manifest).map(([file, m]) => ({
 }));
 
 /* Local journey photos keyed by milestone slug.
-   Filenames can contain spaces; we map the slug explicitly. */
-const JOURNEY_PHOTOS: Record<string, string> = {
-  "how-we-met": new URL("./assets/journey/how we met.jpeg", import.meta.url).href,
+   Each slug maps to an array of image URLs for carousel support. */
+const JOURNEY_PHOTOS: Record<string, string[]> = {
+  "how-we-met": [
+    new URL("./assets/journey/how we met.jpeg", import.meta.url).href,
+  ],
 };
 
 /**
- * Photo pinned to a specific milestone slug, pulled from the local
- * src/assets/journey/ folder.
+ * All local image URLs pinned to a specific milestone slug,
+ * pulled from the src/assets/journey/ folder (no network required).
+ */
+export function photosFor(slug: string): string[] {
+  return JOURNEY_PHOTOS[slug] ?? [];
+}
+
+/**
+ * Photo pinned to a specific milestone slug (first of the array).
  */
 export function photoFor(slug: string): Photo | null {
-  const url = JOURNEY_PHOTOS[slug];
-  if (!url) return null;
-  return { slug, date: "", hasDate: false, url, file: "" };
+  const urls = JOURNEY_PHOTOS[slug];
+  if (!urls || urls.length === 0) return null;
+  return { slug, date: "", hasDate: false, url: urls[0], file: "" };
 }
 
 /**

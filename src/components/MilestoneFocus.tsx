@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PassportStamp from "@/components/PassportStamp";
-import { photoForAny, focusMotion, type Milestone } from "@/journeyData";
+import { photosFor, focusMotion, type Milestone } from "@/journeyData";
 import PhotoPlate from "@/components/PhotoPlate";
 
 const SWIPE_THRESHOLD = 60; // px before a drag counts as a page change
@@ -28,6 +28,20 @@ export default function MilestoneFocus({ item, onClose }: Props) {
   const [subIndex, setSubIndex] = useState(0);
   const [dir, setDir] = useState(1); // 1 forward, -1 back — drives the slide
   const closeRef = useRef<HTMLButtonElement>(null);
+
+  /* carousel state for the focused image set */
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const slideTimer = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  const active = hasSubs ? subs[subIndex] : null;
+  const currentSlug = active ? active.slug : item.slug;
+  const images = photosFor(currentSlug);
+
+  /* reset to first image when the active milestone changes */
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [currentSlug]);
 
   /* reset to the first sub-journey whenever a different card opens */
   useEffect(() => {
@@ -92,10 +106,47 @@ export default function MilestoneFocus({ item, onClose }: Props) {
     else if (d > SWIPE_THRESHOLD) prev();
   };
 
-  const active = hasSubs ? subs[subIndex] : null;
-  /* the milestone's own photo when it has one, otherwise any photo
-     from the pool — so a card never sits empty once photos exist */
-  const shot = photoForAny(active ? active.slug : item.slug);
+  /* 2. Auto-play: advance image every 3s while the card is focused */
+  useEffect(() => {
+    if (!images.length) return;
+    slideTimer.current = window.setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, 3000);
+    return () => {
+      if (slideTimer.current) window.clearInterval(slideTimer.current);
+    };
+  }, [images, currentSlug]);
+
+  const restartTimer = () => {
+    if (slideTimer.current) window.clearInterval(slideTimer.current);
+    if (images.length) {
+      slideTimer.current = window.setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      }, 3000);
+    }
+  };
+
+  /* 3. Touch handlers — swipe left/next, right/prev, then reset the timer */
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (images.length <= 1) return;
+    touchStartX.current = e.touches[0].clientX;
+    e.stopPropagation();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || images.length <= 1) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      } else {
+        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+      }
+      restartTimer();
+    }
+    touchStartX.current = null;
+    e.stopPropagation();
+  };
 
   return (
     <motion.div
@@ -159,9 +210,63 @@ export default function MilestoneFocus({ item, onClose }: Props) {
                   exit={{ opacity: 0, x: dir * -40 }}
                   transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  {shot
-                    ? <img src={shot.url} alt={active ? active.title : item.title} className="w-full aspect-[4/3] object-cover rounded-lg border-2 border-rose-700" />
-                    : <PhotoPlate label={active ? active.title : item.title} />}
+                  {images.length > 0 ? (
+                    <div
+                      className="relative w-full aspect-[4/3]"
+                      onTouchStart={handleTouchStart}
+                      onTouchEnd={handleTouchEnd}
+                    >
+                      {images.map((url, idx) => (
+                        <img
+                          key={idx}
+                          src={url}
+                          alt={`${active ? active.title : item.title} photo ${idx + 1}`}
+                          className={`absolute inset-0 h-full w-full object-cover rounded-lg border-2 border-rose-700 transition-opacity duration-500 ease-in-out ${
+                            idx === currentImageIndex ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                      ))}
+
+                      {images.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+                              restartTimer();
+                            }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-cream-50/80 p-1 text-rose-700 hover:bg-cream-50"
+                            aria-label="Previous photo"
+                          >
+                            ‹
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentImageIndex((prev) => (prev + 1) % images.length);
+                              restartTimer();
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-cream-50/80 p-1 text-rose-700 hover:bg-cream-50"
+                            aria-label="Next photo"
+                          >
+                            ›
+                          </button>
+                          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
+                            {images.map((_, idx) => (
+                              <div
+                                key={idx}
+                                className={`h-1.5 w-1.5 rounded-full ${
+                                  idx === currentImageIndex ? "bg-rose-700" : "bg-rose-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <PhotoPlate label={active ? active.title : item.title} />
+                  )}
                 </motion.div>
               </AnimatePresence>
 
