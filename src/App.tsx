@@ -7,6 +7,7 @@ import './index.css';
 import Landing from './pages/Landing';
 import Message from './pages/Message';
 import Options from './pages/Options';
+import Reasons from './pages/Reasons';
 
 const Plan = lazy(() => import('./pages/Plan'));
 const Moments = lazy(() => import('./pages/Moments'));
@@ -44,6 +45,7 @@ function App() {
             <Route path='/moments' element={<Moments />}></Route>
             <Route path='/journey' element={<Journey />}></Route>
             <Route path='/compliments' element={<Compliments />}></Route>
+            <Route path='/reasons' element={<Reasons />}></Route>
           </Routes>
         </Suspense>
       </HashRouter>

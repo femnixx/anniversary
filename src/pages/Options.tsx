@@ -6,9 +6,9 @@ import compliments from "../assets/compliments.png";
 import date from "../assets/date.png";
 import moments from "../assets/moments.png";
 import together from "../assets/together.png";
+import bluekitty from "../assets/bluekitty.png";
 import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
 import DateWheel from '@/components/DateWheel';
-import ReasonTerminal from '@/components/ReasonTerminal';
 
 interface CardProps {
   imgSrc: string;
@@ -78,6 +78,7 @@ const cardData = [
   { imgSrc: moments, label: "capture moments", alt: "Camera and memories", to: "/moments", icon: "📸" },
   { imgSrc: together, label: "journey together", alt: "Timeline together", to: "/journey", icon: "🗺️" },
   { imgSrc: compliments, label: "Compliments", alt: "Stars and compliments", to: "/compliments", icon: "💕" },
+  { imgSrc: bluekitty, label: "100 reasons", alt: "Cute cat", to: "/reasons", icon: "🐱" },
 ];
 
 function Options() {
@@ -121,7 +122,7 @@ function Options() {
           </div>
         </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 auto-rows-fr w-full max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 auto-rows-fr w-full max-w-6xl mx-auto">
             {cardData.map((d, i) => (
               <Card key={d.to} {...d} delay={i * 0.08} />
             ))}
@@ -139,10 +140,10 @@ function Options() {
           )}
         </ScrollReveal>
 
-        {/* empty band, now populated: a quote strip + a little spin game */}
+        {/* empty band, now populated: the date wheel game */}
         <section
           className="relative z-10 px-3 sm:px-4 pb-4"
-          aria-label="A quote and a little game"
+          aria-label="A little spin game"
         >
           <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-8 sm:gap-24">
             <ScrollReveal direction="up" delay={0.1} className="w-full flex flex-col items-center gap-6">
@@ -152,7 +153,6 @@ function Options() {
               >
                 back to the letter
               </button>
-              <ReasonTerminal />
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.2} className="w-full">
@@ -165,6 +165,7 @@ function Options() {
                   <p className="text-sm text-gray-500 mt-1 break-words">
                     Tap anywhere on the wheel to spin
                   </p>
+                  <p className="text-xs text-gray-400 mt-1">or visit /reasons for the terminal</p>
                 </div>
                 <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] flex justify-center">
                   <DateWheel />

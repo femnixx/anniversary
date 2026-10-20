@@ -217,32 +217,32 @@ export default function ReasonTerminal() {
     <div
       className="relative mx-auto w-full max-w-[480px] box-border"
       style={{
-        backgroundColor: "#1e1e24",
+        backgroundColor: "#ffffff",
         borderRadius: "16px",
-        border: "3px solid #bde0fe",
-        boxShadow: "0px 8px 0px #a2d2ff",
+        border: "3px solid #1d3557",
+        boxShadow: "0px 8px 0px #1d3557",
         fontFamily: "monospace",
-        color: "#fdf0d5",
+        color: "#1d3557",
       }}
     >
-      <div className="flex items-center gap-2 px-4 py-2 border-b-2 border-[#3a3a4a]">
+      <div className="flex items-center gap-2 px-4 py-2 border-b-2 border-[#a2d2ff]">
         <div className="flex gap-1.5">
           <span className="block h-3 w-3 rounded-full bg-[#ff5f57]" />
           <span className="block h-3 w-3 rounded-full bg-[#ffb400]" />
           <span className="block h-3 w-3 rounded-full bg-[#00d26a]" />
         </div>
-        <span className="text-sm font-medium text-[#bde0fe]">💕 reason_terminal.exe</span>
+        <span className="text-sm font-medium text-[#0f172a]">💕 reason_terminal.exe</span>
       </div>
 
       <div className="p-4">
-        <div className="mb-4 text-sm text-[#8a8a9a]">
+        <div className="mb-4 text-sm text-[#475569]">
           <p>&gt; Welcome to the reason terminal.</p>
           <p>&gt; Type a keyword (smile, laugh, always) or a number (1-100).</p>
         </div>
 
         <div className="mb-4">
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-[#00d2ff]">&gt;</span>
+            <span className="text-[#3b82f6]">&gt;</span>
             <input
               ref={inputRef}
               type="text"
@@ -250,7 +250,7 @@ export default function ReasonTerminal() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="type keyword..."
-              className="flex-1 bg-[#2a2a3a] px-3 py-2 text-[#fdf0d5] outline-none transition-colors placeholder-[#8a8a9a] focus:bg-[#323246]"
+              className="flex-1 bg-[#f8f9fa] px-3 py-2 text-[#1d3557] outline-none transition-colors placeholder-[#94a3b8] focus:bg-[#f1f5f9] w-full box-border"
               style={{ borderRadius: "6px" }}
               aria-label="Type a keyword or number to look up a reason"
             />
@@ -260,7 +260,7 @@ export default function ReasonTerminal() {
         <AnimatePresence>
           {isProcessing && (
             <motion.div
-              className="text-sm text-[#8a8a9a]"
+              className="text-sm text-[#64748b]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -271,13 +271,13 @@ export default function ReasonTerminal() {
 
           {output && !isProcessing && (
             <motion.div
-              className="text-sm text-[#fdf0d5]"
+              className="text-sm text-[#1d3557]"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
               <p className="mb-1">&gt; {input.trim() || "query"}</p>
-              <p className="text-[#a2d2ff]">{output}</p>
+              <p className="text-[#2563eb]">{output}</p>
             </motion.div>
           )}
         </AnimatePresence>
