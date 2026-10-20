@@ -41,20 +41,20 @@ const Card = ({ imgSrc, label, alt, to, icon, delay }: CardProps) => {
           }}
           aria-label={label}
         >
-          <div className="relative z-10 flex flex-col items-center gap-4">
-            <div className="relative">
-              {/* offset ink plate behind the artwork */}
-              <div
-                className="absolute inset-0 bg-lavender-200 rounded-lg"
-                style={{ transform: "translate(7px, 7px)" }}
-                aria-hidden="true"
-              />
-              <img
-                src={imgSrc}
-                alt={alt}
-                className="relative h-[clamp(6.5rem,13vw,14rem)] object-contain"
-              />
-            </div>
+              <div className="relative z-10 flex flex-col items-center gap-4 icon-container">
+                <div className="relative">
+                  {/* offset ink plate behind the artwork */}
+                  <div
+                    className="absolute inset-0 bg-lavender-200 rounded-lg"
+                    style={{ transform: "translate(7px, 7px)" }}
+                    aria-hidden="true"
+                  />
+                  <img
+                    src={imgSrc}
+                    alt={alt}
+                    className="relative h-[clamp(6.5rem,13vw,14rem)] sm:h-[clamp(7rem,16vw,18rem)] md:h-[clamp(8rem,18vw,22rem)] object-contain"
+                  />
+                </div>
 
             <div className="flex items-center gap-2">
               <span className="text-2xl">{icon}</span>
@@ -105,7 +105,7 @@ function Options() {
   }, []);
 
   return (
-    <div className="page-container min-h-screen relative">
+    <div className="page-container min-h-screen relative max-w-[1800px] mx-auto">
       <main className="relative z-10 flex flex-col min-h-screen">
       <ScrollReveal direction="down" delay={0.1} className="pt-8 px-3 sm:px-4 flex-1">
         <div className="text-center mb-10">
@@ -122,7 +122,7 @@ function Options() {
           </div>
         </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 auto-rows-fr w-full max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 auto-rows-fr w-full card-grid">
             {cardData.map((d, i) => (
               <Card key={d.to} {...d} delay={i * 0.08} />
             ))}
@@ -145,8 +145,8 @@ function Options() {
           className="relative z-10 px-3 sm:px-4 pb-4"
           aria-label="A little spin game"
         >
-          <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-8 sm:gap-24">
-            <ScrollReveal direction="up" delay={0.1} className="w-full flex flex-col items-center gap-6">
+          <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-8 sm:gap-24 section-gap">
+            <ScrollReveal direction="up" delay={0.1} className="w-full flex flex-col items-center gap-6 options-section-gap">
               <button
                 className="romantic-button romantic-button-ghost mt-6"
                 onClick={() => navigate('/message')}
@@ -156,7 +156,7 @@ function Options() {
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.2} className="w-full">
-              <div className="flex flex-col items-center gap-8 mt-6 md:mt-8 w-full">
+              <div className="flex flex-col items-center gap-8 mt-6 md:mt-8 w-full options-section-gap">
                 <div className="text-center">
                   <p className="press-label mb-2 text-sm sm:text-base">can't decide?</p>
                   <h2 className="font-romantic type-title text-rose-700 text-[1.5rem] sm:text-[1.75rem]">
@@ -167,7 +167,7 @@ function Options() {
                   </p>
                   <p className="text-xs text-gray-400 mt-1">or visit /reasons for the terminal</p>
                 </div>
-                <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] flex justify-center">
+                <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] lg:max-w-[500px] flex justify-center wheel-large">
                   <DateWheel />
                 </div>
               </div>

@@ -7,7 +7,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 
 function Reasons() {
   return (
-    <div className="page-container min-h-screen relative">
+    <div className="page-container min-h-screen relative max-w-[1800px] mx-auto">
       <main className="relative z-10 flex flex-col min-h-screen">
         <ScrollReveal direction="down" delay={0.1} className="pt-16 pb-12 px-3 sm:px-4 flex-1">
           <div className="text-center mb-10">
@@ -25,7 +25,7 @@ function Reasons() {
             </p>
           </div>
 
-          <div className="max-w-2xl mx-auto flex flex-col items-center gap-10">
+          <div className="max-w-2xl mx-auto flex flex-col items-center gap-10 section-gap">
             <ScrollReveal direction="up" delay={0.2} className="w-full">
               <ReasonTerminal />
             </ScrollReveal>
@@ -40,7 +40,7 @@ function Reasons() {
                   Tap anywhere on the wheel to spin
                 </p>
               </div>
-              <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] flex justify-center mx-auto">
+              <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] lg:max-w-[500px] flex justify-center wheel-large">
                 <DateWheel />
               </div>
             </ScrollReveal>

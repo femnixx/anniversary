@@ -111,17 +111,17 @@ const WheelSvg = ({
       }}
       onClick={undefined}
     >
-      {/* Pointer marker at top — no pointer events so clicks reach the wheel */}
+      {/* Pointer marker at top — scales up on high-res displays */}
       <div
         className="absolute left-1/2 -top-1.5 -translate-x-1/2 pointer-events-none"
         aria-hidden="true"
       >
-        <div className="h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
+        <div className="pointer-arrow h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
       </div>
 
       <svg
         viewBox="0 0 220 220"
-        className={showSpinButton ? "block h-auto w-full max-w-full" : "block h-[clamp(9rem,24vw,11rem)] w-[clamp(9rem,24vw,11rem)]"}
+        className={showSpinButton ? "block h-auto w-full max-w-full wheel-large" : "block h-[clamp(9rem,24vw,11rem)] w-[clamp(9rem,24vw,11rem)]"}
         role="img"
         aria-label="Wheel of date ideas"
       >
