@@ -76,7 +76,6 @@ const WheelSvg = ({
   picked,
   hoveredIndex,
   onSliceHover,
-  onSliceClick,
   onSpinClick,
 }: {
   showLabels: boolean;
@@ -86,7 +85,6 @@ const WheelSvg = ({
   picked: number | null;
   hoveredIndex: number | null;
   onSliceHover: (index: number | null) => void;
-  onSliceClick: (index: number) => void;
   onSpinClick: () => void;
 }) => {
   const reduced =
@@ -111,7 +109,7 @@ const WheelSvg = ({
         transform: `rotate(${rotationDegree}deg)`,
         transition: spinTransition,
       }}
-      onClick={showSpinButton ? onSpinClick : undefined}
+      onClick={undefined}
     >
       {/* Pointer marker at top — no pointer events so clicks reach the wheel */}
       <div
@@ -137,10 +135,6 @@ const WheelSvg = ({
               key={idea.id}
               onMouseEnter={() => onSliceHover(i)}
               onMouseLeave={() => onSliceHover(null)}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!isSpinning && showSpinButton) onSliceClick(i);
-              }}
               style={{ cursor: showSpinButton && !isSpinning ? "pointer" : "default" }}
             >
               <title>{idea.description}</title>
@@ -213,6 +207,20 @@ const WheelSvg = ({
           </>
         )}
       </svg>
+
+      {/* Transparent click-capture overlay — covers the full wheel circle.
+          Catches clicks on any slice, the center hub, or the perimeter. */}
+      {showSpinButton && (
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{ cursor: "pointer", zIndex: 20 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSpinClick();
+          }}
+          aria-label="Spin the wheel"
+        />
+      )}
     </div>
   );
 };
@@ -262,18 +270,6 @@ export default function DateWheel() {
       setPicked((landed + N) % N);
     }, SPIN_DURATION);
   }, [isSpinning, rotationDegree]);
-
-  const handleSliceClick = useCallback(
-    (index: number) => {
-      if (isSpinning) return;
-      setRotationDegree(0);
-      setPicked(index);
-      setIsSpinning(false);
-      setHoveredIndex(null);
-      setTooltipPos(null);
-    },
-    [isSpinning],
-  );
 
   const handleSliceHover = useCallback((index: number | null) => {
     setHoveredIndex(index);
@@ -328,7 +324,6 @@ export default function DateWheel() {
             picked={null}
             hoveredIndex={null}
             onSliceHover={() => {}}
-            onSliceClick={() => {}}
             onSpinClick={() => {}}
           />
         </motion.div>
@@ -377,7 +372,6 @@ export default function DateWheel() {
               picked={picked}
               hoveredIndex={hoveredIndex}
               onSliceHover={handleSliceHover}
-              onSliceClick={handleSliceClick}
               onSpinClick={handleSpinClick}
             />
           </div>

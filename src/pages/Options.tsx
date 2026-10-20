@@ -162,6 +162,9 @@ function Options() {
                   <h2 className="font-romantic type-title text-rose-700 text-[1.5rem] sm:text-[1.75rem]">
                     let the wheel choose
                   </h2>
+                  <p className="text-sm text-gray-500 mt-1 break-words">
+                    Tap anywhere on the wheel to spin
+                  </p>
                 </div>
                 <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] flex justify-center">
                   <DateWheel />
