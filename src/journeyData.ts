@@ -179,7 +179,7 @@ export const MILESTONES: Milestone[] = [
   },
 ];
 
-/* ═══════════════════════════════════════════════════════════════
+/* ==================================================================
    Photo discovery — every photo is stored on Neon Object Storage
    (bucket "media", public_read). The manifest written by
    scripts/upload-moments.mjs lists each one with its storage key, so
@@ -191,7 +191,10 @@ export const MILESTONES: Milestone[] = [
    lets that photo pin itself to the matching milestone. Every other
    file still counts — it simply joins the shared pool that fills in
    any milestone without its own photo.
-   ═══════════════════════════════════════════════════════════════ */
+
+   Local photos dropped in src/assets/journey/ are also matched by
+   slug and served directly — no network dependency.
+   ================================================================== */
 import manifest from "./assets/moments/manifest.json";
 
 const STORAGE_ENDPOINT = import.meta.env.VITE_NEON_S3_ENDPOINT ?? "";
@@ -211,23 +214,28 @@ export const PHOTOS: Photo[] = Object.entries(manifest).map(([file, m]) => ({
   file,
 }));
 
+/* Local journey photos keyed by milestone slug.
+   Filenames can contain spaces; we map the slug explicitly. */
+const JOURNEY_PHOTOS: Record<string, string> = {
+  "how-we-met": new URL("./assets/journey/how we met.jpeg", import.meta.url).href,
+};
+
 /**
- * Photo for a milestone — placeholder only.
- *
- * The timeline cards and focused views intentionally show a printed
- * "photo pending" plate instead of fetching from Neon storage. The
- * photos live in storage for the /plan gallery, but /journey keeps a
- * clean, static timeline with no network dependency.
+ * Photo pinned to a specific milestone slug, pulled from the local
+ * src/assets/journey/ folder.
  */
-export function photoFor(_slug: string): Photo | null {
-  return null;
+export function photoFor(slug: string): Photo | null {
+  const url = JOURNEY_PHOTOS[slug];
+  if (!url) return null;
+  return { slug, date: "", hasDate: false, url, file: "" };
 }
 
 /**
- * A photo for a milestone — placeholder only. See photoFor.
+ * A photo for a milestone — its own pinned photo first, then a
+ * fallback from the shared storage pool so a card never sits empty.
  */
-export function photoForAny(_slug: string): Photo | null {
-  return null;
+export function photoForAny(slug: string): Photo | null {
+  return photoFor(slug) ?? (PHOTOS.length > 0 ? PHOTOS[0] : null);
 }
 
 /* ── Motion presets, shared by the open/close transition ──────── */
