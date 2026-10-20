@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useWheelSize } from "@/hooks/useViewport";
 
 /* ==================================================================
    Spin-for-our-next-adventure wheel.
@@ -77,6 +78,7 @@ const WheelSvg = ({
   hoveredIndex,
   onSliceHover,
   onSpinClick,
+  wheelSize,
 }: {
   showLabels: boolean;
   showSpinButton: boolean;
@@ -86,6 +88,7 @@ const WheelSvg = ({
   hoveredIndex: number | null;
   onSliceHover: (index: number | null) => void;
   onSpinClick: () => void;
+  wheelSize: number;
 }) => {
   const reduced =
     typeof window !== "undefined" &&
@@ -97,31 +100,43 @@ const WheelSvg = ({
       ? "transform 0.9s ease-out"
       : "transform 0.3s ease-out";
 
+  const arrowBorder = Math.max(wheelSize * 0.04, 11);
+
   return (
     <div
-      className={[
-        "relative rounded-full bg-cream-50 shadow-xl will-change-transform",
-        showSpinButton
-          ? "mx-auto w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] md:w-[400px] md:h-[400px]"
-          : "",
-      ].join(" ")}
+      className="relative mx-auto rounded-full bg-cream-50 shadow-xl will-change-transform"
       style={{
+        width: `${wheelSize}px`,
+        height: `${wheelSize}px`,
+        minWidth: "260px",
+        maxWidth: "550px",
         transform: `rotate(${rotationDegree}deg)`,
         transition: spinTransition,
       }}
       onClick={undefined}
     >
-      {/* Pointer marker at top — scales up on high-res displays */}
+      {/* Pointer marker at top — scales with wheel size */}
       <div
-        className="absolute left-1/2 -top-1.5 -translate-x-1/2 pointer-events-none"
+        className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+        style={{ top: `-${Math.max(wheelSize * 0.05, 16)}px` }}
         aria-hidden="true"
       >
-        <div className="pointer-arrow h-0 w-0 border-x-[11px] border-t-[19px] border-x-transparent border-t-rose-700" />
+        <div
+          className="h-0 border-x-transparent border-t-rose-700"
+          style={{
+            width: 0,
+            minWidth: "16px",
+            borderWidth: `${arrowBorder}px`,
+            borderTopWidth: `${Math.max(arrowBorder * 1.7, 19)}px`,
+            borderLeftWidth: `${arrowBorder}px`,
+            borderRightWidth: `${arrowBorder}px`,
+          }}
+        />
       </div>
 
       <svg
         viewBox="0 0 220 220"
-        className={showSpinButton ? "block h-auto w-full max-w-full wheel-large" : "block h-[clamp(9rem,24vw,11rem)] w-[clamp(9rem,24vw,11rem)]"}
+        className={showSpinButton ? "block h-full w-full" : "block h-[clamp(9rem,24vw,11rem)] w-[clamp(9rem,24vw,11rem)]"}
         role="img"
         aria-label="Wheel of date ideas"
       >
@@ -142,7 +157,7 @@ const WheelSvg = ({
                 d={wedge(i)}
                 fill={lit ? "#2f80d8" : hoveredIndex === i ? "#f0f7ff" : i % 2 ? "#eaf3fc" : "#dce9f7"}
                 stroke="#123a6b"
-                strokeWidth="1.6"
+                strokeWidth={wheelSize * 0.028}
               />
               <line
                 x1={polar(i * STEP, R_IN)[0]}
@@ -150,7 +165,7 @@ const WheelSvg = ({
                 x2={polar(i * STEP, R_OUT)[0]}
                 y2={polar(i * STEP, R_OUT)[1]}
                 stroke="#123a6b"
-                strokeWidth="1.4"
+                strokeWidth={wheelSize * 0.028}
               />
               {/* Emoji centered in the wedge — no rotation, always upright */}
               {showLabels && (
@@ -160,7 +175,7 @@ const WheelSvg = ({
                   textAnchor="middle"
                   dominantBaseline="central"
                   fill={lit ? "#f4f8fd" : "#123a6b"}
-                  fontSize="24px"
+                  fontSize={wheelSize * 0.09}
                 >
                   {idea.emoji}
                 </text>
@@ -170,14 +185,14 @@ const WheelSvg = ({
         })}
 
         {/* Hub (always visible) */}
-        <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth="2.6" />
-        <text
-          x={C}
-          y={C + 3.6}
-          textAnchor="middle"
-          fill="#2f80d8"
-          style={{ font: "400 21px 'Great Vibes', cursive" }}
-        >
+        <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth={wheelSize * 0.04} />
+          <text
+            x={C}
+            y={C + 3.6}
+            textAnchor="middle"
+            fill="#2f80d8"
+            style={{ font: `400 ${wheelSize * 0.14}px 'Great Vibes', cursive` }}
+          >
           us
         </text>
 
@@ -187,7 +202,7 @@ const WheelSvg = ({
             <circle
               cx={C}
               cy={C}
-              r={isSpinning ? 18 : 20}
+              r={isSpinning ? wheelSize * 0.055 : wheelSize * 0.06}
               fill={isSpinning ? "#f1f5f9" : "#ffffff"}
               stroke="#123a6b"
               strokeWidth="2"
@@ -198,7 +213,7 @@ const WheelSvg = ({
               textAnchor="middle"
               fill={isSpinning ? "#94a3bc" : "#2f80d8"}
               style={{
-                font: "700 12px 'Plus Jakarta Sans', system-ui, sans-serif",
+                font: `700 ${wheelSize * 0.05}px 'Plus Jakarta Sans', system-ui, sans-serif`,
                 letterSpacing: "1.2px",
               }}
             >
@@ -232,6 +247,8 @@ export default function DateWheel() {
   const [picked, setPicked] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+
+  const { wheelSize, isMobile, isTablet, isDesktop } = useWheelSize();
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const spinTimer = useRef<number | undefined>(undefined);
@@ -292,11 +309,11 @@ export default function DateWheel() {
     /* PREVIEW: small, plain, label-free wheel in normal page flow */
     return (
       <div
-        className="relative mx-auto flex w-fit flex-col items-center gap-3"
+        className="relative mx-auto flex w-fit flex-col items-center gap-[3.5vh]"
         ref={wheelRef}
       >
         <motion.div
-          className="relative mx-auto flex h-[clamp(9rem,24vw,11rem)] w-[clamp(9rem,24vw,11rem)] cursor-pointer items-center justify-center rounded-full bg-cream-50 ring-2 ring-rose-200 hover:ring-rose-400"
+          className="relative mx-auto flex h-[min(26vmin,280px)] w-[min(26vmin,280px)] cursor-pointer items-center justify-center rounded-full bg-cream-50 ring-2 ring-rose-200 hover:ring-rose-400"
           onClick={handlePreviewClick}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -325,10 +342,11 @@ export default function DateWheel() {
             hoveredIndex={null}
             onSliceHover={() => {}}
             onSpinClick={() => {}}
+            wheelSize={Math.min(wheelSize * 0.55, 280)}
           />
         </motion.div>
 
-        <p className="press-label opacity-60">tap to spin</p>
+        <p className="press-label opacity-60" style={{ fontSize: "calc(0.65rem + 0.2vw)" }}>tap to spin</p>
       </div>
     );
   }
@@ -346,9 +364,9 @@ export default function DateWheel() {
       />
 
       {/* 2b. Centered wheel container inside the modal */}
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center mt-[5vh] mb-[4vh]">
         <div
-          className="relative flex flex-col items-center justify-center gap-4"
+          className="relative flex flex-col items-center justify-center gap-[3.5vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* 4. Close button */}
@@ -373,17 +391,19 @@ export default function DateWheel() {
               hoveredIndex={hoveredIndex}
               onSliceHover={handleSliceHover}
               onSpinClick={handleSpinClick}
+              wheelSize={wheelSize}
             />
           </div>
 
           {/* 3. Hover tooltip — floating label showing full description */}
           {hoveredIndex !== null && tooltipPos && (
             <motion.div
-              className="pointer-events-none fixed z-[10000] rounded-lg bg-cream-50 px-3 py-2 text-xs text-rose-800 shadow-xl"
+              className="pointer-events-none fixed z-[10000] rounded-lg bg-cream-50 px-3 py-2 text-rose-800 shadow-xl"
               style={{
                 left: tooltipPos.x + 16,
                 top: tooltipPos.y + 16,
                 maxWidth: "200px",
+                fontSize: "calc(0.6rem + 0.2vw)",
               }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -397,20 +417,26 @@ export default function DateWheel() {
           {/* Result headline — centered, responsive */}
           {label && !isSpinning && (
             <motion.div
-              className="flex flex-col items-center justify-center text-center w-full box-border"
-              style={{ fontSize: "calc(1.1rem + 0.5vw)", padding: "0 16px" }}
+              className="flex w-full flex-col items-center justify-center text-center box-border"
+              style={{ padding: "0 5vmin" }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 320, damping: 22 }}
             >
-              <span className="press-label font-bold text-rose-800 break-words">
+              <span
+                className="press-label font-bold text-rose-800 break-words"
+                style={{ fontSize: "calc(1rem + 0.8vw)" }}
+              >
                 {label}
               </span>
             </motion.div>
           )}
 
           {/* Hint text */}
-          <p className="press-label opacity-60 text-center">
+          <p
+            className="press-label opacity-60 text-center"
+            style={{ fontSize: "calc(0.75rem + 0.4vw)" }}
+          >
             {isSpinning
               ? "where will it land…"
               : label

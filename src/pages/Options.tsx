@@ -108,19 +108,20 @@ function Options() {
     <div className="page-container min-h-screen relative max-w-[1800px] mx-auto">
       <main className="relative z-10 flex flex-col min-h-screen">
       <ScrollReveal direction="down" delay={0.1} className="pt-8 px-3 sm:px-4 flex-1">
-        <div className="text-center mb-10">
-          <div className="inline-flex flex-col items-center">
-            <p className="press-label mb-2">pick a page</p>
-            <RevealText
-              text="choose your adventure"
-              className="font-romantic type-title ink-mark inline-block text-[1.5rem] sm:text-[1.75rem]"
-              delay={0.2}
-            />
-            <p className="text-rose-600 type-lead mt-3">
-              every path leads to more of us
-            </p>
+          <div className="text-center mb-10">
+            <div className="inline-flex flex-col items-center">
+              <p className="press-label mb-2">pick a page</p>
+              <RevealText
+                text="choose your adventure"
+                className="font-romantic type-title ink-mark inline-block"
+                delay={0.2}
+                style={{ fontSize: "calc(1.5rem + 0.5vw)" }}
+              />
+              <p className="text-rose-600 type-lead mt-3" style={{ fontSize: "calc(0.8rem + 0.2vw)" }}>
+                every path leads to more of us
+              </p>
+            </div>
           </div>
-        </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 auto-rows-fr w-full card-grid">
             {cardData.map((d, i) => (
@@ -157,17 +158,16 @@ function Options() {
 
             <ScrollReveal direction="up" delay={0.2} className="w-full">
               <div className="flex flex-col items-center gap-8 mt-6 md:mt-8 w-full options-section-gap">
-                <div className="text-center">
-                  <p className="press-label mb-2 text-sm sm:text-base">can't decide?</p>
-                  <h2 className="font-romantic type-title text-rose-700 text-[1.5rem] sm:text-[1.75rem]">
+            <div className="text-center">
+                  <p className="press-label mb-2" style={{ fontSize: "calc(0.7rem + 0.2vw)" }}>can't decide?</p>
+                  <h2 className="font-romantic type-title text-rose-700" style={{ fontSize: "calc(1.5rem + 0.6vw)" }}>
                     let the wheel choose
                   </h2>
-                  <p className="text-sm text-gray-500 mt-1 break-words">
+                  <p className="text-gray-500 mt-1 break-words" style={{ fontSize: "calc(0.65rem + 0.2vw)" }}>
                     Tap anywhere on the wheel to spin
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">or visit /reasons for the terminal</p>
                 </div>
-                <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] lg:max-w-[500px] flex justify-center wheel-large">
+                <div className="w-[min(80vmin,45vmax,550px)] max-w-[min(80vmin,45vmax,600px)] min-w-[200px] flex justify-center">
                   <DateWheel />
                 </div>
               </div>
@@ -175,9 +175,9 @@ function Options() {
 
             <ScrollReveal direction="up" delay={1}>
               <footer className="flex justify-center">
-                <p className="font-romantic-alt text-rose-600 type-lead text-center bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2 max-w-[calc(100%-2rem)]">
-                  each path leads to more love
-                </p>
+              <p className="font-romantic-alt text-rose-600 type-lead text-center bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2 max-w-[calc(100%-2rem)]" style={{ fontSize: "calc(1rem + 0.8vw)" }}>
+                each path leads to more love
+              </p>
               </footer>
             </ScrollReveal>
           </div>

@@ -13,14 +13,15 @@ function Reasons() {
           <div className="text-center mb-10">
             <p className="press-label mb-2">100 reasons</p>
             <motion.h1
-              className="font-romantic type-title text-rose-700 text-[1.75rem] sm:text-[2rem] mb-2"
+              className="font-romantic type-title text-rose-700 mb-2"
+              style={{ fontSize: "calc(1.75rem + 0.7vw)" }}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               reason terminal
             </motion.h1>
-            <p className="text-sm text-gray-500 mt-1 max-w-md mx-auto break-words">
+            <p className="text-gray-500 mt-1 max-w-md mx-auto break-words" style={{ fontSize: "calc(0.7rem + 0.2vw)" }}>
               Type a keyword (smile, laugh, always) or a number (1-100) to discover another reason I love you.
             </p>
           </div>
@@ -32,15 +33,15 @@ function Reasons() {
 
             <ScrollReveal direction="up" delay={0.3} className="w-full">
               <div className="text-center">
-                <p className="press-label mb-2 text-sm sm:text-base">can't decide?</p>
-                <h2 className="font-romantic type-title text-rose-700 text-[1.5rem] sm:text-[1.75rem]">
+                <p className="press-label mb-2" style={{ fontSize: "calc(0.7rem + 0.2vw)" }}>can't decide?</p>
+                <h2 className="font-romantic type-title text-rose-700" style={{ fontSize: "calc(1.5rem + 0.6vw)" }}>
                   let the wheel choose
                 </h2>
-                <p className="text-sm text-gray-500 mt-1 break-words">
+                <p className="text-gray-500 mt-1 break-words" style={{ fontSize: "calc(0.65rem + 0.2vw)" }}>
                   Tap anywhere on the wheel to spin
                 </p>
               </div>
-              <div className="w-[80vw] max-w-[280px] sm:max-w-[340px] md:max-w-[400px] lg:max-w-[500px] flex justify-center wheel-large">
+              <div className="w-[min(80vmin,45vmax,550px)] max-w-[min(80vmin,45vmax,600px)] min-w-[200px] flex justify-center">
                 <DateWheel />
               </div>
             </ScrollReveal>
