@@ -167,7 +167,7 @@ function Options() {
                     Tap anywhere on the wheel to spin
                   </p>
                 </div>
-                <div className="w-[min(80vmin,45vmax,550px)] max-w-[min(80vmin,45vmax,600px)] min-w-[200px] flex justify-center">
+                <div className="flex justify-center">
                   <DateWheel />
                 </div>
               </div>

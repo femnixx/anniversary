@@ -2,22 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useWheelSize } from "@/hooks/useViewport";
-
-/* ==================================================================
-   Spin-for-our-next-adventure wheel.
-
-   States:
-     PREVIEW  – a quiet, label-free disc you can click to focus.
-     FULLSCREEN – fixed overlay with dimmed backdrop; the wheel spins
-                  with decelerating CSS rotation and lands on a winner.
-     RESULT  – the winning description appears as a headline below.
-                Re-spin any number of times. Close → back to PREVIEW.
-
-   Only `transform` is ever transitioned on the wheel itself, so the
-   spin costs no layout. The landing wedge is derived from the final
-   rotation rather than chosen at random.
-   ================================================================== */
 
 interface DateIdea {
   id: string;
@@ -38,12 +22,12 @@ const IDEAS: DateIdea[] = [
 
 const N = IDEAS.length;
 const STEP = 360 / N;
-const C = 110; // viewBox centre
-const R_OUT = 104; // outer radius
-const R_IN = 30; // hub radius
-const R_TEXT = R_IN + (R_OUT - R_IN) * 0.55; // emoji center radius (~71)
 
-/* Extra turns the wheel makes before it settles. */
+const C = 250;
+const R_OUT = 220;
+const R_IN = 65;
+const R_TEXT = R_IN + (R_OUT - R_IN) * 0.55;
+
 const SPIN_EXTRA_TURNS = 5;
 const SPIN_DURATION = 4000;
 
@@ -78,7 +62,6 @@ const WheelSvg = ({
   hoveredIndex,
   onSliceHover,
   onSpinClick,
-  wheelSize,
 }: {
   showLabels: boolean;
   showSpinButton: boolean;
@@ -88,7 +71,6 @@ const WheelSvg = ({
   hoveredIndex: number | null;
   onSliceHover: (index: number | null) => void;
   onSpinClick: () => void;
-  wheelSize: number;
 }) => {
   const reduced =
     typeof window !== "undefined" &&
@@ -97,47 +79,40 @@ const WheelSvg = ({
   const spinTransition = isSpinning
     ? "transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)"
     : reduced
-      ? "transform 0.9s ease-out"
-      : "transform 0.3s ease-out";
+    ? "transform 0.9s ease-out"
+    : "transform 0.3s ease-out";
 
   return (
     <div
-      className="relative mx-auto rounded-full bg-cream-50 shadow-xl"
-      style={{
-        width: `${wheelSize}px`,
-        height: `${wheelSize}px`,
-        minWidth: "260px",
-        maxWidth: "550px",
-      }}
-      onClick={undefined}
+      className={showSpinButton
+        ? "relative mx-auto rounded-full bg-cream-50"
+        : "relative mx-auto rounded-full bg-cream-50"
+      }
     >
       <svg
-        viewBox="0 0 220 220"
-        className={showSpinButton ? "block h-full w-full" : "block h-[clamp(9rem,24vw,11rem)] w-[clamp(9rem,24vw,11rem)]"}
+        viewBox="0 0 500 500"
+        width="38vw"
+        height="38vw"
+        style={{
+          minWidth: "280px",
+          maxWidth: "500px",
+          marginLeft: "auto",
+          marginRight: "auto",
+          display: "block",
+        }}
         role="img"
         aria-label="Wheel of date ideas"
       >
-        {/* Pointer marker at top — anchored to SVG center */}
         <defs>
-          <filter id="shadow">
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.15" />
           </filter>
         </defs>
 
-        {/* Top pointer arrow — positioned inside SVG, centered above wheel */}
-        <g transform={`translate(${C}, ${C - R_OUT})`}>
-          <polygon
-            points="0,0 -12,-22 12,-22"
-            fill="#e11941"
-            filter="url(#shadow)"
-          />
-        </g>
-
-        {/* Unified rotation group — all rotating segments rotate together */}
         <g
           style={{
             transform: `rotate(${rotationDegree}deg)`,
-            transformOrigin: "center center",
+            transformOrigin: `${C}px ${C}px`,
             transition: spinTransition,
           }}
         >
@@ -158,7 +133,7 @@ const WheelSvg = ({
                   d={wedge(i)}
                   fill={lit ? "#2f80d8" : hoveredIndex === i ? "#f0f7ff" : i % 2 ? "#eaf3fc" : "#dce9f7"}
                   stroke="#123a6b"
-                  strokeWidth={wheelSize * 0.028}
+                  strokeWidth="3"
                 />
                 <line
                   x1={polar(i * STEP, R_IN)[0]}
@@ -166,9 +141,8 @@ const WheelSvg = ({
                   x2={polar(i * STEP, R_OUT)[0]}
                   y2={polar(i * STEP, R_OUT)[1]}
                   stroke="#123a6b"
-                  strokeWidth={wheelSize * 0.028}
+                  strokeWidth="2"
                 />
-                {/* Emoji centered in the wedge — no rotation, always upright */}
                 {showLabels && (
                   <text
                     x={tx}
@@ -176,7 +150,10 @@ const WheelSvg = ({
                     textAnchor="middle"
                     dominantBaseline="central"
                     fill={lit ? "#f4f8fd" : "#123a6b"}
-                    fontSize={wheelSize * 0.09}
+                    style={{
+                      fontSize: "calc(1.2rem + 1.5vw)",
+                      fontFamily: "system-ui, sans-serif",
+                    }}
                   >
                     {idea.emoji}
                   </text>
@@ -185,37 +162,37 @@ const WheelSvg = ({
             );
           })}
 
-          {/* Hub (always visible) */}
-          <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth={wheelSize * 0.04} />
+          <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth="4" />
           <text
             x={C}
-            y={C + 3.6}
+            y={C + 12}
             textAnchor="middle"
             fill="#2f80d8"
-            style={{ font: `400 ${wheelSize * 0.14}px 'Great Vibes', cursive` }}
+            style={{
+              font: `400 calc(1.5rem + 0.8vw) 'Great Vibes', cursive`,
+            }}
           >
             us
           </text>
 
-          {/* Central SPIN button — only shown in interactive (focused) mode */}
           {showSpinButton && (
             <>
               <circle
                 cx={C}
                 cy={C}
-                r={isSpinning ? wheelSize * 0.055 : wheelSize * 0.06}
+                r={isSpinning ? 42 : 48}
                 fill={isSpinning ? "#f1f5f9" : "#ffffff"}
                 stroke="#123a6b"
-                strokeWidth="2"
+                strokeWidth="3"
               />
               <text
                 x={C}
-                y={C + 5.6}
+                y={C + 10}
                 textAnchor="middle"
                 fill={isSpinning ? "#94a3bc" : "#2f80d8"}
                 style={{
-                  font: `700 ${wheelSize * 0.05}px 'Plus Jakarta Sans', system-ui, sans-serif`,
-                  letterSpacing: "1.2px",
+                  font: `700 calc(1rem + 0.3vw) 'Plus Jakarta Sans', system-ui, sans-serif`,
+                  letterSpacing: "2px",
                 }}
               >
                 {isSpinning ? "SPIN…" : "SPIN"}
@@ -223,10 +200,19 @@ const WheelSvg = ({
             </>
           )}
         </g>
+
+        <circle
+          cx={C}
+          cy={C}
+          r={R_OUT}
+          fill="none"
+          stroke="#123a6b"
+          strokeWidth="2"
+          strokeDasharray="6,4"
+          opacity="0.3"
+        />
       </svg>
 
-      {/* Transparent click-capture overlay — covers the full wheel circle.
-          Catches clicks on any slice, the center hub, or the perimeter. */}
       {showSpinButton && (
         <div
           className="absolute inset-0 rounded-full"
@@ -249,8 +235,6 @@ export default function DateWheel() {
   const [picked, setPicked] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
-
-  const { wheelSize } = useWheelSize();
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const spinTimer = useRef<number | undefined>(undefined);
@@ -306,16 +290,18 @@ export default function DateWheel() {
 
   const label = picked !== null ? IDEAS[picked].description : null;
 
-  /* 1. STATE RENDERING LOGIC: Only ONE wheel instance at any time. */
   if (isPreviewMode) {
-    /* PREVIEW: small, plain, label-free wheel in normal page flow */
     return (
       <div
         className="relative mx-auto flex w-fit flex-col items-center gap-[3.5vh]"
         ref={wheelRef}
       >
         <motion.div
-          className="relative mx-auto flex h-[min(26vmin,280px)] w-[min(26vmin,280px)] cursor-pointer items-center justify-center rounded-full bg-cream-50 ring-2 ring-rose-200 hover:ring-rose-400"
+          className="relative mx-auto flex cursor-pointer items-center justify-center rounded-full bg-cream-50 ring-2 ring-rose-200 hover:ring-rose-400"
+          style={{
+            width: "min(42vmin, 280px)",
+            height: "min(42vmin, 280px)",
+          }}
           onClick={handlePreviewClick}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -344,20 +330,16 @@ export default function DateWheel() {
             hoveredIndex={null}
             onSliceHover={() => {}}
             onSpinClick={() => {}}
-            wheelSize={Math.min(wheelSize * 0.55, 280)}
           />
         </motion.div>
 
-        <p className="press-label opacity-60" style={{ fontSize: "calc(0.65rem + 0.2vw)" }}>tap to spin</p>
+        <p className="press-label opacity-60" style={{ fontSize: "calc(0.7rem + 0.3vw)" }}>tap to spin</p>
       </div>
     );
   }
 
-  /* 2. FOCUSED: fullscreen modal overlay with the large wheel.
-     The wheel renders summaries, handles spins, and the result reveals after landing. */
   return (
     <>
-      {/* 2a. Fixed overlay: dim backdrop with blur */}
       <div
         className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
         onClick={handleClose}
@@ -365,13 +347,11 @@ export default function DateWheel() {
         role="button"
       />
 
-      {/* 2b. Centered wheel container inside the modal */}
       <div className="fixed inset-0 z-[9999] flex items-center justify-center mt-[5vh] mb-[4vh]">
         <div
           className="relative flex flex-col items-center justify-center gap-[3.5vh]"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* 4. Close button */}
           <button
             onClick={handleClose}
             className="absolute -top-16 right-0 rounded-full bg-cream-50 px-3 py-1 text-rose-700 shadow hover:bg-rose-50 press-label"
@@ -393,11 +373,9 @@ export default function DateWheel() {
               hoveredIndex={hoveredIndex}
               onSliceHover={handleSliceHover}
               onSpinClick={handleSpinClick}
-              wheelSize={wheelSize}
             />
           </div>
 
-          {/* 3. Hover tooltip — floating label showing full description */}
           {hoveredIndex !== null && tooltipPos && (
             <motion.div
               className="pointer-events-none fixed z-[10000] rounded-lg bg-cream-50 px-3 py-2 text-rose-800 shadow-xl"
@@ -416,7 +394,6 @@ export default function DateWheel() {
             </motion.div>
           )}
 
-          {/* Result headline — centered, responsive */}
           {label && !isSpinning && (
             <motion.div
               className="flex w-full flex-col items-center justify-center text-center box-border"
@@ -434,16 +411,12 @@ export default function DateWheel() {
             </motion.div>
           )}
 
-          {/* Hint text */}
-          <p
-            className="press-label opacity-60 text-center"
-            style={{ fontSize: "calc(0.75rem + 0.4vw)" }}
-          >
+          <p className="press-label opacity-60 text-center" style={{ fontSize: "calc(0.7rem + 0.3vw)" }}>
             {isSpinning
               ? "where will it land…"
               : label
-                ? "close or spin again"
-                : "tap the wheel or SPIN to go"}
+              ? "close or spin again"
+              : "tap the wheel or SPIN to go"}
           </p>
         </div>
       </div>
