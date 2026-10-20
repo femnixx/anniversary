@@ -100,92 +100,93 @@ const WheelSvg = ({
       ? "transform 0.9s ease-out"
       : "transform 0.3s ease-out";
 
-  const arrowBorder = Math.max(wheelSize * 0.04, 11);
-
   return (
     <div
-      className="relative mx-auto rounded-full bg-cream-50 shadow-xl will-change-transform"
+      className="relative mx-auto rounded-full bg-cream-50 shadow-xl"
       style={{
         width: `${wheelSize}px`,
         height: `${wheelSize}px`,
         minWidth: "260px",
         maxWidth: "550px",
-        transform: `rotate(${rotationDegree}deg)`,
-        transition: spinTransition,
       }}
       onClick={undefined}
     >
-      {/* Pointer marker at top — scales with wheel size */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{ top: `-${Math.max(wheelSize * 0.05, 16)}px` }}
-        aria-hidden="true"
-      >
-        <div
-          className="h-0 border-x-transparent border-t-rose-700"
-          style={{
-            width: 0,
-            minWidth: "16px",
-            borderWidth: `${arrowBorder}px`,
-            borderTopWidth: `${Math.max(arrowBorder * 1.7, 19)}px`,
-            borderLeftWidth: `${arrowBorder}px`,
-            borderRightWidth: `${arrowBorder}px`,
-          }}
-        />
-      </div>
-
       <svg
         viewBox="0 0 220 220"
         className={showSpinButton ? "block h-full w-full" : "block h-[clamp(9rem,24vw,11rem)] w-[clamp(9rem,24vw,11rem)]"}
         role="img"
         aria-label="Wheel of date ideas"
       >
-        {IDEAS.map((idea, i) => {
-          const lit = picked === i;
-          const midAngle = i * STEP + STEP / 2;
-          const [tx, ty] = polar(midAngle, R_TEXT);
+        {/* Pointer marker at top — anchored to SVG center */}
+        <defs>
+          <filter id="shadow">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.15" />
+          </filter>
+        </defs>
 
-          return (
-            <g
-              key={idea.id}
-              onMouseEnter={() => onSliceHover(i)}
-              onMouseLeave={() => onSliceHover(null)}
-              style={{ cursor: showSpinButton && !isSpinning ? "pointer" : "default" }}
-            >
-              <title>{idea.description}</title>
-              <path
-                d={wedge(i)}
-                fill={lit ? "#2f80d8" : hoveredIndex === i ? "#f0f7ff" : i % 2 ? "#eaf3fc" : "#dce9f7"}
-                stroke="#123a6b"
-                strokeWidth={wheelSize * 0.028}
-              />
-              <line
-                x1={polar(i * STEP, R_IN)[0]}
-                y1={polar(i * STEP, R_IN)[1]}
-                x2={polar(i * STEP, R_OUT)[0]}
-                y2={polar(i * STEP, R_OUT)[1]}
-                stroke="#123a6b"
-                strokeWidth={wheelSize * 0.028}
-              />
-              {/* Emoji centered in the wedge — no rotation, always upright */}
-              {showLabels && (
-                <text
-                  x={tx}
-                  y={ty}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill={lit ? "#f4f8fd" : "#123a6b"}
-                  fontSize={wheelSize * 0.09}
-                >
-                  {idea.emoji}
-                </text>
-              )}
-            </g>
-          );
-        })}
+        {/* Top pointer arrow — positioned inside SVG, centered above wheel */}
+        <g transform={`translate(${C}, ${C - R_OUT})`}>
+          <polygon
+            points="0,0 -12,-22 12,-22"
+            fill="#e11941"
+            filter="url(#shadow)"
+          />
+        </g>
 
-        {/* Hub (always visible) */}
-        <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth={wheelSize * 0.04} />
+        {/* Unified rotation group — all rotating segments rotate together */}
+        <g
+          style={{
+            transform: `rotate(${rotationDegree}deg)`,
+            transformOrigin: "center center",
+            transition: spinTransition,
+          }}
+        >
+          {IDEAS.map((idea, i) => {
+            const lit = picked === i;
+            const midAngle = i * STEP + STEP / 2;
+            const [tx, ty] = polar(midAngle, R_TEXT);
+
+            return (
+              <g
+                key={idea.id}
+                onMouseEnter={() => onSliceHover(i)}
+                onMouseLeave={() => onSliceHover(null)}
+                style={{ cursor: showSpinButton && !isSpinning ? "pointer" : "default" }}
+              >
+                <title>{idea.description}</title>
+                <path
+                  d={wedge(i)}
+                  fill={lit ? "#2f80d8" : hoveredIndex === i ? "#f0f7ff" : i % 2 ? "#eaf3fc" : "#dce9f7"}
+                  stroke="#123a6b"
+                  strokeWidth={wheelSize * 0.028}
+                />
+                <line
+                  x1={polar(i * STEP, R_IN)[0]}
+                  y1={polar(i * STEP, R_IN)[1]}
+                  x2={polar(i * STEP, R_OUT)[0]}
+                  y2={polar(i * STEP, R_OUT)[1]}
+                  stroke="#123a6b"
+                  strokeWidth={wheelSize * 0.028}
+                />
+                {/* Emoji centered in the wedge — no rotation, always upright */}
+                {showLabels && (
+                  <text
+                    x={tx}
+                    y={ty}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill={lit ? "#f4f8fd" : "#123a6b"}
+                    fontSize={wheelSize * 0.09}
+                  >
+                    {idea.emoji}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+
+          {/* Hub (always visible) */}
+          <circle cx={C} cy={C} r={R_IN} fill="#f4f8fd" stroke="#123a6b" strokeWidth={wheelSize * 0.04} />
           <text
             x={C}
             y={C + 3.6}
@@ -193,34 +194,35 @@ const WheelSvg = ({
             fill="#2f80d8"
             style={{ font: `400 ${wheelSize * 0.14}px 'Great Vibes', cursive` }}
           >
-          us
-        </text>
+            us
+          </text>
 
-        {/* Central SPIN button — only shown in interactive (focused) mode */}
-        {showSpinButton && (
-          <>
-            <circle
-              cx={C}
-              cy={C}
-              r={isSpinning ? wheelSize * 0.055 : wheelSize * 0.06}
-              fill={isSpinning ? "#f1f5f9" : "#ffffff"}
-              stroke="#123a6b"
-              strokeWidth="2"
-            />
-            <text
-              x={C}
-              y={C + 5.6}
-              textAnchor="middle"
-              fill={isSpinning ? "#94a3bc" : "#2f80d8"}
-              style={{
-                font: `700 ${wheelSize * 0.05}px 'Plus Jakarta Sans', system-ui, sans-serif`,
-                letterSpacing: "1.2px",
-              }}
-            >
-              {isSpinning ? "SPIN…" : "SPIN"}
-            </text>
-          </>
-        )}
+          {/* Central SPIN button — only shown in interactive (focused) mode */}
+          {showSpinButton && (
+            <>
+              <circle
+                cx={C}
+                cy={C}
+                r={isSpinning ? wheelSize * 0.055 : wheelSize * 0.06}
+                fill={isSpinning ? "#f1f5f9" : "#ffffff"}
+                stroke="#123a6b"
+                strokeWidth="2"
+              />
+              <text
+                x={C}
+                y={C + 5.6}
+                textAnchor="middle"
+                fill={isSpinning ? "#94a3bc" : "#2f80d8"}
+                style={{
+                  font: `700 ${wheelSize * 0.05}px 'Plus Jakarta Sans', system-ui, sans-serif`,
+                  letterSpacing: "1.2px",
+                }}
+              >
+                {isSpinning ? "SPIN…" : "SPIN"}
+              </text>
+            </>
+          )}
+        </g>
       </svg>
 
       {/* Transparent click-capture overlay — covers the full wheel circle.
@@ -248,7 +250,7 @@ export default function DateWheel() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
-  const { wheelSize, isMobile, isTablet, isDesktop } = useWheelSize();
+  const { wheelSize } = useWheelSize();
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const spinTimer = useRef<number | undefined>(undefined);

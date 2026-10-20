@@ -235,11 +235,6 @@
 @layer utilities {
   .text-balance { text-wrap: balance; }
 
-  /* Wheel emoji text — scales with the wheel size */
-  .wheel-emoji {
-    font-size: clamp(18px, 8vmin, 32px);
-  }
-
   /* ── The signature: offset spot-ink plate, zero blur ───────── */
   .plate {
     box-shadow: var(--print-offset) var(--print-offset) 0 var(--color-rose-700);
@@ -576,18 +571,6 @@
   .press-label { font-size: clamp(0.7rem, 0.68rem + 0.15vw, 0.85rem); }
   .nav-label { font-size: clamp(0.95rem, 0.9rem + 0.45vw, 1.4rem); }
 
-  /* Fluid wheel sizing — scales with the smaller viewport axis (vmin) */
-  .wheel-large {
-    width: clamp(260px, 32vmin, 550px);
-    height: clamp(260px, 32vmin, 550px);
-  }
-
-  /* Pointer arrow tracks wheel scaling */
-  .pointer-arrow {
-    width: clamp(16px, 2vmin, 24px);
-    min-width: 16px;
-  }
-
   /* Fluid vertical rhythm — viewport-relative spacing */
   .section-gap {
     gap: 3.5vh;
@@ -615,16 +598,6 @@
   .type-subtitle { font-size: clamp(1.15rem, 0.75rem + 1.5vw, 3.5rem); }
   .press-label { font-size: clamp(0.7rem, 0.68rem + 0.15vw, 1rem); }
   .nav-label { font-size: clamp(0.95rem, 0.9rem + 0.45vw, 1.8rem); }
-
-  .wheel-large {
-    width: clamp(280px, 35vmin, 650px);
-    height: clamp(280px, 35vmin, 650px);
-  }
-
-  .pointer-arrow {
-    width: clamp(18px, 2.2vmin, 28px);
-    min-width: 18px;
-  }
 
   .section-gap {
     gap: 4vh;
