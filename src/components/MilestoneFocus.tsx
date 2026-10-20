@@ -223,7 +223,7 @@ export default function MilestoneFocus({ item, onClose }: Props) {
                 >
                   {images.length > 0 ? (
                     <div
-                      className="relative w-full aspect-[4/3]"
+                      className="relative w-full aspect-[16/9]"
                       onTouchStart={handleTouchStart}
                       onTouchEnd={handleTouchEnd}
                     >
@@ -232,7 +232,7 @@ export default function MilestoneFocus({ item, onClose }: Props) {
                           key={idx}
                           src={url}
                           alt={`${active ? active.title : item.title} photo ${idx + 1}`}
-                          className={`absolute inset-0 h-full w-full object-cover rounded-lg border-2 border-rose-700 transition-opacity duration-500 ease-in-out ${
+                          className={`absolute inset-0 h-full w-full object-cover rounded-xl border-2 border-rose-700 transition-opacity duration-500 ease-in-out ${
                             idx === currentImageIndex ? "opacity-100" : "opacity-0"
                           }`}
                         />
@@ -300,15 +300,15 @@ export default function MilestoneFocus({ item, onClose }: Props) {
                   className="flex flex-col gap-4"
                 >
                   <div>
-                    <p className="press-label mb-2">
-                      {active ? active.date : item.date}
-                    </p>
-                    <h2 className="font-romantic text-4xl sm:text-5xl text-rose-700 leading-[1.05]">
+                  <p className="press-label mb-2 break-words whitespace-normal">
+                    {active ? active.date : item.date}
+                  </p>
+                    <h2 className="font-romantic text-4xl sm:text-5xl text-rose-700 leading-[1.05] break-words whitespace-normal">
                       {active ? active.title : item.title}
                     </h2>
                   </div>
 
-                  <p className="text-sage-700 type-body whitespace-pre-line leading-relaxed">
+                  <p className="text-sage-700 type-body whitespace-pre-line leading-relaxed break-words whitespace-normal">
                     {active ? active.story : item.story}
                   </p>
 
