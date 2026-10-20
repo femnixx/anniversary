@@ -85,17 +85,17 @@ const WheelSvg = ({
     : "transform 0.3s ease-out";
 
   return (
-    <div className="relative mx-auto rounded-full bg-cream-50">
+    <div className="relative mx-auto">
       <svg
         viewBox="0 0 500 500"
-        width="38vw"
-        height="38vw"
         style={{
           minWidth: "280px",
           maxWidth: "500px",
           marginLeft: "auto",
           marginRight: "auto",
           display: "block",
+          width: showSpinButton ? "38vw" : "100%",
+          height: showSpinButton ? "38vw" : "100%",
         }}
         role="img"
         aria-label="Wheel of date ideas"
@@ -385,14 +385,15 @@ function DateWheelPreview() {
   return (
     <>
       <div
-        className="relative mx-auto flex w-fit flex-col items-center gap-[3.5vh]"
+        className="relative mx-auto aspect-square w-[min(42vmin,280px)]"
+        style={{ overflow: "visible" }}
         ref={wheelRef}
       >
         <motion.div
           className="relative mx-auto flex cursor-pointer items-center justify-center rounded-full bg-cream-50 ring-2 ring-rose-200 hover:ring-rose-400"
           style={{
-            width: "min(42vmin, 280px)",
-            height: "min(42vmin, 280px)",
+            width: "100%",
+            height: "100%",
           }}
           onClick={handlePreviewClick}
           onKeyDown={(e) => {
@@ -425,8 +426,13 @@ function DateWheelPreview() {
           />
         </motion.div>
 
-        <p className="press-label opacity-60" style={{ fontSize: "calc(0.7rem + 0.3vw)" }}>tap to spin</p>
-      </div>
+      <p
+        className="press-label opacity-60 absolute -bottom-[2rem] left-0 right-0 text-center"
+        style={{ fontSize: "calc(0.7rem + 0.3vw)" }}
+      >
+        tap to spin
+      </p>
+    </div>
 
       {isModalOpen && <DateWheelFocused onClose={handleClose} />}
     </>
