@@ -14,7 +14,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: "/", label: "Home", shortLabel: "🏠", icon: <HomeIcon /> },
   { path: "/message", label: "Letter", shortLabel: "💌", icon: <LetterIcon /> },
-  { path: "/plan", label: "Memories", shortLabel: "🌸", icon: <MemoriesIcon /> },
+  { path: "/memories", label: "Memories", shortLabel: "🌸", icon: <MemoriesIcon /> },
   { path: "/moments", label: "Upload", shortLabel: "📸", icon: <UploadIcon /> },
   { path: "/journey", label: "Journey", shortLabel: "🗺️", icon: <JourneyIcon /> },
   { path: "/compliments", label: "Love Notes", shortLabel: "💕", icon: <ComplimentsIcon /> },

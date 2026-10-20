@@ -1,7 +1,7 @@
 // scripts/rename-moments.mjs
 //
 // Renames every photo in src/assets/moments/ to a short, descriptive
-// slug so the /plan gallery labels never overflow the card. The old
+// slug so the /memories gallery labels never overflow the card. The old
 // WhatsApp filenames ("WhatsApp Image 2026-10-19 at 18.16.07 (2).jpeg")
 // were far too long for the circular gallery to render.
 //

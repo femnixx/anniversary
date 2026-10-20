@@ -8,6 +8,7 @@ import "../components/CircularGallery.css";
 import { neonStorage } from "@/NeonClient";
 import { PHOTOS } from "@/journeyData";
 import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
+import memoriesManifest from "@/assets/memories-manifest.json";
 
 interface GalleryItem {
   image: string;
@@ -21,7 +22,7 @@ const fallbackGallery: GalleryItem[] = [
   { image: "https://picsum.photos/id/1074/800/600", text: "Concert Night" },
 ];
 
-function Plan() {
+function Memories() {
   const [myGalleryItems, setMyGalleryItems] = useState<GalleryItem[]>([]);
   const [galleryFontSize, setGalleryFontSize] = useState(28);
   const [focused, setFocused] = useState<number | null>(null);
@@ -85,55 +86,17 @@ function Plan() {
   }, []);
 
   useEffect(() => {
-    /* Local photos in src/assets/moments/ come first — they are real,
-       and they need no renaming to show up. */
-    if (PHOTOS.length > 0) {
-      setMyGalleryItems(
-        PHOTOS.map(p => ({
-          image: p.url,
-          text: p.hasDate ? `${p.date}` : p.file.replace(/\.[^.]+$/, ""),
-        }))
-      );
-      return;
-    }
+    /* Load images categorized as "memories" (other pics) from the
+       database-generated manifest. These are the photos served from
+       Neon Object Storage with permanent public URLs. */
+    const dbItems: GalleryItem[] = Object.entries(memoriesManifest).map(
+      ([file, meta]) => ({
+        image: meta.publicUrl,
+        text: file.replace(/\.[^.]+$/, ""),
+      })
+    );
 
-    if (!neonStorage.isConfigured) {
-      setMyGalleryItems(fallbackGallery);
-      return;
-    }
-
-    const fetchImages = async () => {
-      try {
-        const files = await neonStorage.list();
-
-        if (!files || files.length === 0) {
-          setMyGalleryItems(fallbackGallery);
-          return;
-        }
-
-        const neonItems: GalleryItem[] = await Promise.all(
-          files.map(async (file) => {
-            const url = await neonStorage.getPublicUrl(file.key);
-            return {
-              image: url,
-              text: file.name.replace(/\.[^/.]+$/, ""),
-            };
-          })
-        );
-
-        const combinedItems =
-          neonItems.length >= 4
-            ? neonItems
-            : [...neonItems, ...fallbackGallery].slice(0, 4);
-
-        setMyGalleryItems(combinedItems);
-      } catch (error) {
-        console.error("Error fetching images:", error);
-        setMyGalleryItems(fallbackGallery);
-      }
-    };
-
-    fetchImages();
+    setMyGalleryItems(dbItems.length > 0 ? dbItems : fallbackGallery);
   }, []);
 
   return (
@@ -271,4 +234,4 @@ function Plan() {
   );
 }
 
-export default Plan;
+export default Memories;

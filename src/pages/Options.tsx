@@ -73,7 +73,7 @@ const Card = ({ imgSrc, label, alt, to, icon, delay }: CardProps) => {
 };
 
 const cardData = [
-  { imgSrc: date, label: "our memories", alt: "Calendar and heart", to: "/plan", icon: "🌸" },
+  { imgSrc: date, label: "our memories", alt: "Calendar and heart", to: "/memories", icon: "🌸" },
   { imgSrc: moments, label: "capture moments", alt: "Camera and memories", to: "/moments", icon: "📸" },
   { imgSrc: together, label: "journey together", alt: "Timeline together", to: "/journey", icon: "🗺️" },
   { imgSrc: compliments, label: "Compliments", alt: "Stars and compliments", to: "/compliments", icon: "💕" },
@@ -92,7 +92,7 @@ function Options() {
     };
   }, [currentPath]);
 
-  /* Dominant colour of the last photo viewed on /plan, cached in
+  /* Dominant colour of the last photo viewed on /memories, cached in
      sessionStorage by that page. Read once on mount and again when the
      tab regains focus — no polling loop, so the choice cards never
      re-render on a timer. */

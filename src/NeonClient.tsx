@@ -70,6 +70,17 @@ export const neonStorage = {
       Key: key,
     }), { expiresIn: 3600 });
   },
+
+  /**
+   * Returns a permanent, non-expiring public URL for an object in a
+   * public_read bucket. Constructed from the endpoint + bucket + key,
+   * no presigning required.
+   */
+  getPublicReadUrl(key: string) {
+    if (!ENDPOINT || !BUCKET) return "";
+    const base = ENDPOINT.replace(/\/$/, "");
+    return `${base}/${BUCKET}/${key}`;
+  },
 };
 
 export const neonDb = neonStorage;
