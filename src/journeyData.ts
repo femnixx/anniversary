@@ -47,9 +47,9 @@ export const MILESTONES: Milestone[] = [
     slug: "how-we-met",
     title: "How We Met",
     date: "the beginning",
-    desc: "A simple hello that changed everything.",
+    desc: "It started with a hello that wasn't supposed to be anything special.",
     story:
-      "It started the way the best things do — quietly, and without either of us planning it. A hello that should have been forgettable, and instead became the thing everything else got measured against.\n\nNeither of us knew yet that a year later we'd be driving through toll roads in the dark just to be somewhere together on a birthday.",
+      "It started when I first saw you. A greeting, a question, if we were in the same cluster. An unexpected question that came out of our mouths without realizing it was the start to it all.\n\nWithout even knowing that in a few months we were driving up through toll roads, spending our nights together, and loving each other.",
     icon: "✨",
   },
   {
