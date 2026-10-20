@@ -23,44 +23,53 @@ function JourneyMilestone({
   const isLast = index === total - 1;
   const hasKids = Boolean(item.children?.length);
 
+  const cardWidth = "calc(50% - clamp(1.5rem, 4vw, 3rem))";
+
   return (
-    <div className="relative flex w-full">
-      {/*
-        Mobile: vertical timeline axis pin anchored on the left.
-        Desktop: alternating cards left/right of central axis line.
-      */}
+    <div className="relative w-full mb-[clamp(1.5rem,4vw,3rem)] last:mb-0">
+      {/* Center axis dot + connector (tablet+) */}
       <div
-        className={`absolute top-0 z-20 flex items-center justify-center -translate-x-1/2 md:relative md:translate-x-0 ${
-          isEven ? "md:justify-end md:pr-4" : "md:justify-start md:pl-4"
-        }`}
-        style={{ left: isEven ? "calc(50% - 12px)" : "calc(50% - 12px)" }}
+        className="absolute top-10 z-20 hidden md:flex items-center"
+        style={{
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
       >
+        <div className="h-3 w-3 rounded-full bg-black border-2 border-black" />
+
+        {/* Connector line to card */}
         <div
-          className={`hidden md:block h-4 w-4 rounded-full border-2 ${
-            isLast ? "bg-rose-400" : "bg-[#2f80d8]"
-          } border-[#123a6b]`}
+          className={`absolute top-1/2 h-0.5 bg-black -translate-y-1/2 ${
+            isEven ? "right-0" : "left-0"
+          }`}
+          style={{
+            width: cardWidth,
+            left: isEven ? "auto" : "0",
+            right: isEven ? "0" : "auto",
+          }}
         />
       </div>
 
-      {/* Mobile pin (left edge) */}
+      {/* Mobile axis dot + connector */}
       <div
-        className="absolute left-6 top-6 z-20 -translate-x-1/2 md:hidden"
-        aria-hidden="true"
+        className="absolute top-10 z-20 flex items-center md:hidden"
+        style={{ left: "clamp(0.75rem, 4vw, 1.25rem)" }}
       >
+        <div className="h-3 w-3 rounded-full bg-black border-2 border-black" />
+
         <div
-          className={`h-4 w-4 rounded-full border-2 ${
-            isLast ? "bg-rose-400" : "bg-[#2f80d8]"
-          } border-[#123a6b]`}
+          className="absolute top-1/2 h-0.5 bg-black -translate-y-1/2 left-[12px]"
+          style={{
+            width: "clamp(0.75rem, 4vw, 1.5rem)",
+          }}
         />
       </div>
 
-      {/* Card container — alternating sides on desktop, full-width on mobile */}
+      {/* Card container */}
       <div
-        className={`relative flex ${
-          isEven
-            ? "md:justify-end md:w-[calc(50%-1rem)]"
-            : "md:ml-auto md:w-[calc(50%-1rem)]"
-        } w-full ml-12 md:ml-0`}
+        className={`relative mx-auto ${
+          isEven ? "md:mr-auto md:ml-0" : "md:ml-auto md:mr-0"
+        } w-full md:w-[${cardWidth}]`}
       >
         <ScrollReveal direction="up" delay={0.1} className="w-full">
           <motion.div
@@ -132,7 +141,6 @@ function JourneyMilestone({
 function Journey() {
   const [focused, setFocused] = useState<Milestone | null>(null);
 
-  /* SITREP: verify journey images against Neon DB on mount */
   useEffect(() => {
     verifyJourneyImages().then((ok) => {
       if (!ok) {
@@ -172,20 +180,27 @@ function Journey() {
             </div>
           </div>
 
-          <div className="relative w-full">
-            {/* Mobile: vertical timeline axis line on left edge */}
+          <div className="journeys-timeline relative w-full">
+            {/* Vertical timeline line (behind cards, in front of background) */}
+            {/* Desktop: center line */}
             <div
-              className="absolute left-6 top-0 bottom-[-2rem] w-px bg-[#94a3bc] md:hidden"
-              aria-hidden="true"
+              className="absolute top-0 bottom-0 w-[2px] bg-black md:translate-x-0"
+              style={{
+                left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 0,
+              }}
+            />
+            {/* Mobile: left-side line */}
+            <div
+              className="absolute top-0 bottom-0 w-[2px] bg-black md:hidden"
+              style={{
+                left: "calc(clamp(0.75rem, 4vw, 1.25rem) - 1px)",
+                zIndex: 0,
+              }}
             />
 
-            {/* Desktop: central vertical axis line */}
-            <div
-              className="hidden md:absolute md:inset-y-0 md:left-1/2 md:-translate-x-1/2 md:w-px md:bg-[#94a3bc]"
-              aria-hidden="true"
-            />
-
-            <div className="relative flex flex-col gap-6 md:gap-8">
+            <div className="relative flex flex-col gap-6 md:gap-8" style={{ zIndex: 1 }}>
               {MILESTONES.map((m, i) => (
                 <JourneyMilestone
                   key={m.slug}
@@ -199,7 +214,6 @@ function Journey() {
           </div>
         </ScrollReveal>
 
-        {/* Focused milestone */}
         <AnimatePresence>
           {focused && (
             <MilestoneFocus item={focused} onClose={() => setFocused(null)} />
