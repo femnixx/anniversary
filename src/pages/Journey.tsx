@@ -10,31 +10,59 @@ import { verifyJourneyImages } from "@/journeyImages";
 
 function JourneyMilestone({
   item,
-  _isLast,
+  index,
+  total,
   onFocus,
 }: {
   item: Milestone;
-  _isLast: boolean;
+  index: number;
+  total: number;
   onFocus: () => void;
 }) {
+  const isEven = index % 2 === 0;
+  const isLast = index === total - 1;
   const hasKids = Boolean(item.children?.length);
 
   return (
-    <div className="relative flex w-full items-start">
+    <div className="relative flex w-full">
       {/*
-        Mobile: vertical timeline axis pin anchored on the left line.
-        Desktop (md+): hidden, reverts to horizontal card layout.
+        Mobile: vertical timeline axis pin anchored on the left.
+        Desktop: alternating cards left/right of central axis line.
       */}
+      <div
+        className={`absolute top-0 z-20 flex items-center justify-center -translate-x-1/2 md:relative md:translate-x-0 ${
+          isEven ? "md:justify-end md:pr-4" : "md:justify-start md:pl-4"
+        }`}
+        style={{ left: isEven ? "calc(50% - 12px)" : "calc(50% - 12px)" }}
+      >
+        <div
+          className={`hidden md:block h-4 w-4 rounded-full border-2 ${
+            isLast ? "bg-rose-400" : "bg-[#2f80d8]"
+          } border-[#123a6b]`}
+        />
+      </div>
+
+      {/* Mobile pin (left edge) */}
       <div
         className="absolute left-6 top-6 z-20 -translate-x-1/2 md:hidden"
         aria-hidden="true"
       >
-        <div className="h-4 w-4 rounded-full bg-[#2f80d8] border-2 border-[#123a6b]" />
+        <div
+          className={`h-4 w-4 rounded-full border-2 ${
+            isLast ? "bg-rose-400" : "bg-[#2f80d8]"
+          } border-[#123a6b]`}
+        />
       </div>
 
-      {/* card — indented on mobile for the timeline, half-width on desktop */}
-      <div className="ml-12 w-full md:ml-0 md:w-1/2">
-        <ScrollReveal direction="up" delay={0.1}>
+      {/* Card container — alternating sides on desktop, full-width on mobile */}
+      <div
+        className={`relative flex ${
+          isEven
+            ? "md:justify-end md:w-[calc(50%-1rem)]"
+            : "md:ml-auto md:w-[calc(50%-1rem)]"
+        } w-full ml-12 md:ml-0`}
+      >
+        <ScrollReveal direction="up" delay={0.1} className="w-full">
           <motion.div
             role="button"
             tabIndex={0}
@@ -56,7 +84,7 @@ function JourneyMilestone({
                 {item.emoji ?? item.icon}
               </div>
 
-              {/* text stack — date, location, title, description */}
+              {/* text stack */}
               <div className="flex-1 min-w-0">
                 <p className="press-label mb-1 break-words whitespace-normal">
                   {item.date}
@@ -85,7 +113,6 @@ function JourneyMilestone({
                 )}
               </div>
 
-              {/* expand affordance */}
               <span
                 className="flex-shrink-0 self-start w-11 h-11 rounded-full grid place-items-center border-2 border-rose-700 bg-cream-50 text-rose-700 transition-all duration-300"
                 aria-hidden="true"
@@ -119,7 +146,7 @@ function Journey() {
 
   return (
     <div
-      className="page-container min-h-screen relative max-w-[100vw] overflow-x-hidden px-4"
+      className="page-container min-h-screen 100dvh relative max-w-7xl mx-auto overflow-x-hidden px-3 sm:px-4"
       data-journey-root
     >
       <div className="absolute inset-0 z-0">
@@ -129,8 +156,8 @@ function Journey() {
       </div>
 
       <main className="relative z-10 flex flex-col min-h-screen">
-        <ScrollReveal direction="down" delay={0.1} className="pt-8 flex-1">
-          <div className="mb-10 flex flex-col items-center text-center">
+        <ScrollReveal direction="down" delay={0.1} className="pt-6 pb-6 flex-1">
+          <div className="mb-8 flex flex-col items-center text-center">
             <div className="flex flex-col items-center">
               <p className="press-label mb-2">our route so far</p>
               <RevealText
@@ -145,40 +172,43 @@ function Journey() {
             </div>
           </div>
 
-          <div className="w-full max-w-4xl mx-auto">
-            {/*
-              Mobile: vertical connected timeline with left axis line + pins.
-              Desktop (md+): horizontal multi-column, timeline hidden.
-            */}
-            <div className="relative flex w-full flex-col gap-6 md:flex-row md:flex-wrap md:gap-8">
-              {/* vertical timeline axis — mobile only */}
-              <div
-                className="absolute left-6 top-0 bottom-[-2rem] w-px bg-[#94a3bc] md:hidden"
-                aria-hidden="true"
-              />
+          <div className="relative w-full">
+            {/* Mobile: vertical timeline axis line on left edge */}
+            <div
+              className="absolute left-6 top-0 bottom-[-2rem] w-px bg-[#94a3bc] md:hidden"
+              aria-hidden="true"
+            />
 
+            {/* Desktop: central vertical axis line */}
+            <div
+              className="hidden md:absolute md:inset-y-0 md:left-1/2 md:-translate-x-1/2 md:w-px md:bg-[#94a3bc]"
+              aria-hidden="true"
+            />
+
+            <div className="relative flex flex-col gap-6 md:gap-8">
               {MILESTONES.map((m, i) => (
-          <JourneyMilestone
-            key={m.slug}
-            item={m}
-            _isLast={i === MILESTONES.length - 1}
-            onFocus={() => setFocused(m)}
-          />
+                <JourneyMilestone
+                  key={m.slug}
+                  item={m}
+                  index={i}
+                  total={MILESTONES.length}
+                  onFocus={() => setFocused(m)}
+                />
               ))}
             </div>
           </div>
         </ScrollReveal>
 
-        {/* Focused milestone — dark scrim, centred card, sub-journey nav */}
+        {/* Focused milestone */}
         <AnimatePresence>
           {focused && (
             <MilestoneFocus item={focused} onClose={() => setFocused(null)} />
           )}
         </AnimatePresence>
 
-        <footer className="relative z-10 py-8 px-4 flex justify-center">
+        <footer className="relative z-10 py-6 flex justify-center">
           <ScrollReveal direction="up" delay={1}>
-            <p className="font-romantic-alt text-rose-600 type-lead text-center bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2 break-words whitespace-normal">
+            <p className="font-romantic-alt text-rose-600 type-lead text-center bg-cream-50 plate border-2 border-rose-700 rounded-full px-5 py-2 break-words whitespace-normal" style={{ fontSize: "calc(0.9rem + 0.8vw)" }}>
               the map isn't finished
             </p>
           </ScrollReveal>

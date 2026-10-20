@@ -425,10 +425,10 @@
 /* Buttons: two stacked plates, re-registering on hover */
 .romantic-button {
   font-family: var(--font-ui);
-  padding: 0.75rem 1.5rem;
+  padding: clamp(0.6rem, 0.5rem + 0.5vw, 0.75rem) clamp(1.2rem, 1rem + 1vw, 1.5rem);
   border-radius: 10px;
   font-weight: 700;
-  font-size: clamp(0.85rem, 0.8rem + 0.25vw, 1.05rem);
+  font-size: clamp(0.8rem, 0.75rem + 0.2vw, 1rem);
   border: 2.5px solid var(--color-rose-700);
   cursor: pointer;
   transition: transform 0.18s var(--print-ease), box-shadow 0.18s var(--print-ease);
@@ -520,16 +520,80 @@
 .section-container {
   max-width: 90rem;
   margin: 0 auto;
-  padding: 4rem 1rem;
+  padding: clamp(2rem, 5vw, 4rem) 1rem;
 }
-@media (min-width: 640px) { .section-container { padding: 4rem 1.5rem; } }
-@media (min-width: 1024px) { .section-container { padding: 4rem 2rem; } }
 
 .page-container {
   min-height: 100vh;
   min-height: 100dvh;
   position: relative;
   overflow: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+/* Max-width container for large screens */
+.max-w-7xl {
+  max-width: 80rem;
+}
+@media (min-width: 640px) { .max-w-7xl { max-width: 80rem; } }
+@media (min-width: 768px) { .max-w-7xl { max-width: 88rem; } }
+@media (min-width: 1024px) { .max-w-7xl { max-width: 96rem; } }
+@media (min-width: 1280px) { .max-w-7xl { max-width: 100rem; } }
+
+/* Responsive spacing utilities */
+.pt-safe { padding-top: max(env(safe-area-inset-top), 1rem); }
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 1rem); }
+
+/* Card grid responsive gap */
+.card-grid {
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+@media (min-width: 640px) { .card-grid { gap: clamp(1rem, 2vw, 1.75rem); } }
+
+/* Section gaps */
+.section-gap {
+  gap: clamp(3rem, 6vw, 6rem);
+}
+.options-section-gap {
+  gap: clamp(2rem, 4vw, 5rem);
+}
+
+/* Fluid typography */
+.type-title {
+  font-weight: 400;
+  font-size: clamp(1.75rem, 0.9rem + 3.4vw, 4.5rem);
+  line-height: 1.08;
+}
+.type-hero {
+  font-size: clamp(2.5rem, 1rem + 7.5vw, 7rem);
+  line-height: 1.02;
+}
+.type-lead {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: clamp(0.95rem, 0.85rem + 0.4vw, 1.5rem);
+  line-height: 1.45;
+}
+.type-subtitle {
+  font-weight: 400;
+  font-size: clamp(1rem, 0.75rem + 1.2vw, 2.2rem);
+  line-height: 1.25;
+}
+.type-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(0.85rem, 0.8rem + 0.3vw, 1.2rem);
+  line-height: 1.6;
+}
+
+.press-label {
+  font-family: var(--font-ui);
+  font-size: clamp(0.65rem, 0.6rem + 0.25vw, 0.85rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--color-rose-700);
 }
 
 @media (pointer: coarse) {
