@@ -394,15 +394,18 @@ export default function DateWheel() {
             </motion.div>
           )}
 
-          {/* Result headline — prominent description of the spun/clicked slice */}
+          {/* Result headline — centered, responsive */}
           {label && !isSpinning && (
             <motion.div
-              className="press-label text-2xl font-bold text-rose-800"
+              className="flex flex-col items-center justify-center text-center w-full box-border"
+              style={{ fontSize: "calc(1.1rem + 0.5vw)", padding: "0 16px" }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 320, damping: 22 }}
             >
-              {label}
+              <span className="press-label font-bold text-rose-800 break-words">
+                {label}
+              </span>
             </motion.div>
           )}
 

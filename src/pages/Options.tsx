@@ -8,7 +8,7 @@ import moments from "../assets/moments.png";
 import together from "../assets/together.png";
 import { ScrollReveal, RevealText } from '@/components/ScrollReveal';
 import DateWheel from '@/components/DateWheel';
-import QuoteStrip from '@/components/QuoteStrip';
+import ReasonTerminal from '@/components/ReasonTerminal';
 
 interface CardProps {
   imgSrc: string;
@@ -77,7 +77,7 @@ const cardData = [
   { imgSrc: date, label: "our memories", alt: "Calendar and heart", to: "/plan", icon: "🌸" },
   { imgSrc: moments, label: "capture moments", alt: "Camera and memories", to: "/moments", icon: "📸" },
   { imgSrc: together, label: "journey together", alt: "Timeline together", to: "/journey", icon: "🗺️" },
-  { imgSrc: compliments, label: "love notes", alt: "Stars and compliments", to: "/compliments", icon: "💕" },
+  { imgSrc: compliments, label: "Compliments", alt: "Stars and compliments", to: "/compliments", icon: "💕" },
 ];
 
 function Options() {
@@ -152,7 +152,7 @@ function Options() {
               >
                 back to the letter
               </button>
-              <QuoteStrip />
+              <ReasonTerminal />
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.2} className="w-full">
